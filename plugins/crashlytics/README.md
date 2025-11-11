@@ -18,6 +18,24 @@ Generate crash reports from Firebase Crashlytics for iOS and Android with automa
 - Firebase project with Crashlytics enabled
 - Git repository
 - Claude Code
+- Node.js and npm (for Firebase MCP auto-installation)
+- Firebase MCP server (auto-installed on first run if needed)
+
+## Setup
+
+No manual setup required! When you first run the `/crash-report` command, it will automatically:
+1. Detect if Firebase MCP is installed
+2. If missing, automatically install it
+3. Verify the installation
+4. Begin crash analysis
+
+You can verify installation at any time with:
+
+```bash
+claude mcp list
+```
+
+The output should show "firebase" in the list of installed MCP servers.
 
 ## Commands
 
@@ -64,12 +82,16 @@ Plugin uses `.mcp.json` to configure Firebase MCP server:
 {
   "mcpServers": {
     "firebase": {
-      "command": "npx",
-      "args": ["-y", "firebase-tools@latest", "experimental:mcp", "--only", "crashlytics"]
+      "command": "sh",
+      "args": ["-c", "NODE_OPTIONS='--max-old-space-size=4096' npx -y firebase-tools@latest experimental:mcp"]
     }
   }
 }
 ```
+
+**Note**:
+- Node.js heap is set to 4GB to handle large project analysis
+- No project-specific flags needed - Firebase MCP auto-detects authenticated project
 
 ## Error Handling
 

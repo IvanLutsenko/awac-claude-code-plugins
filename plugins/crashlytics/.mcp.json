@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "firebase": {
-      "command": "npx",
-      "args": ["-y", "firebase-tools@latest", "experimental:mcp", "--only", "crashlytics"]
+      "command": "sh",
+      "args": ["-c", "NODE_OPTIONS='--max-old-space-size=4096' npx -y firebase-tools@latest experimental:mcp"]
     }
   }
 }

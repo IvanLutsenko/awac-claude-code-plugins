@@ -1,4 +1,4 @@
-# Claude Code Plugins Marketplace
+# AWAC Claude Code Plugins Marketplace
 
 Collection of Claude Code plugins for enhanced development workflows.
 
@@ -37,8 +37,21 @@ Generate crash reports from Firebase Crashlytics with automated fix proposals an
 
 ## Installation
 
+**Prerequisites:** Node.js and npm
+
 ```bash
-/plugin marketplace add artemnovichkov/claude-code-plugins
+/plugin marketplace add artemnovichkov/awac-claude-code-plugins
+```
+
+That's it! No additional setup needed. When you run the `/crash-report` command, it will automatically:
+- Detect if Firebase MCP is installed
+- Automatically install it if missing (with `NODE_OPTIONS='--max-old-space-size=4096'` for stable performance)
+- Start analyzing your crashes immediately
+
+Verify Firebase MCP installation at any time with:
+
+```bash
+claude mcp list
 ```
 
 ## Author
