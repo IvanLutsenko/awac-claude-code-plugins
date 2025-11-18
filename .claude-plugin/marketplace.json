@@ -1,28 +1,18 @@
 {
-  "name": "awac-claude-code-plugins",
+  "name": "AWAC Claude Code Plugins",
   "owner": {
-    "name": "Artem Novichkov",
-    "email": "mail@artemnovichkov.com",
-    "url": "https://artemnovichkov.com"
-  },
-  "metadata": {
-    "description": "A marketplace for Claude Code plugins",
-    "version": "1.1.0",
-    "homepage": "https://github.com/artemnovichkov/awac-claude-code-plugins",
-    "pluginRoot": "./plugins"
+    "name": "Ivan Lutsenko"
   },
   "plugins": [
     {
+      "name": "test-standards",
+      "source": "./plugins/test-standards",
+      "description": "Генерация и валидация unit тестов для Android/Kotlin по корпоративным стандартам Bereke Business"
+    },
+    {
       "name": "crashlytics",
-      "description": "Generate crash reports from Firebase Crashlytics with fix proposals and developer assignments",
-      "version": "1.1.0",
-      "author": {
-        "name": "Artem Novichkov",
-        "email": "mail@artemnovichkov.com",
-        "url": "https://artemnovichkov.com"
-      },
       "source": "./plugins/crashlytics",
-      "category": "development"
+      "description": "Firebase Crashlytics integration (Work in Progress)"
     }
   ]
 }
