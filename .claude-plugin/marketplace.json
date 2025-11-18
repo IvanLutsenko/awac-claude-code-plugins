@@ -1,18 +1,34 @@
 {
-  "name": "AWAC Claude Code Plugins",
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "awac-claude-code-plugins",
+  "version": "1.0.0",
+  "description": "Custom plugins for Claude Code by Ivan Lutsenko",
   "owner": {
-    "name": "Ivan Lutsenko"
+    "name": "Ivan Lutsenko",
+    "email": "ivan.lutsenko@example.com"
   },
   "plugins": [
     {
       "name": "test-standards",
+      "version": "1.0.0",
+      "description": "Генерация и валидация unit тестов для Android/Kotlin по корпоративным стандартам Bereke Business",
       "source": "./plugins/test-standards",
-      "description": "Генерация и валидация unit тестов для Android/Kotlin по корпоративным стандартам Bereke Business"
+      "author": {
+        "name": "Ivan Lutsenko",
+        "url": "https://github.com/IvanLutsenko"
+      },
+      "category": "testing"
     },
     {
       "name": "crashlytics",
+      "version": "0.1.0",
+      "description": "Firebase Crashlytics integration (Work in Progress)",
       "source": "./plugins/crashlytics",
-      "description": "Firebase Crashlytics integration (Work in Progress)"
+      "author": {
+        "name": "Ivan Lutsenko",
+        "url": "https://github.com/IvanLutsenko"
+      },
+      "category": "development"
     }
   ]
 }
