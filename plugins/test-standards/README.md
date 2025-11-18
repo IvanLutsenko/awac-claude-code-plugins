@@ -8,10 +8,10 @@
 
 ```bash
 # Добавь marketplace
-/plugin marketplace add awac https://github.com/IvanLutsenko/awac-claude-code-plugins
+/plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
 
 # Установи plugin
-/plugin install test-standards@awac
+/plugin install test-standards
 
 # Проверка
 /help  # должны появиться новые команды
