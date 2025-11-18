@@ -7,8 +7,10 @@
 ### Claude Code
 
 ```bash
-# Установка из GitHub
-/plugin marketplace add awac IvanLutsenko/awac-claude-code-plugins
+# Добавь marketplace
+/plugin marketplace add awac https://github.com/IvanLutsenko/awac-claude-code-plugins
+
+# Установи plugin
 /plugin install test-standards@awac
 
 # Проверка
