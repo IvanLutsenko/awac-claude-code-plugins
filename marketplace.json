@@ -1,0 +1,18 @@
+{
+  "name": "AWAC Claude Code Plugins",
+  "description": "Custom plugins for Claude Code by Ivan Lutsenko",
+  "plugins": [
+    {
+      "name": "test-standards",
+      "path": "plugins/test-standards",
+      "version": "1.0.0",
+      "description": "Генерация и валидация unit тестов для Android/Kotlin по корпоративным стандартам Bereke Business"
+    },
+    {
+      "name": "crashlytics",
+      "path": "plugins/crashlytics",
+      "version": "0.1.0",
+      "description": "Firebase Crashlytics integration (Work in Progress)"
+    }
+  ]
+}
