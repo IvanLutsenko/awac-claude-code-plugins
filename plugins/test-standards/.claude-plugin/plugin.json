@@ -1,0 +1,13 @@
+{
+  "name": "test-standards",
+  "version": "1.0.0",
+  "description": "Генерация и валидация unit тестов по корпоративным стандартам для Android/Kotlin проектов",
+  "author": {
+    "name": "Ivan Lutsenko",
+    "url": "https://github.com/IvanLutsenko"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IvanLutsenko/awac-claude-code-plugins"
+  }
+}
