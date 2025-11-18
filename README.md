@@ -1,63 +1,50 @@
-# AWAC Claude Code Plugins Marketplace
+# AWAC Claude Code Plugins
 
-Collection of Claude Code plugins for enhanced development workflows.
+Custom Claude Code plugins by Ivan Lutsenko
 
 ## Available Plugins
 
-### Crashlytics
-Generate crash reports from Firebase Crashlytics with automated fix proposals and developer assignments.
+### Test Standards
+Автоматическая генерация и валидация unit тестов для Android/Kotlin по корпоративным стандартам Bereke Business.
 
 **Features:**
-- Fetches fatal errors from Firebase Crashlytics
-- Analyzes stack traces and identifies root causes
-- Proposes specific fixes with code snippets
-- Assigns crashes to developers via git blame
-- Calculates severity scores (0-100)
-- Groups related crashes
-- Generates comprehensive markdown reports
+- `/generate-test` - генерация теста для одного класса
+- `/validate-test` - валидация теста на соответствие стандартам
+- `/test-module-business-core` - покрытие бизнес-логики модуля
+- `/test-module-all` - покрытие всех классов модуля
+- `test-engineer` агент для сложных задач
+
+**Category:** Testing
+**Version:** 1.0.0
+**Status:** ✅ Production Ready
+
+### Crashlytics
+Firebase Crashlytics integration (Work in Progress)
 
 **Category:** Development
-**Version:** 1.0.0
-
-## Structure
-
-```
-.
-├── .claude-plugin/
-│   └── marketplace.json       # Marketplace config
-└── plugins/
-    └── crashlytics/          # Crashlytics plugin
-        ├── .claude-plugin/
-        │   └── plugin.json   # Plugin metadata
-        ├── .mcp.json         # MCP server config
-        ├── README.md         # Plugin docs
-        └── commands/
-            └── crash-report.md
-```
+**Version:** 0.1.0
+**Status:** 🚧 Work in Progress
 
 ## Installation
 
-**Prerequisites:** Node.js and npm
-
 ```bash
-/plugin marketplace add artemnovichkov/awac-claude-code-plugins
+# Добавь marketplace
+/plugin marketplace add awac https://github.com/IvanLutsenko/awac-claude-code-plugins
+
+# Установи plugin
+/plugin install test-standards@awac
 ```
 
-That's it! No additional setup needed. When you run the `/crash-report` command, it will automatically:
-- Detect if Firebase MCP is installed
-- Automatically install it if missing (with `NODE_OPTIONS='--max-old-space-size=4096'` for stable performance)
-- Start analyzing your crashes immediately
+## Documentation
 
-Verify Firebase MCP installation at any time with:
-
-```bash
-claude mcp list
-```
+- [Test Standards Plugin](plugins/test-standards/README.md)
+- [Crashlytics Plugin](plugins/crashlytics/README.md)
 
 ## Author
 
-Artem Novichkov, https://artemnovichkov.com/
+Ivan Lutsenko
+GitHub: [@IvanLutsenko](https://github.com/IvanLutsenko)
 
 ## License
 
-The project is available under the MIT license. See the [LICENSE](./LICENSE) file for more info.
+MIT - see [LICENSE](LICENSE)
