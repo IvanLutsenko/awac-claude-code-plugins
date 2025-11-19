@@ -13,6 +13,13 @@
   },
   "keywords": ["testing", "unit-tests", "android", "kotlin", "test-generation"],
   "license": "MIT",
-  "commands": ["./commands/"],
-  "agents": ["./agents/"]
+  "commands": [
+    "./commands/generate-test.md",
+    "./commands/validate-test.md",
+    "./commands/test-module-business-core.md",
+    "./commands/test-module-all.md"
+  ],
+  "agents": [
+    "./agents/test-engineer.md"
+  ]
 }
