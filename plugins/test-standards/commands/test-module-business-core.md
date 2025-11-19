@@ -1,6 +1,7 @@
 ---
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, TodoWrite
 description: Покрытие unit тестами бизнес-логики модуля (ViewModel, UseCase, Interactor, Repository)
+argument-hint: "path/to/module"
+allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "TodoWrite"]
 ---
 
 ## Задача

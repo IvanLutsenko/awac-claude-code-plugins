@@ -1,6 +1,7 @@
 ---
-allowed-tools: Read, Grep
 description: Валидация unit теста на соответствие корпоративным стандартам
+argument-hint: "path/to/test/file.kt"
+allowed-tools: ["Read", "Grep"]
 ---
 
 ## Задача

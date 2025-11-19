@@ -1,6 +1,7 @@
 ---
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, TodoWrite
 description: Покрытие unit тестами всех классов модуля где есть смысл у тестов
+argument-hint: "path/to/module"
+allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "TodoWrite"]
 ---
 
 ## Задача
