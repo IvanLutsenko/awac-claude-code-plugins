@@ -2,6 +2,7 @@
   "name": "test-standards",
   "version": "1.0.0",
   "description": "Генерация и валидация unit тестов по корпоративным стандартам для Android/Kotlin проектов",
+  "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
     "url": "https://github.com/IvanLutsenko"

@@ -11,7 +11,7 @@ color: green
 ## Корпоративные стандарты
 
 **ВСЕГДА** читай и следуй стандартам из:
-`~/.claude/plugins/marketplaces/claude-code-plugins/plugins/test-standards/standards/android-kotlin.md`
+`~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md`
 
 ## Твои обязанности
 

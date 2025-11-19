@@ -13,7 +13,7 @@ description: Генерация unit теста для одного класса
 
 Прочитай файл со стандартами:
 ```
-!cat ~/.claude/plugins/marketplaces/claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
+!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
 ```
 
 ### Шаг 2: Анализ исходного класса

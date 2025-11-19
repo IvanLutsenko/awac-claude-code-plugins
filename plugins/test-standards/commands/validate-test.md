@@ -12,7 +12,7 @@ description: Валидация unit теста на соответствие к
 ### Шаг 1: Загрузи стандарты и тест
 
 ```
-!cat ~/.claude/plugins/marketplaces/claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
+!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
 ```
 
 Прочитай тестовый файл для валидации.

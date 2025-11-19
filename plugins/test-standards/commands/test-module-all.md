@@ -28,7 +28,7 @@ description: Покрытие unit тестами всех классов мод
 ### Шаг 1: Загрузи стандарты
 
 ```
-!cat ~/.claude/plugins/marketplaces/claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
+!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
 ```
 
 ### Шаг 2: Полное сканирование модуля
