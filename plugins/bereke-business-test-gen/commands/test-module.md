@@ -96,6 +96,44 @@ find {module_path}/src/main -type f -name "*.kt" | grep -v "/di/" | grep -v "/mo
 - ❌ Только константы
 - ❌ Простой mapper (field.copy())
 
+### ⚠️ КРИТИЧЕСКАЯ ПРОВЕРКА: По методам в каждом классе!
+
+**Не тестируй весь класс сразу!** Проверь каждый public метод:
+
+```
+Перед созданием теста спрашивай:
+
+1. Возвращает ли метод значение?
+   ✅ fun validate(phone: String): Boolean  → ТЕСТИРОВАТЬ
+   ❌ fun logEvent(name: String)  → ПРОПУСТИТЬ (void)
+
+2. Может ли быть замокирована зависимость?
+   ✅ api.getStatus() внутри метода  → ТЕСТИРОВАТЬ
+   ❌ Firebase.track() SDK вызов  → ПРОПУСТИТЬ
+
+3. Есть ли логика для асёрта?
+   ✅ if (x > 0) return true  → ТЕСТИРОВАТЬ
+   ❌ просто receiver.call()  → ПРОПУСТИТЬ
+
+ВСЕ ДА? → создавай тест
+ХОТЯ БЫ ОДИН НЕТ? → пропусти метод (нечего проверять)
+```
+
+**Типичный класс:**
+```kotlin
+class PaymentValidator {
+    // ✅ ТЕСТИРУЕМ - возвращает значение, логика
+    fun isCardValid(card: String): Boolean {
+        return card.length == 16 && card.all { it.isDigit() }
+    }
+
+    // ❌ ПРОПУСКАЕМ - void, нет return
+    fun reportCardUsage(card: String) {
+        analytics.track("card_used")
+    }
+}
+```
+
 ### Шаг 5: Анализ примера
 
 **Требует теста:**

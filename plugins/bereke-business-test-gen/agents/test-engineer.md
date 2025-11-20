@@ -200,6 +200,45 @@ fun publicMethod_callsHelper_worksCorrectly() = runTest {
 - Координирует компоненты
 - Управляет состоянием
 
+### ⚠️ КРИТИЧЕСКАЯ ПРОВЕРКА: По методам, не по классам!
+
+**ПЕРЕД генерацией теста для каждого МЕТОДА проверь:**
+
+```
+□ У метода есть return value? (не void)
+  ✅ fun getKey(): String
+  ✅ fun isEnabled(): Boolean
+  ❌ fun logEvent(name: String)  ← void - пропусти
+
+□ Может быть замокирована его зависимость? (не SDK direct call)
+  ✅ api.getStatus()  ← можно замокировать
+  ❌ Firebase.logEvent()  ← не мокируется
+
+□ Есть логика, которую можно асёртить?
+  ✅ if (enabled) { return "yes" }
+  ❌ просто forward вызов: receiver.method()
+
+Если ВСЕ YES → создавай тест
+Если хотя бы один NO → пропусти ЭТОТ МЕТОД
+```
+
+**Пример класса с смешанными методами:**
+```kotlin
+class AnalyticsRepository(val api: AnalyticsApi) {
+
+    // ✅ ТЕСТИРУЕМ - return value, mockable API
+    suspend fun getApiKey(): String { return api.getKey() }
+
+    // ❌ ПРОПУСКАЕМ - void, nothing to assert
+    fun trackEvent(name: String) { api.track(name) }
+
+    // ✅ ТЕСТИРУЕМ - return value, exception handling
+    suspend fun isEnabled(): Boolean {
+        return try { api.checkStatus() } catch (e: Exception) { false }
+    }
+}
+```
+
 ### 3. Валидация существующих тестов
 
 **Шаги:**
