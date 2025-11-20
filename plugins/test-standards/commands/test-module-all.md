@@ -428,3 +428,35 @@ class SessionCacheTest {
 - ✅ Полный tearDown с cleanupFlowResources
 - ✅ Happy path + error handling + edge cases
 - ✅ Анализируй каждый класс - тестировать ли его
+- ✅ **Пакет теста = пакет исходного класса** (только путь меняется)
+- ✅ Тестировать только PUBLIC методы (минимум 1 happy path + 1 error case)
+
+## Проверка качества после генерации
+
+После завершения генерации всех тестов:
+
+```bash
+# 1. Проверка синтаксиса
+./gradlew :{module}:compileDebugUnitTestKotlin
+
+# 2. Проверка линтера и удаление неиспользуемых импортов
+./gradlew :{module}:lintDebugUnitTest
+
+# 3. Запуск всех тестов
+./gradlew :{module}:testDebugUnitTest
+
+# 4. Проверка покрытия кода
+./gradlew :{module}:koverVerify
+./gradlew :{module}:koverHtmlReport  # отчет в build/reports/kover/html/
+```
+
+**Если лinter нашел unused imports:**
+- Удали их автоматически через Edit
+- Переблюдай логику того что осталось
+
+**Если тесты не компилируются:**
+- Проверь типы параметров
+- Убедись что все импорты правильные
+- Перепроверь синтаксис Given-When-Then блоков
+
+**Целевое покрытие:** >= 70% (стремись к 100%)
