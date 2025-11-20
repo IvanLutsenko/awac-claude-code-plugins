@@ -11,7 +11,7 @@
   "license": "MIT",
   "commands": [
     "./commands/test-class.md",
-    "./commands/test-coverage.md",
+    "./commands/test-module.md",
     "./commands/validate-tests.md"
   ],
   "agents": [

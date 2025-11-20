@@ -73,7 +73,7 @@ When generating tests for Android/Kotlin:
 
 ⏱️ **Время:** 2-5 минут
 
-### `/test-coverage [path/to/module]`
+### `/test-module [path/to/module]`
 Покрывает тестами ВСЕ классы модуля где это имеет смысл.
 
 Включает:
@@ -89,8 +89,8 @@ When generating tests for Android/Kotlin:
 - Константы/Enums
 
 ```bash
-/test-coverage feature/auth
-/test-coverage core:push
+/test-module feature/auth
+/test-module core:push
 ```
 
 **Результат:** Полное покрытие модуля с итоговыми metrics
@@ -113,7 +113,7 @@ When generating tests for Android/Kotlin:
 /test-class path/to/Class.kt
 
 # Весь модуль (полно)
-/test-coverage path/to/module
+/test-module path/to/module
 
 # Опционально: проверить старые тесты
 /validate-tests path/to/module

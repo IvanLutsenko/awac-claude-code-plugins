@@ -462,7 +462,7 @@ find . -name "*Validator*Test.kt" -path "*/test/*" | head -3
 
 **Две основные команды:**
 1. `/test-class path/to/ClassName.kt` → Тест для одного класса (2-5 мин)
-2. `/test-coverage path/to/module` → Полное покрытие модуля (20-30 мин)
+2. `/test-module path/to/module` → Полное покрытие модуля (20-30 мин)
 3. `/validate-tests path/to/module` → Проверка существующих тестов (опционально)
 
 **Workflow:**

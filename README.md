@@ -9,7 +9,7 @@ Automated unit test generation for Kotlin/Android business logic with corporate 
 
 **Commands:**
 - `/test-class path/to/ClassName.kt` - генерация теста для одного класса (2-5 мин)
-- `/test-coverage path/to/module` - полное покрытие модуля (20-30 мин)
+- `/test-module path/to/module` - полное покрытие модуля (20-30 мин)
 - `/validate-tests path/to/module` - валидация существующих тестов (опционально)
 
 **Agent:**
@@ -43,7 +43,7 @@ Firebase Crashlytics integration (Work in Progress)
 /test-class src/main/java/.../YourClass.kt
 
 # Полное покрытие модуля
-/test-coverage feature/auth
+/test-module feature/auth
 ```
 
 ## Documentation
