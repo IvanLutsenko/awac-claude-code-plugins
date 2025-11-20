@@ -16,6 +16,12 @@ allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "TodoWrite"]
 
 ### Шаг 1: Загрузи стандарты
 
+**Быстрая шпаргалка** (начни с этого - 50 строк):
+```
+!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin-quick-ref.md
+```
+
+**Полное руководство** (если нужны детали - 600+ строк):
 ```
 !cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
 ```
