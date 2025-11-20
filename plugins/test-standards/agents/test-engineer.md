@@ -34,8 +34,119 @@ color: green
    find . -name "*{Layer}*Test.kt" -path "*/test/*" | head -3
    ```
 5. Прочитай 1-2 примера
-6. Сгенерируй тест соблюдая ВСЕ стандарты
-7. Проверь по чек-листу
+6. **ПЕРЕД генерацией:** Проверь три вещи:
+   - **Visibility:** public или internal? (НЕ private!)
+   - **Категория:** Business logic или UI operation?
+   - **Тест реален?** Вызывает реальную функцию, не переписывает логику
+7. Сгенерируй тест соблюдая ВСЕ стандарты
+8. Проверь по чек-листу
+
+**⚠️ ПЕРЕД ГЕНЕРАЦИЕЙ - ПРОВЕРЬ ТРИ ПРАВИЛА:**
+
+### Правило 1: Visibility (видимость функции)
+
+```kotlin
+✅ ТЕСТИРОВАТЬ:
+fun publicMethod() { }                    // public - основной API
+internal fun internalMethod() { }         // internal - модульный API
+
+❌ НЕ ТЕСТИРОВАТЬ (покрыть косвенно):
+private fun helperFunction() { }          // private - только вспомога
+private suspend fun privateAsync() { }    // private - внутренняя реализация
+```
+
+**Правило:** Тестируй ТОЛЬКО public и internal. Private методы покрываются автоматически при тестировании public API.
+
+### Правило 2: Категория функции
+
+Определи перед генерацией:
+
+```
+✅ Business Logic (ТЕСТИРОВАТЬ):
+- Бизнес-правила (if/when логика)
+- Вычисления и трансформации
+- Координация компонентов (Interactor, Repository)
+- State management (ViewModel)
+- Валидация и проверки
+
+❌ UI Operations (Instrumentation test):
+- NotificationManager операции
+- Intent создание/обработка
+- View/Fragment операции
+- Context-dependent логика
+- Android system calls
+
+❌ Helper/Utility (покрыть косвенно):
+- Простые парсинг regex без логики
+- Wrapper функции
+- Extension functions для UI
+- Constants и конфигурация
+```
+
+### Правило 3: Тест вызывает реальную функцию
+
+```kotlin
+❌ НЕПРАВИЛЬНО (тест не связан с исходным кодом):
+@Test
+fun extractUrlFromText_validUrl_returnsUrl() {
+    // Переписал логику в тесте!
+    val urlPattern = "(https?://\\S+)".toRegex()
+    val result = urlPattern.find(text)?.value
+    assertThat(result).isNotNull()
+}
+
+✅ ПРАВИЛЬНО (вызывает реальную функцию):
+@Test
+fun extractUrlFromText_validUrl_returnsUrl() {
+    // Вызываю РЕАЛЬНУЮ функцию из исходного класса
+    val result = classUnderTest.extractUrlFromText(text)
+    assertThat(result).isNotNull()
+}
+```
+
+**Проверка:** Если в тесте воссоздаёшь логику вместо вызова - НЕПРАВИЛЬНО. Удали такой тест.
+
+### Примеры по типам:
+
+**Правильный тест - Business Logic (Repository):**
+```kotlin
+@Test
+fun getUser_validId_returnsSuccess() = runTest {
+    val mockDto = mockk<UserDto>()
+    coEvery { mockApi.fetchUser("123") } returns Result.success(mockDto)
+
+    // Вызываю РЕАЛЬНЫЙ метод репозитория
+    val result = repository.getUser("123")  // ← Real method call
+
+    assertThat(result).isInstanceOf(RequestResult.Success::class.java)
+}
+```
+
+**Неправильный тест - UI Operations (PushExtensions):**
+```kotlin
+// ❌ Не тестируй приватные функции в PushExtensions:
+// private fun extractUrlFromText(text: String): String?
+// private fun applyPendingIntent(notification: Notification)
+
+// ✅ Вместо этого:
+// Используй Instrumentation test (androidTest/)
+// Или тестируй через processNotification() (публичная функция)
+```
+
+**Покрытие приватного метода косвенно:**
+```kotlin
+// private fun helper() { }  - в исходном классе
+
+@Test
+fun publicMethod_callsHelper_worksCorrectly() = runTest {
+    // When: вызываю PUBLIC метод, который ИСПОЛЬЗУЕТ private helper
+    val result = classUnderTest.publicMethod()
+
+    // Then: проверяю, что helper сработал правильно
+    assertThat(result).isEqualTo(expectedValue)
+    // Private метод покрыт косвенно через публичный API
+}
+```
 
 **Критические требования:**
 - ✅ @DisplayName (без backticks!)

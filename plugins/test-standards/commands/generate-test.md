@@ -280,13 +280,89 @@ internal abstract class MyViewModelBaseTest {
    ./gradlew :module:testDebugUnitTest
    ```
 
+### Шаг 11: Проверка покрытия по классу
+
+После успешного запуска тестов выведи процент покрытия конкретного класса:
+
+```bash
+# Генерируем XML отчет покрытия
+./gradlew :module:koverXmlReport
+
+# Парсим покрытие конкретного класса
+CLASS_PATH="path/to/ClassName"  # Пример: kz/berekebank/business/core/push/push_impl/data/repositories/PushRepository
+
+# Извлекаем линии и инструкции из XML
+COVERAGE_FILE="build/reports/kover/report.xml"
+grep "class name=\"$CLASS_PATH\"" "$COVERAGE_FILE" -A 5 | \
+  grep -E "counter type=\"(INSTRUCTION|LINE)\"" | \
+  head -2
+```
+
+Выведи в формате:
+```
+📊 Покрытие класса ClassName:
+- LINE coverage: XX.X%
+- INSTRUCTION coverage: XX.X%
+```
+
+Примеры интерпретации:
+- ✅ > 80% - Отличное покрытие
+- ⚠️  60-80% - Хорошее, но можно улучшить
+- ❌ < 60% - Требуется дополнительные тесты
+
 ## Output
 
-Выведи:
-1. Путь к созданному файлу теста
-2. Список сгенерированных тестовых методов
-3. Примененные стандарты
-4. Предложения для дополнительных тест-кейсов
+Выведи в следующем порядке:
+
+1. **Заголовок с именем класса:**
+   ```
+   ✅ Создан тест: ClassName
+   ```
+
+2. **Путь к файлу теста:**
+   ```
+   📍 Файл: src/test/kotlin/kz/berekebank/business/core/push/.../ClassName Test.kt
+   ```
+
+3. **Статистика:**
+   ```
+   📊 Статистика:
+   - Всего тестов: N
+   - Happy path: N
+   - Error cases: N
+   - Edge cases: N
+   ```
+
+4. **Покрытие класса (ОБЯЗАТЕЛЬНО):**
+   ```
+   📈 Покрытие ClassName:
+   - LINE coverage: XX.X%
+   - INSTRUCTION coverage: XX.X%
+   ```
+
+5. **Список методов:**
+   ```
+   ✅ Тестируемые методы:
+   1. methodName1() - happy path + error case
+   2. methodName2() - happy path + edge case
+   ...
+   ```
+
+6. **Примененные стандарты:**
+   ```
+   ✅ Стандарты:
+   - @DisplayName ✅
+   - Given-When-Then ✅
+   - Truth assertions ✅
+   - FlowTestUtils ✅
+   ```
+
+7. **Рекомендации:**
+   ```
+   💡 Рекомендации:
+   - Дополнительный тест-кейс 1
+   - Дополнительный тест-кейс 2
+   ```
 
 ## Пример использования
 
