@@ -14,12 +14,12 @@ allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "TodoWrite"]
 
 **Быстрая шпаргалка** (начни с этого):
 ```
-!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin-quick-ref.md
+!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/android-kotlin-quick-ref.md
 ```
 
 **Полное руководство** (если нужны детали):
 ```
-!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
+!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/android-kotlin.md
 ```
 
 ### Шаг 2: Анализ исходного класса

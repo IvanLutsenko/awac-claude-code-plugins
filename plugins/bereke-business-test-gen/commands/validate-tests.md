@@ -14,7 +14,7 @@ allowed-tools: ["Read", "Grep", "Bash"]
 ### Шаг 1: Загрузи стандарты
 
 ```
-!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md
+!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/android-kotlin.md
 ```
 
 ### Шаг 2: Найди все тесты в модуле
@@ -176,13 +176,13 @@ find {module_path}/src/test -name "*Test.kt" -type f
 
 ```bash
 # Валидировать весь модуль
-/test-standards:validate-test-module feature/auth
+/bereke-business-test-gen:validate-test-module feature/auth
 
 # Валидировать impl модуль
-/test-standards:validate-test-module feature/qr-signing/qr-signing-impl
+/bereke-business-test-gen:validate-test-module feature/qr-signing/qr-signing-impl
 
 # Валидировать core модуль
-/test-standards:validate-test-module core/push/push-impl
+/bereke-business-test-gen:validate-test-module core/push/push-impl
 ```
 
 ## Автоматизация (опционально)

@@ -11,7 +11,7 @@ color: green
 ## Корпоративные стандарты
 
 **ВСЕГДА** читай и следуй стандартам из:
-`~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/test-standards/standards/android-kotlin.md`
+`~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/android-kotlin.md`
 
 ## Твои обязанности
 
@@ -157,62 +157,7 @@ fun publicMethod_callsHelper_worksCorrectly() = runTest {
 - ✅ `FlowTestUtils.cleanupFlowResources()` в tearDown
 - ✅ **ПАКЕТ ТЕСТА = ПАКЕТ ИСХОДНОГО КЛАССА** (только путь файла меняется: src/main → src/test)
 
-### 2. Покрытие бизнес-логики модуля
-
-**Цель:** Покрыть ViewModel, UseCase, Interactor, Repository с целевым покрытием 100%
-
-**Шаги:**
-
-1. Загрузи стандарты
-2. Сканируй модуль:
-   ```bash
-   find {module} -name "*ViewModel.kt" -not -path "*/test/*"
-   find {module} -name "*UseCase.kt" -not -path "*/test/*"
-   find {module} -name "*Interactor*.kt" -not -path "*/test/*"
-   find {module} -name "*Repository*.kt" -not -path "*/test/*"
-   ```
-3. Для каждого класса проверь наличие теста
-4. Создай план в TodoWrite
-5. Генерируй тесты по приоритету:
-   - UseCase (высший приоритет)
-   - Interactor
-   - Repository
-   - ViewModel
-6. **ВАЖНО:** Для каждого класса тестируй:
-   - ✅ ВСЕ **PUBLIC** методы (только публичные!)
-   - ✅ Минимум 1 happy path тест на метод
-   - ✅ Минимум 1 error case тест на метод (если возможно)
-   - ❌ Private методы тестируются косвенно через public
-7. Отмечай выполненное в TodoWrite
-
-**Достижение 100% покрытия:**
-
-8. После генерации базовых тестов:
-   ```bash
-   ./gradlew :{module}:koverXmlReport
-   ```
-
-9. Найди методы без покрытия (LINE покрытие):
-   ```bash
-   grep -E '<method.*missed="[1-9]"' build/reports/kover/report.xml | \
-   grep -oP 'name="\K[^"]*'
-   ```
-
-10. Для каждого uncovered метода:
-    - Определи класс где метод находится
-    - Генерируй дополнительные тесты через `/generate-test`
-    - Сосредоточься на edge cases и error paths
-
-11. Повторяй шаги 8-10 пока не будет 100% (обычно 2-3 итерации)
-
-12. Финальная проверка:
-    ```bash
-    ./gradlew :{module}:koverVerify  # ✅ Должно пройти с 100%
-    ```
-
-13. Выведи итоговый отчет с финальным покрытием
-
-### 3. Покрытие всех классов модуля
+### 2. Полное покрытие модуля (test-coverage)
 
 **Цель:** Покрыть ВСЕ классы где unit тесты имеют смысл
 
@@ -255,7 +200,7 @@ fun publicMethod_callsHelper_worksCorrectly() = runTest {
 - Координирует компоненты
 - Управляет состоянием
 
-### 4. Валидация существующего теста
+### 3. Валидация существующих тестов
 
 **Шаги:**
 
@@ -514,8 +459,15 @@ find . -name "*Validator*Test.kt" -path "*/test/*" | head -3
 - **Не гадай** - ищи примеры
 
 Когда получишь задачу:
-1. Определи тип (один класс/модуль core/модуль all/валидация)
-2. Следуй workflow
-3. Используй TodoWrite для трекинга
-4. Используй чек-лист
-5. Выведи результат
+
+**Две основные команды:**
+1. `/test-class path/to/ClassName.kt` → Тест для одного класса (2-5 мин)
+2. `/test-coverage path/to/module` → Полное покрытие модуля (20-30 мин)
+3. `/validate-tests path/to/module` → Проверка существующих тестов (опционально)
+
+**Workflow:**
+1. Определи тип (класс или модуль)
+2. Следуй соответствующему workflow (раздел 1 или 2)
+3. Используй TodoWrite для многошаговых задач
+4. Используй чек-лист перед выводом
+5. Выведи результат с покрытием

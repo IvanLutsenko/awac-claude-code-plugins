@@ -9,10 +9,10 @@
   },
   "plugins": [
     {
-      "name": "test-standards",
-      "version": "1.0.0",
-      "description": "Генерация и валидация unit тестов для Android/Kotlin по корпоративным стандартам Bereke Business",
-      "source": "./plugins/test-standards",
+      "name": "bereke-business-test-gen",
+      "version": "2.0.0",
+      "description": "Automated unit test generation for Kotlin/Android business logic with corporate standards",
+      "source": "./plugins/bereke-business-test-gen",
       "author": {
         "name": "Ivan Lutsenko",
         "url": "https://github.com/IvanLutsenko"
