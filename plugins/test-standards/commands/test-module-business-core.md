@@ -291,3 +291,24 @@ class AuthRepositoryImplTest {
 - Перепроверь синтаксис Given-When-Then блоков
 
 **Целевое покрытие:** >= 70% (стремись к 100%)
+
+## ✨ BONUS: Достижение 100% покрытия
+
+Для полного покрытия (100%) используй Kover анализ:
+
+```bash
+# 1. После генерации тестов - запусти Kover
+./gradlew :{module}:koverXmlReport
+
+# 2. Найди методы без покрытия (missed > 0)
+grep -E '<method.*missed="[1-9]"' build/reports/kover/report.xml | \
+grep -oP 'name="\K[^"]*'
+
+# 3. Для каждого найденного метода - генерируй тест
+/generate-test feature/auth/data/repositories/AuthRepository.kt
+
+# 4. Повторяй шаги 1-3 пока все методы не покрыты
+./gradlew :{module}:koverVerify  # ✅ Готово!
+```
+
+**Полный workflow с примерами:** смотри раздел "BONUS: Автоматическое достижение 100% покрытия" в `/test-standards:test-module-all`

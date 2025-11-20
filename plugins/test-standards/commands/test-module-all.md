@@ -460,3 +460,163 @@ class SessionCacheTest {
 - Перепроверь синтаксис Given-When-Then блоков
 
 **Целевое покрытие:** >= 70% (стремись к 100%)
+
+## ✨ BONUS: Автоматическое достижение 100% покрытия
+
+Если хочешь достичь 100% покрытия - используй этот workflow для итеративной генерации:
+
+### Шаг 1: Сгенерируй базовые тесты
+
+```bash
+# Создай первый набор тестов обычным способом
+/test-module-all feature/auth
+```
+
+### Шаг 2: Генерируй Kover отчет
+
+```bash
+# Запусти Kover с XML отчетом
+./gradlew :{module}:koverXmlReport
+
+# XML будет в: build/reports/kover/report.xml
+```
+
+### Шаг 3: Найди методы с недостаточным покрытием
+
+```bash
+# Показать методы где missed > 0:
+grep -E '<method.*missed="[1-9]"' build/reports/kover/report.xml | grep -oP 'name="\K[^"]*'
+
+# Или все методы с их покрытием:
+grep '<method' build/reports/kover/report.xml | grep -oP 'name="\K[^"]*' | head -20
+```
+
+Вывод покажет методы типа:
+```
+getFcmToken
+postMessageStatus
+deleteToken
+onIntentReceived
+```
+
+### Шаг 4: Для каждого uncovered метода - генерируй тест
+
+```bash
+# Для каждого метода найденного в Шаге 3:
+/generate-test feature/auth/data/repositories/AuthRepository.kt
+
+# Сосредоточься на методе `getFcmToken`:
+# - Happy path: успешное получение токена
+# - Error case: токен недоступен
+# - Edge case: null/empty результат
+```
+
+### Шаг 5: Проверь обновленное покрытие
+
+```bash
+# Перегенерируй отчет
+./gradlew :{module}:koverXmlReport
+
+# Проверь новый результат
+grep -c '<method' build/reports/kover/report.xml  # всего методов
+grep -c 'missed="0"' build/reports/kover/report.xml  # полностью покрыто
+```
+
+### Шаг 6: Повторяй пока не будет 100%
+
+```bash
+# Показать итоговое покрытие
+./gradlew :{module}:koverVerify
+
+# Если не прошло (< 100%):
+# 1. Повтори Шаг 3 (найди новые uncovered методы)
+# 2. Повтори Шаг 4 (генерируй тесты)
+# 3. Повтори Шаг 5 (проверь результаты)
+
+# Когда пройдет - готово! ✅
+```
+
+### Пример полного цикла
+
+```bash
+# 1. Начальная генерация
+/test-module-all feature/auth
+
+# 2. Первая итерация
+./gradlew :feature:auth:koverXmlReport
+grep '<method' build/reports/kover/report.xml | wc -l  # => 15 методов
+grep -E 'missed="[1-9]"' build/reports/kover/report.xml | wc -l  # => 6 методов не покрыто
+
+# 3. Генерируем тесты для 6 методов (Шаг 4)
+/generate-test feature/auth/data/AuthRepository.kt  # getFcmToken
+/generate-test feature/auth/data/AuthRepository.kt  # postMessageStatus
+# ... еще 4 метода
+
+# 4. Вторая итерация
+./gradlew :feature:auth:koverXmlReport
+grep -E 'missed="[1-9]"' build/reports/kover/report.xml | wc -l  # => 2 метода
+
+# 5. Генерируем тесты для оставшихся 2
+/generate-test feature/auth/domain/AuthInteractor.kt  # método_x
+/generate-test feature/auth/domain/AuthUseCase.kt    # método_y
+
+# 6. Проверка финального результата
+./gradlew :feature:auth:koverVerify  # ✅ BUILD SUCCESSFUL
+```
+
+### Автоматизированный скрипт (опционально)
+
+Если надоел ручной процесс - создай скрипт:
+
+```bash
+#!/bin/bash
+MODULE="feature:auth"
+COVERAGE_TARGET=100
+
+while true; do
+    # 1. Генерируй отчет
+    ./gradlew :${MODULE}:koverXmlReport
+
+    # 2. Найди uncovered методы
+    UNCOVERED=$(grep -E 'missed="[1-9]"' build/reports/kover/report.xml | \
+                 grep -oP 'name="\K[^"]*' | sort -u)
+
+    # 3. Если нет uncovered - выход
+    if [ -z "$UNCOVERED" ]; then
+        echo "✅ 100% coverage achieved!"
+        break
+    fi
+
+    # 4. Для каждого uncovered метода - даю инструкцию генерировать тест
+    echo "❌ Found uncovered methods: $UNCOVERED"
+    echo "📝 Generate tests for these methods:"
+    echo "$UNCOVERED" | head -5  # Show max 5 для не затопить user
+
+    # 5. User должен запустить /generate-test для каждого
+    # (полная автоматизация требует интеграции AI model внутри скрипта)
+    echo "Run: /generate-test {class-with-these-methods}"
+    break
+done
+```
+
+### ⚠️ Важные моменты
+
+1. **Kover парсинг:** XML структура может отличаться по версиям
+   ```xml
+   <method name="methodName">
+     <counter type="LINE" missed="0" covered="5"/>  ← это важно
+   </method>
+   ```
+
+2. **Missed vs Covered:**
+   - `missed="0"` = полностью покрыто ✅
+   - `missed="1"` = 1 инструкция не покрыта ❌
+
+3. **LINE vs INSTRUCTION:**
+   - LINE покрытие используется для целевого процента (70%)
+   - INSTRUCTION покрытие дает более точные результаты
+
+4. **Повторяющийся процесс:**
+   - Каждый раз новые тесты покрывают не только целевой метод, но и другие
+   - Итоговое покрытие может быстро расти
+   - Обычно 2-3 итерации достаточно для 100%
