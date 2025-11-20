@@ -44,6 +44,7 @@ color: green
 - ✅ Prefix `mock` для всех моков
 - ✅ `FlowTestUtils.coVerifyFlowCall` для Flow
 - ✅ `FlowTestUtils.cleanupFlowResources()` в tearDown
+- ✅ **ПАКЕТ ТЕСТА = ПАКЕТ ИСХОДНОГО КЛАССА** (только путь файла меняется: src/main → src/test)
 
 ### 2. Покрытие бизнес-логики модуля
 
@@ -66,8 +67,13 @@ color: green
    - Interactor
    - Repository
    - ViewModel
-6. Отмечай выполненное в TodoWrite
-7. Выведи итоговый отчет
+6. **ВАЖНО:** Для каждого класса тестируй:
+   - ✅ ВСЕ **PUBLIC** методы (только публичные!)
+   - ✅ Минимум 1 happy path тест на метод
+   - ✅ Минимум 1 error case тест на метод (если возможно)
+   - ❌ Private методы тестируются косвенно через public
+7. Отмечай выполненное в TodoWrite
+8. Выведи итоговый отчет
 
 ### 3. Покрытие всех классов модуля
 

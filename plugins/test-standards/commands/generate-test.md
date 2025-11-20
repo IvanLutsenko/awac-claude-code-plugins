@@ -20,7 +20,21 @@ allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "TodoWrite"]
 ### Шаг 2: Анализ исходного класса
 
 1. Прочитай исходный файл
-2. Определи слой архитектуры:
+2. **КРИТИЧНО:** Определи пакет класса:
+   ```
+   Например, если класс в:
+   src/main/java/kz/berekebank/business/core/push/push_impl/data/repositories/PushRepository.kt
+
+   Пакет: kz.berekebank.business.core.push.push_impl.data.repositories
+
+   Тест ДОЛЖЕН быть в ТОМ ЖЕ пакете:
+   src/test/kotlin/kz/berekebank/business/core/push/push_impl/data/repositories/PushRepositoryTest.kt
+
+   Только путь меняется: src/main → src/test
+   Пакет остается ИДЕНТИЧНЫМ исходному классу!
+   ```
+
+3. Определи слой архитектуры:
    - **ViewModel** - управление UI состоянием
    - **UseCase** - бизнес-логика
    - **Interactor** - координация UseCase
@@ -29,9 +43,9 @@ allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "TodoWrite"]
    - **Validator** - валидация
    - **Другое** - util, formatter и т.д.
 
-3. Найди все зависимости для мокирования
-4. Определи публичные методы для тестирования
-5. Проверь использование корутин и Flow
+4. Найди все зависимости для мокирования
+5. Определи публичные методы для тестирования (только public!)
+6. Проверь использование корутин и Flow
 
 ### Шаг 3: Найди примеры в проекте
 
@@ -53,7 +67,22 @@ find . -name "*ViewModelBaseTest.kt" -path "*/test/*" | head -3
 
 Прочитай 1-2 примера для понимания паттернов проекта.
 
-### Шаг 4: Генерация теста
+### Шаг 4: Определи путь файла теста
+
+**ВАЖНО:** Тестовый файл должен быть в ТОМ ЖЕ пакете что исходный класс!
+
+```bash
+# Исходный класс:
+src/main/java/kz/berekebank/business/core/push/push_impl/data/repositories/PushRepository.kt
+
+# Путь теста (пакет одинаковый!):
+src/test/kotlin/kz/berekebank/business/core/push/push_impl/data/repositories/PushRepositoryTest.kt
+
+# Извлеки пакет из исходного файла и используй его в тесте:
+package kz.berekebank.business.core.push.push_impl.data.repositories
+```
+
+### Шаг 5: Генерация теста
 
 Создай тест со следующей структурой:
 
@@ -115,7 +144,7 @@ fun methodName_condition_result() = runTest {
 }
 ```
 
-### Шаг 5: Критические правила
+### Шаг 6: Критические правила
 
 ✅ **ОБЯЗАТЕЛЬНО:**
 - @DisplayName для каждого теста (без backticks!)
@@ -131,15 +160,15 @@ fun methodName_condition_result() = runTest {
 - Thread.sleep()
 - Обычный coVerify для Flow
 
-### Шаг 6: Покрытие
+### Шаг 7: Покрытие
 
 Сгенерируй тесты для:
 - ✅ Happy path (успешный сценарий)
 - ✅ Error handling (обработка ошибок)
 - ✅ Edge cases (null, empty, большие значения)
-- ✅ Все публичные методы
+- ✅ Все публичные методы (и только публичные!)
 
-### Шаг 7: Специфика по слоям
+### Шаг 8: Специфика по слоям
 
 **UseCase:**
 ```kotlin
@@ -216,7 +245,7 @@ internal abstract class MyViewModelBaseTest {
 }
 ```
 
-### Шаг 8: Валидация
+### Шаг 9: Валидация
 
 Перед завершением проверь по чек-листу:
 - [ ] @DisplayName присутствует (без backticks)
@@ -225,6 +254,26 @@ internal abstract class MyViewModelBaseTest {
 - [ ] Все зависимости замоканы с префиксом mock
 - [ ] tearDown с FlowTestUtils.cleanupFlowResources()
 - [ ] Truth assertions
+- [ ] Пакет теста совпадает с пакетом исходного класса ✅
+
+### Шаг 10: Проверка качества
+
+После генерации выполни:
+1. **Проверка синтаксиса:**
+   ```bash
+   ./gradlew :module:compileDebugUnitTestKotlin
+   ```
+
+2. **Проверка линтера:**
+   ```bash
+   ./gradlew :module:lintDebugUnitTest
+   ```
+   Удали any unused imports если найдены.
+
+3. **Запуск тестов:**
+   ```bash
+   ./gradlew :module:testDebugUnitTest
+   ```
 
 ## Output
 
@@ -239,4 +288,11 @@ internal abstract class MyViewModelBaseTest {
 ```bash
 /generate-test feature/auth/domain/LoginUseCase.kt
 /generate-test feature/documents/data/DocumentsRepositoryImpl.kt
+/generate-test core/push/push-impl/src/main/java/kz/berekebank/business/core/push/push_impl/data/repositories/PushRepository.kt
 ```
+
+## Ключевые улучшения
+
+✅ Явная инструкция о пакетах тестов
+✅ Пакет теста = пакет исходного класса
+✅ Проверка качества после генерации (синтаксис, линтер, тесты)
