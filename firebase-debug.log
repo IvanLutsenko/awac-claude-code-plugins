@@ -1,0 +1,139 @@
+[debug] [2025-11-12T07:57:18.628Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"projects"}
+[debug] [2025-11-12T07:57:18.630Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"projects"}
+[debug] [2025-11-12T07:57:18.630Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"projects"}
+[debug] [2025-11-12T07:57:18.630Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"projects"}
+[debug] [2025-11-12T07:57:18.630Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-12T07:57:18.630Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2025-11-12T07:57:18.630Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-12T07:57:18.630Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2025-11-12T07:57:18.630Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"projects"}
+[debug] [2025-11-12T07:57:18.632Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.632Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.633Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.633Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.633Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.634Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.634Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.634Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.634Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.634Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.637Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.637Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.637Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.637Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.637Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.638Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.638Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.638Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.638Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.638Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.638Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"projects"}
+[debug] [2025-11-12T07:57:18.638Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.638Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.638Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.639Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.639Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.639Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.639Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.639Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.639Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.639Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.640Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.640Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.640Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.640Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.640Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.640Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.640Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.640Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.640Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.640Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.641Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-12T07:57:18.641Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2025-11-12T07:57:18.641Z] Object "" in "firebase.json" has unknown property: {"additionalProperty":"projects"}
+[debug] [2025-11-12T07:57:18.641Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.641Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.641Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.641Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.641Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.641Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.641Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.641Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.641Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.641Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.642Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.642Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.642Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.642Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.642Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:18.642Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.642Z] Checked if tokens are valid: false, expires at: 1762885337754
+[debug] [2025-11-12T07:57:18.642Z] > refreshing access token with scopes: []
+[debug] [2025-11-12T07:57:18.642Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-12T07:57:18.642Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.296Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.296Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.309Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.309Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.326Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.326Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.336Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2025-11-12T07:57:19.336Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.345Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.345Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.354Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.354Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.365Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.365Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.376Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.376Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.377Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.377Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.385Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.385Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.395Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.395Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.403Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.403Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.556Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.556Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.562Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2025-11-12T07:57:19.562Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.562Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.563Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.571Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.571Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.603Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.603Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.612Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.612Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.646Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.646Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.656Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2025-11-12T07:57:19.656Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.656Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.656Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.666Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.666Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:19.846Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-12T07:57:19.846Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-12T07:57:19.855Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2025-11-12T07:57:19.855Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2025-11-12T07:57:20.803Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2025-11-12T07:57:20.803Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2025-11-12T07:57:20.836Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2025-11-12T07:57:20.836Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2025-11-12T07:57:20.836Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-12T07:57:20.836Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-12T07:57:20.843Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2025-11-12T07:57:20.843Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2025-11-12T07:57:21.209Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2025-11-12T07:57:21.209Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2025-11-12T07:57:21.442Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-12T07:57:21.442Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-12T07:57:21.493Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2025-11-12T07:57:21.494Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2025-11-12T07:57:21.553Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2025-11-12T07:57:21.553Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2025-11-12T07:57:32.992Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2025-11-12T07:57:32.992Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]

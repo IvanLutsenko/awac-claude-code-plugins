@@ -11,7 +11,7 @@
   "license": "MIT",
   "commands": [
     "./commands/generate-test.md",
-    "./commands/validate-test.md",
+    "./commands/validate-test-module.md",
     "./commands/test-module-business-core.md",
     "./commands/test-module-all.md"
   ],
