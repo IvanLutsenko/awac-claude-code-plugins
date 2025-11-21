@@ -155,7 +155,8 @@ fun publicMethod_callsHelper_worksCorrectly() = runTest {
 - ✅ Prefix `mock` для всех моков
 - ✅ `FlowTestUtils.coVerifyFlowCall` для Flow
 - ✅ `FlowTestUtils.cleanupFlowResources()` в tearDown
-- ✅ **ПАКЕТ ТЕСТА = ПАКЕТ ИСХОДНОГО КЛАССА** (только путь файла меняется: src/main → src/test)
+- ✅ **ПАКЕТ ТЕСТА = ПАКЕТ ИСХОДНОГО КЛАССА** (src/main → src/test)
+- ✅ **Максимум 80 символов на строку** (detekt requirement)
 
 ### 2. Полное покрытие модуля (test-coverage)
 
@@ -253,6 +254,7 @@ class AnalyticsRepository(val api: AnalyticsApi) {
    - Отсутствие @DisplayName
    - Нет Given-When-Then
    - Неполный tearDown
+   - **Строки длиннее 80 символов** (detekt violation)
 4. Выведи отчет ТОЛЬКО с проблемами confidence ≥ 80
 
 ## Использование TodoWrite
@@ -437,6 +439,7 @@ find . -name "*Validator*Test.kt" -path "*/test/*" | head -3
 - [ ] ✅ FlowTestUtils.cleanupFlowResources() в tearDown
 - [ ] ✅ runTest для корутин
 - [ ] ✅ advanceUntilIdle() вместо sleep
+- [ ] ✅ Максимум 80 символов на строку (detekt)
 
 ## Output форматы
 

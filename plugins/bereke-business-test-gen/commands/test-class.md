@@ -179,12 +179,14 @@ fun methodName_condition_result() = runTest {
 - Prefix `mock` для всех моков
 - `FlowTestUtils.coVerifyFlowCall` для Flow методов
 - `FlowTestUtils.cleanupFlowResources()` в tearDown
+- **Максимальная длина строки: 80 символов** (требование detekt)
 
 ❌ **ЗАПРЕЩЕНО:**
 - Backticks в именах методов
 - JUnit assertions (assertEquals, assertTrue)
 - Thread.sleep()
 - Обычный coVerify для Flow
+- Строки длинней 80 символов
 
 ### Шаг 7: Покрытие
 
@@ -281,6 +283,7 @@ internal abstract class MyViewModelBaseTest {
 - [ ] tearDown с FlowTestUtils.cleanupFlowResources()
 - [ ] Truth assertions
 - [ ] Пакет теста совпадает с пакетом исходного класса ✅
+- [ ] Максимум 80 символов на строку (detekt requirement)
 
 ### Шаг 10: Проверка качества
 

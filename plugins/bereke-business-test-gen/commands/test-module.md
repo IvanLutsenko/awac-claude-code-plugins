@@ -233,7 +233,11 @@ object Constants {
    find . -name "*Utils*Test.kt" -path "*/test/*" | head -3
    ```
 3. **Прочитай примеры** - понять паттерны
-4. **Сгенерируй тест** - по стандартам
+4. **Сгенерируй тест** - по стандартам:
+   - ✅ @DisplayName, Given-When-Then, Truth assertions
+   - ✅ **Максимум 80 символов на строку** (detekt)
+   - ✅ Prefix `mock` для всех моков
+   - ✅ FlowTestUtils для Flow
 5. **Отметь выполненным** в TodoWrite
 
 ### Шаг 8: Приоритизация
@@ -254,6 +258,13 @@ object Constants {
 - Utils/Helpers
 
 ### Шаг 9: Примеры тестов разных типов
+
+**ОБЯЗАТЕЛЬНО соблюдай при создании всех примеров:**
+- ✅ @DisplayName для каждого теста
+- ✅ Given-When-Then структура
+- ✅ Truth assertions
+- ✅ Максимум 80 символов на строку (detekt)
+- ✅ Prefix `mock` для всех моков
 
 **Validator:**
 ```kotlin
