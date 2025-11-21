@@ -2,6 +2,14 @@
 
 Custom Claude Code plugins by Ivan Lutsenko
 
+## Installation
+
+Add the marketplace once, then install plugins as needed:
+
+```bash
+/plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
+```
+
 ## Available Plugins
 
 ### Bereke Business Test Gen
@@ -12,7 +20,6 @@ Automated unit test generation for Kotlin/Android business logic with corporate 
 
 **Installation:**
 ```bash
-/plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
 /plugin install bereke-business-test-gen
 ```
 
@@ -35,20 +42,6 @@ Firebase Crashlytics integration
 **Status:** 🚧 Work in Progress | **Version:** 0.1.0
 
 ---
-
-## Installation
-
-Add the marketplace once, then install plugins as needed:
-
-```bash
-/plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
-```
-
-Then install individual plugins:
-```bash
-/plugin install bereke-business-test-gen
-/plugin install crashlytics
-```
 
 ## Author
 
