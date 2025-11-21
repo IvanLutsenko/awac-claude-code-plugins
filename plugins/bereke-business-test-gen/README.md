@@ -2,9 +2,13 @@
 
 Automated unit test generation for Kotlin/Android business logic with corporate standards.
 
-## Quick Start
+## Installation & Usage
 
-### Installation
+Choose your tool below:
+
+### Claude Code (CLI)
+
+Best for automated test generation with slash commands.
 
 ```bash
 # Add marketplace
@@ -17,7 +21,150 @@ Automated unit test generation for Kotlin/Android business logic with corporate 
 /help  # Should show new commands
 ```
 
-## Commands
+Then use:
+```bash
+/test-class src/main/java/.../YourClass.kt
+/test-module feature/auth
+```
+
+---
+
+### Claude Desktop
+
+Use this plugin as an MCP server in Claude Desktop.
+
+1. Edit Claude Desktop config file:
+   - **macOS/Linux:** `~/.config/Claude/claude_desktop_config.json`
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+2. Add this plugin as MCP server:
+```json
+{
+  "mcpServers": {
+    "bereke-test-gen": {
+      "command": "node",
+      "args": ["/path/to/awac-claude-code-plugins/plugins/bereke-business-test-gen/mcp-server.js"]
+    }
+  }
+}
+```
+
+3. Restart Claude Desktop
+4. Plugin will be available in conversations
+
+---
+
+### ChatGPT Desktop
+
+Use test standards as knowledge base.
+
+1. Open ChatGPT Desktop
+2. In conversation, paste this at start:
+```
+I'll use these test standards for our conversation.
+
+[PASTE CONTENTS OF standards/android-kotlin-quick-ref.md]
+```
+
+3. Then request test generation:
+```
+Generate unit test for this Kotlin class:
+
+[PASTE YOUR CLASS CODE]
+
+Follow the standards above.
+```
+
+---
+
+### ChatGPT Code (CLI/API)
+
+Use standards with ChatGPT via API or CLI tools.
+
+**With OpenAI API:**
+```bash
+curl https://api.openai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -d '{
+    "model": "gpt-4",
+    "system": "[PASTE CONTENTS OF standards/android-kotlin.md]",
+    "messages": [{
+      "role": "user",
+      "content": "Generate test for: [YOUR CLASS CODE]"
+    }]
+  }'
+```
+
+**With CLI tools (like aider):**
+```bash
+# Include standards in project context
+cp standards/android-kotlin-quick-ref.md .cursorrules
+
+# Or use with aider
+aider --message "Generate test for this class:
+[PASTE YOUR CLASS CODE]
+
+Follow standards in standards/android-kotlin.md"
+```
+
+---
+
+### Gemini Web
+
+Use standards in Gemini conversations.
+
+1. Open https://gemini.google.com
+
+2. Paste test standards at start of conversation:
+```
+Follow these test standards:
+
+[PASTE CONTENTS OF standards/android-kotlin-quick-ref.md]
+```
+
+3. Then request test generation:
+```
+Generate unit test for this Kotlin class:
+
+[PASTE YOUR CLASS CODE]
+```
+
+---
+
+### Gemini CLI
+
+Use standards with Gemini API or CLI tools.
+
+**With Google Gemini API:**
+```bash
+curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "system_instruction": {
+      "parts": [{
+        "text": "[PASTE CONTENTS OF standards/android-kotlin.md]"
+      }]
+    },
+    "contents": {
+      "parts": [{
+        "text": "Generate test for: [YOUR CLASS CODE]"
+      }]
+    }
+  }'
+```
+
+**With Gemini CLI tools:**
+```bash
+gemini --system-prompt="[PASTE standards/android-kotlin-quick-ref.md]" \
+        --input="Generate test for: [YOUR CLASS CODE]"
+```
+
+---
+
+## Commands (Claude Code Only)
+
+The following slash commands are available only in Claude Code (CLI):
 
 ### `/test-class [path/to/ClassName.kt]`
 
@@ -76,7 +223,9 @@ Validate existing tests for compliance with standards.
 
 ## How It Works
 
-Both commands use the `test-engineer` agent which:
+**Claude Code (CLI) & Claude Desktop:**
+
+Both platforms use the `test-engineer` agent which:
 
 - ✅ Analyzes code structure and architecture
 - ✅ Finds existing test examples in project
@@ -84,6 +233,10 @@ Both commands use the `test-engineer` agent which:
 - ✅ Compiles and runs tests
 - ✅ Reports LINE + INSTRUCTION coverage metrics
 - ✅ Provides improvement recommendations
+
+**Other platforms (ChatGPT, Gemini):**
+
+Use the test standards files as knowledge base. The LLM will generate tests based on your instructions using the standards provided.
 
 ## Test Standards
 
@@ -108,10 +261,19 @@ Quick reference for test patterns:
 
 ## Tips
 
+**For Claude Code & Claude Desktop:**
+
 1. **Use `/test-class` first** to understand the agent behavior on a single class
 2. **Provide clear module paths** (feature/auth, core:analytics, etc.)
 3. **Check coverage after generation** (LINE and INSTRUCTION metrics)
 4. **Review generated tests** - they follow patterns from your codebase
+
+**For all platforms:**
+
+1. **Start with quick reference** - use `android-kotlin-quick-ref.md` before full standards
+2. **Use specific class/method names** - be clear about what you want tested
+3. **Review coverage** - always verify the generated tests meet your needs
+4. **Follow the standards** - all standards are mandatory for consistent test quality
 
 ## License
 
