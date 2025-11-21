@@ -2,135 +2,117 @@
 
 Automated unit test generation for Kotlin/Android business logic with corporate standards.
 
-## Быстрый старт
+## Quick Start
 
-### Claude Code
+### Installation
 
 ```bash
-# Добавь marketplace
+# Add marketplace
 /plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
 
-# Установи plugin
+# Install plugin
 /plugin install bereke-business-test-gen
 
-# Проверка
-/help  # должны появиться новые команды
+# Verify installation
+/help  # Should show new commands
 ```
 
-### ChatGPT
-
-1. Создай Custom GPT
-2. Загрузи файл `standards/android-kotlin.md` в Knowledge
-3. В Instructions добавь:
-   ```
-   Ты - эксперт по Android/Kotlin тестированию.
-   Следуй стандартам из загруженного файла android-kotlin.md.
-   Всегда используй @DisplayName, Given-When-Then, Truth assertions.
-   ```
-
-### Claude.ai (без CLI)
-
-1. Перейди в Settings → Skills
-2. Создай новый Skill "Test Standards"
-3. Загрузи `standards/android-kotlin.md`
-4. Skill автоматически активируется при запросах о тестах
-
-### Cursor / Windsurf / Aider
-
-Добавь в `.cursorrules` / `.windsurfrules` / `.aider.conf.yml`:
-
-```markdown
-# Test Standards for Android/Kotlin
-
-[Вставь содержимое standards/android-kotlin.md]
-```
-
-### GitHub Copilot
-
-Создай `.github/copilot-instructions.md`:
-
-```markdown
-# Testing Standards
-
-When generating tests for Android/Kotlin:
-[Вставь ключевые правила из standards/android-kotlin.md]
-```
-
-### Другие LLM инструменты
-
-Используй `standards/android-kotlin.md` как system prompt или загрузи в контекст инструмента.
-
-## Команды (только для Claude Code)
+## Commands
 
 ### `/test-class [path/to/ClassName.kt]`
-Создаёт тест для одного класса + выводит покрытие класса.
 
+Generate a comprehensive unit test for a single class with coverage metrics.
+
+**Example:**
 ```bash
 /test-class src/main/java/kz/berekebank/business/core/auth/LoginRepository.kt
 ```
 
-**Результат:** Тест с покрытием класса (LINE + INSTRUCTION metrics)
+**Output:** Test file with LINE + INSTRUCTION coverage metrics
 
-⏱️ **Время:** 2-5 минут
+⏱️ **Time:** 2-5 minutes
+
+---
 
 ### `/test-module [path/to/module]`
-Покрывает тестами ВСЕ классы модуля где это имеет смысл.
 
-Включает:
-- Бизнес-логика (ViewModel, UseCase, Interactor, Repository)
-- Validators, Formatters, Utils с логикой
+Generate unit tests for ALL classes in a module where unit tests make sense.
+
+**Includes:**
+- Business logic (ViewModel, UseCase, Interactor, Repository)
+- Validators, Formatters, Utils with logic
 - State machines, Custom delegates
 - Cache implementations
 
-Исключает:
-- UI компоненты (Activity, Fragment)
-- Data classes без логики
+**Excludes:**
+- UI components (Activity, Fragment, Composable)
+- Data classes without logic
 - DI modules
-- Константы/Enums
+- Constants/Enums
 
+**Examples:**
 ```bash
 /test-module feature/auth
 /test-module core:push
 ```
 
-**Результат:** Полное покрытие модуля с итоговыми metrics
+**Output:** Full module coverage with statistics and recommendations
 
-⏱️ **Время:** 20-30 минут
+⏱️ **Time:** 20-30 minutes
 
-### `/validate-tests [path/to/module]` (опционально)
-Проверяет существующие тесты на соответствие стандартам.
+---
+
+### `/validate-tests [path/to/module]` (Optional)
+
+Validate existing tests for compliance with standards.
 
 ```bash
 /validate-tests feature/auth
 ```
 
-**Результат:** Список нарушений с confidence scoring
+**Output:** List of violations with confidence scoring
 
-## Две команды на все случаи
+---
 
-```bash
-# Один класс (быстро)
-/test-class path/to/Class.kt
+## How It Works
 
-# Весь модуль (полно)
-/test-module path/to/module
+Both commands use the `test-engineer` agent which:
 
-# Опционально: проверить старые тесты
-/validate-tests path/to/module
-```
+- ✅ Analyzes code structure and architecture
+- ✅ Finds existing test examples in project
+- ✅ Generates tests following corporate standards
+- ✅ Compiles and runs tests
+- ✅ Reports LINE + INSTRUCTION coverage metrics
+- ✅ Provides improvement recommendations
 
-Обе команды работают с `test-engineer` агентом который:
-- ✅ Анализирует код
-- ✅ Находит примеры тестов
-- ✅ Генерирует тесты по стандартам
-- ✅ Запускает компиляцию и тесты
-- ✅ Выводит покрытие (LINE + INSTRUCTION)
-- ✅ Дает рекомендации
+## Test Standards
 
-## Полные стандарты
+All generated tests follow strict corporate standards:
 
-См. [`standards/android-kotlin.md`](standards/android-kotlin.md)
+- **@DisplayName** for every test (no backticks)
+- **Given-When-Then** structure with comments
+- **Truth assertions** (`assertThat`)
+- **MockK** for mocking with `mock` prefix
+- **FlowTestUtils** for reactive testing
+- **Max 80 characters per line** (detekt compliance)
+- **Correct package structure** (test in same package as source)
 
-## Лицензия
+See [`standards/android-kotlin.md`](standards/android-kotlin.md) for complete guide.
 
-MIT - см. [LICENSE](../../LICENSE)
+## Examples
+
+Quick reference for test patterns:
+
+- See [`standards/android-kotlin-quick-ref.md`](standards/android-kotlin-quick-ref.md) (50 lines)
+- Full guide: [`standards/android-kotlin.md`](standards/android-kotlin.md) (600+ lines)
+
+## Tips
+
+1. **Use `/test-class` first** to understand the agent behavior on a single class
+2. **Provide clear module paths** (feature/auth, core:analytics, etc.)
+3. **Check coverage after generation** (LINE and INSTRUCTION metrics)
+4. **Review generated tests** - they follow patterns from your codebase
+
+## License
+
+MIT - see [LICENSE](../../LICENSE)

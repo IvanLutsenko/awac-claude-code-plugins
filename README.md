@@ -5,51 +5,50 @@ Custom Claude Code plugins by Ivan Lutsenko
 ## Available Plugins
 
 ### Bereke Business Test Gen
+
 Automated unit test generation for Kotlin/Android business logic with corporate standards.
 
-**Commands:**
-- `/test-class path/to/ClassName.kt` - генерация теста для одного класса (2-5 мин)
-- `/test-module path/to/module` - полное покрытие модуля (20-30 мин)
-- `/validate-tests path/to/module` - валидация существующих тестов (опционально)
+📚 **[Full Documentation](plugins/bereke-business-test-gen/README.md)**
 
-**Agent:**
-- `test-engineer` - senior test automation engineer для сложных задач
-
-**Category:** Testing
-**Version:** 2.0.0
-**Status:** ✅ Production Ready
-
-### Crashlytics
-Firebase Crashlytics integration (Work in Progress)
-
-**Category:** Development
-**Version:** 0.1.0
-**Status:** 🚧 Work in Progress
-
-## Installation
-
+**Installation:**
 ```bash
-# Добавь marketplace
 /plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
-
-# Установи plugin
 /plugin install bereke-business-test-gen
 ```
 
-## Usage
-
+**Quick Start:**
 ```bash
-# Тест для одного класса
-/test-class src/main/java/.../YourClass.kt
-
-# Полное покрытие модуля
-/test-module feature/auth
+/test-class src/main/java/.../YourClass.kt      # Single class (2-5 min)
+/test-module feature/auth                        # Full module coverage (20-30 min)
 ```
 
-## Documentation
+**Status:** ✅ Production Ready | **Version:** 2.0.0
 
-- [Test Generation](plugins/bereke-business-test-gen/README.md)
-- [Crashlytics Plugin](plugins/crashlytics/README.md)
+---
+
+### Crashlytics
+
+Firebase Crashlytics integration
+
+📚 **[Full Documentation](plugins/crashlytics/README.md)**
+
+**Status:** 🚧 Work in Progress | **Version:** 0.1.0
+
+---
+
+## Installation
+
+Add the marketplace once, then install plugins as needed:
+
+```bash
+/plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
+```
+
+Then install individual plugins:
+```bash
+/plugin install bereke-business-test-gen
+/plugin install crashlytics
+```
 
 ## Author
 
