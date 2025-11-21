@@ -49,9 +49,7 @@
 |-----------|------------------|
 | **Claude Desktop** | Добавить как MCP сервер в `claude_desktop_config.json` |
 | **ChatGPT Desktop** | Загрузить `standards/android-kotlin-quick-ref.md` в Knowledge |
-| **ChatGPT API** | Использовать standards как system prompt |
 | **Gemini Web** | Загрузить standards в начало разговора |
-| **Gemini API** | Использовать standards в system_instruction |
 
 ---
 
