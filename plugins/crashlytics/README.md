@@ -1,111 +1,48 @@
-# Crashlytics Plugin
+# Crashlytics Plugin - Android Edition
 
-Generate crash reports from Firebase Crashlytics for iOS and Android with automated fix proposals and developer assignments.
+Анализ логов Android Crashlytics с определением корневой причины, code-level фиксами и определением разработчика через git blame.
 
-## Features
+## Для чего?
 
-- **Fetches Fatal Errors**: Retrieves top crashes from Firebase Crashlytics via MCP server
-- **Stack Trace Analysis**: Identifies exact crash locations in codebase
-- **Root Cause Detection**: Analyzes code context to determine failure patterns
-- **Severity Scoring**: Calculates 0-100 score based on frequency, users affected, pattern criticality
-- **Fix Proposals**: Generates specific code changes following platform best practices (Swift, Kotlin, Java)
-- **Developer Assignment**: Uses git blame/log to assign crashes to responsible developers
-- **Crash Grouping**: Groups related issues by pattern/file/root cause
-- **Comprehensive Reports**: Generates markdown reports with stats, trends, priorities
+Автоматизирует анализ краш-логов из Firebase Crashlytics:
+- Классифицирует ошибку (тип, критичность, компонент)
+- Находит проблемный код в codebase
+- Определяет кто написал ошибку через `git blame`
+- Предлагает фикс (Kotlin/Java код)
+- Генерирует два формата отчета: детальный анализ + JIRA Brief
 
-## Requirements
+## Что делает?
 
-- Firebase project with Crashlytics enabled
-- Git repository
-- Claude Code
-- Node.js and npm (for Firebase MCP auto-installation)
-- Firebase MCP server (auto-installed on first run if needed)
+1. **Классифицирует стектрейс** - определяет исключение, компонент, триггер
+2. **Ищет файлы** - локализирует все файлы из стектрейса через Glob/Grep
+3. **Git blame анализ** - выполняет `git blame` для найденных файлов
+4. **Определяет assignee** - выбирает 2-3 кандидата с обоснованием
+5. **Анализирует корневую причину** - объясняет что произошло
+6. **Предлагает фикс** - code-level решение с комментариями
 
-## Setup
+Выходной результат:
+- **Детальный анализ** - техническая разбор с git результатами
+- **JIRA Brief** - compact формат готовый к copy-paste в JIRA
 
-No manual setup required! When you first run the `/crash-report` command, it will automatically:
-1. Detect if Firebase MCP is installed
-2. If missing, automatically install it
-3. Verify the installation
-4. Begin crash analysis
-
-You can verify installation at any time with:
+## Как использовать?
 
 ```bash
-claude mcp list
+/crash-report
 ```
 
-The output should show "firebase" in the list of installed MCP servers.
+Затем предоставь логи краша:
+- Полный стектрейс из Firebase Crashlytics
+- Тип исключения и сообщение об ошибке
+- Версию приложения и Android API level
+- Количество крашей и % затронутых пользователей
+- Контекст действия пользователя (если есть)
 
-## Commands
+## Требования
 
-### `/crash-report`
+- Git репозиторий с историей коммитов
+- Логи краша из Firebase Crashlytics
+- Claude Code
 
-Analyzes Crashlytics crashes and generates triage report.
+## Лицензия
 
-**Process:**
-1. Validates Firebase MCP server connection
-2. Fetches fatal errors from Crashlytics
-3. Launches subagents for deep analysis of each crash
-4. Extracts stack traces, searches codebase for crash locations
-5. Identifies root causes and calculates severity scores
-6. Proposes fixes with before/after code snippets
-7. Uses git blame to assign developers
-8. Generates `crash-report-[YYYY-MM-DD].md`
-
-**Report Sections:**
-- Summary (total errors, quick wins, critical issues)
-- Crashes by severity (high -> medium -> low)
-- Stack traces, affected files, root cause analysis
-- Proposed fixes with code snippets
-- Developer assignments with git history
-- Crash groups
-- Aggregate stats (patterns, OS versions, devices)
-
-**Severity Score Calculation:**
-- Crash frequency: 40%
-- Affected users: 30%
-- Pattern criticality: 30%
-
-**Developer Assignment Logic:**
-1. Last modifier of crashing line (git blame)
-2. CODEOWNERS file owner
-3. Most frequent contributor (git log)
-4. Module owner (Package.swift or build.gradle)
-5. Excludes devs with no commits in 6 months
-
-## Configuration
-
-Plugin uses `.mcp.json` to configure Firebase MCP server:
-
-```json
-{
-  "mcpServers": {
-    "firebase": {
-      "command": "sh",
-      "args": ["-c", "NODE_OPTIONS='--max-old-space-size=4096' npx -y firebase-tools@latest experimental:mcp"]
-    }
-  }
-}
-```
-
-**Note**:
-- Node.js heap is set to 4GB to handle large project analysis
-- No project-specific flags needed - Firebase MCP auto-detects authenticated project
-
-## Error Handling
-
-- **Firebase MCP unavailable**: Provides setup instructions
-- **Crashlytics access fails**: Verifies service account permissions
-- **No crashes found**: Reports success with no fatal crashes
-- **Git history unavailable**: Notes inability to assign developer
-- **Code files missing**: Flags deleted/moved files
-- **Rate limiting**: Processes max 10 concurrent analyses
-
-## Output Format
-
-Markdown file `crash-report-[YYYY-MM-DD].md` with:
-- Concise descriptions
-- Detailed code analysis
-- Actionable fix guidance
-- Ready for sprint planning triage
+MIT

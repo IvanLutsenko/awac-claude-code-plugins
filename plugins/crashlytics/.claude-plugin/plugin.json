@@ -1,7 +1,7 @@
 {
   "name": "crashlytics",
-  "description": "Generate crash reports from Firebase Crashlytics for iOS and Android with fix proposals and developer assignments",
-  "version": "1.1.0",
+  "description": "Analyze Android Crashlytics crashes with mandatory git blame forensics and code-level fixes",
+  "version": "2.0.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Artem Novichkov",
