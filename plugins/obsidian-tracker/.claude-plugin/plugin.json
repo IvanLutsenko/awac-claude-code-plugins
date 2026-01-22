@@ -1,0 +1,20 @@
+{
+  "name": "obsidian-tracker",
+  "description": "Project tracking and bug logging with Obsidian integration",
+  "version": "1.2.1",
+  "mcpServers": "./.mcp.json",
+  "author": {
+    "name": "Ivan Lutsenko",
+    "email": "ivan@lutsenko.com",
+    "url": "https://github.com/IvanLutsenko"
+  },
+  "keywords": ["obsidian", "projects", "tracking", "bugs", "documentation"],
+  "license": "MIT",
+  "commands": [
+    "./commands/init.md",
+    "./commands/projects.md",
+    "./commands/project-new.md",
+    "./commands/project-bug.md",
+    "./commands/session-log.md"
+  ]
+}

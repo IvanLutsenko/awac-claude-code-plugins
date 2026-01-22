@@ -1,0 +1,24 @@
+{
+  "name": "crashlytics",
+  "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. Supports Swift, Kotlin, Java, Objective-C.",
+  "version": "3.0.0",
+  "mcpServers": "./.mcp.json",
+  "author": {
+    "name": "Ivan Lutsenko",
+    "email": "ivan@lutsenko.com",
+    "url": "https://github.com/IvanLutsenko"
+  },
+  "keywords": ["crashlytics", "crash-report", "firebase", "android", "ios", "swift", "kotlin", "debugging", "git-blame", "multi-agent"],
+  "license": "MIT",
+  "commands": [
+    "./commands/crash-report-android.md",
+    "./commands/crash-report-ios.md"
+  ],
+  "agents": [
+    "./agents/classifier-android.md",
+    "./agents/classifier-ios.md",
+    "./agents/firebase-fetcher.md",
+    "./agents/forensics-android.md",
+    "./agents/forensics-ios.md"
+  ]
+}

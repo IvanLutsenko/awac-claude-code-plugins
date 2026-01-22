@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "obsidian": {
+      "command": "./mcp/run-server.sh",
+      "env": {
+        "OBSIDIAN_VAULT": "${OBSIDIAN_VAULT:-$HOME/Documents/ObsidianVault/Projects}"
+      }
+    }
+  }
+}
