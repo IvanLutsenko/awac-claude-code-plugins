@@ -1,11 +1,33 @@
 ---
 description: Create a new project in Obsidian
-allowed-tools: ["Write", "AskUserQuestion"]
+allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion"]
 ---
 
 # Project New Command
 
 Creates a new project structure in Obsidian.
+
+## Step 0: Auto-Init (выполняется автоматически!)
+
+**Перед началом работы** проверь конфигурацию:
+
+```yaml
+1. Проверить config:
+   - Прочитай: ~/.config/obsidian-tracker/config.json
+   - Если файл существует и "initialized": true → переходи к Step 1
+
+2. Если не инициализирован:
+   - Спроси путь к vault через AskUserQuestion:
+     - Опция 1: ~/Documents/Obsidian/Projects
+     - Опция 2: ~/Documents/GitHub/obsidian/MCP/Projects
+     - Опция 3: Другой путь (ввести вручную)
+
+3. Создать config:
+   - mkdir -p ~/.config/obsidian-tracker
+   - Записать: {"vaultPath": "{user_path}", "initialized": true}
+
+4. Подтвердить: "✅ Obsidian Tracker инициализирован: {vault_path}"
+```
 
 ## Logic
 

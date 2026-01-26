@@ -1,11 +1,33 @@
 ---
 description: Log current session to Obsidian project
-allowed-tools: ["Write", "AskUserQuestion"]
+allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion"]
 ---
 
 # Session Log Command
 
 Logs the current Claude Code session to the specified project.
+
+## Step 0: Auto-Init (выполняется автоматически!)
+
+**Перед началом работы** проверь конфигурацию:
+
+```yaml
+1. Проверить config:
+   - Прочитай: ~/.config/obsidian-tracker/config.json
+   - Если файл существует и "initialized": true → переходи к Arguments
+
+2. Если не инициализирован:
+   - Спроси путь к vault через AskUserQuestion:
+     - Опция 1: ~/Documents/Obsidian/Projects
+     - Опция 2: ~/Documents/GitHub/obsidian/MCP/Projects
+     - Опция 3: Другой путь (ввести вручную)
+
+3. Создать config:
+   - mkdir -p ~/.config/obsidian-tracker
+   - Записать: {"vaultPath": "{user_path}", "initialized": true}
+
+4. Подтвердить: "✅ Obsidian Tracker инициализирован: {vault_path}"
+```
 
 ## Arguments
 
