@@ -18,7 +18,7 @@ color: blue
 
 ## Предварительные шаги
 
-### Шаг 1: Проверь Firebase окружение
+### Шаг 1: Проверь Firebase окружение и получи project_id
 
 ```yaml
 Сначала вызови:
@@ -28,15 +28,28 @@ color: blue
   - User authenticated
   - Active project установлен
   - App ID доступен
+
+Запомни:
+  - project_id → для console_url
 ```
 
-### Шаг 2: Получи список apps если нужно
+### Шаг 2: Получи project details
+
+```yaml
+mcp__plugin_crashlytics_firebase__firebase_get_project
+
+Запомни:
+  - projectId → для console_url
+```
+
+### Шаг 3: Получи список apps
 
 ```yaml
 mcp__plugin_crashlytics_firebase__firebase_list_apps
-  platform: "android"
+  platform: "android" или "ios"
 
-Запомни app_id для дальнейших запросов
+Запомни:
+  - app_id → для API запросов и console_url
 ```
 
 ## Возможные сценарии
@@ -104,13 +117,18 @@ mcp__plugin_crashlytics_firebase__firebase_list_apps
 ```yaml
 firebase_data:
   available: true
+  project_id: "bereke-business"
   app_id: "1:123456789:android:abcdef"
+  platform: "android"  # или "ios"
 
   issue:
     id: "deadbeefdeadbeefdeadbeef"
     title: "NullPointerException in PaymentProcessor"
     type: "FATAL" | "NON_FATAL" | "ANR"
     status: "OPEN" | "CLOSED" | "MUTED"
+
+  # ОБЯЗАТЕЛЬНО: ссылка на issue в Firebase Console
+  console_url: "https://console.firebase.google.com/project/{project_id}/crashlytics/app/{platform}:{app_id}/issues/{issue_id}"
 
   events:
     - id: "event_id_1"
@@ -186,6 +204,23 @@ mcp__plugin_crashlytics_firebase__crashlytics_get_report
 - **Кэшируй app_id** — переиспользуй между вызовами
 - **Handle gracefully** — если Firebase недоступен, верни fallback mode
 - **Минимум вызовов** — Haiku модель для скорости
+- **ОБЯЗАТЕЛЬНО console_url** — всегда включай ссылку на issue
+
+## Генерация console_url
+
+```
+Формат:
+https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/{PLATFORM}:{APP_ID}/issues/{ISSUE_ID}
+
+Где:
+- PROJECT_ID → из firebase_get_project (поле projectId)
+- PLATFORM → "android" или "ios"
+- APP_ID → из firebase_list_apps (полный app_id вида "1:123456789:android:abcdef")
+- ISSUE_ID → из входных данных или crashlytics_get_issue
+
+Пример:
+https://console.firebase.google.com/project/bereke-business/crashlytics/app/android:1:123456789:android:abcdef/issues/abc123def456
+```
 
 ## Fallback стратегия
 

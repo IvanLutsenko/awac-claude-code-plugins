@@ -30,7 +30,31 @@ allowed-tools: Bash(git log:*), Bash(git blame:*), Task
 
 ## Workflow
 
-### ШАГ 1: Получи输入 от пользователя
+### ШАГ 0: Firebase Auto-Init (выполняется автоматически!)
+
+**Перед началом работы** проверь и настрой Firebase:
+
+```yaml
+1. Проверить окружение:
+   mcp__plugin_crashlytics_firebase__firebase_get_environment
+
+2. Если не авторизован:
+   - Выведи сообщение: "⚠️ Firebase не настроен. Запускаю авторизацию..."
+   - Вызови: mcp__plugin_crashlytics_firebase__firebase_login
+
+3. Если нет активного проекта:
+   - Вызови: mcp__plugin_crashlytics_firebase__firebase_list_projects
+   - Выбери нужный проект
+   - Вызови: mcp__plugin_crashlytics_firebase__firebase_update_environment
+
+4. Получить app_id для Android:
+   - Вызови: mcp__plugin_crashlytics_firebase__firebase_list_apps(platform="android")
+   - Сохрани app_id для последующих вызовов
+```
+
+**Если Firebase недоступен** — продолжай с ручным вводом стектрейса (fallback mode).
+
+### ШАГ 1: Получи данные от пользователя
 
 Попроси предоставить:
 - **Стектрейс** (обязательно)
