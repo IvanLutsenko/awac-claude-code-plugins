@@ -7,35 +7,43 @@ allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion"]
 
 Creates a new project structure in Obsidian.
 
-## Step 0: Auto-Init (выполняется автоматически!)
+## Step 0: Auto-Init (ОБЯЗАТЕЛЬНО выполни первым!)
 
-**Перед началом работы** проверь конфигурацию:
+**СНАЧАЛА** проверь конфигурацию. Выполни ЭТИ ТОЧНЫЕ команды:
 
-```yaml
-1. Проверить config:
-   - Прочитай: ~/.config/obsidian-tracker/config.json
-   - Если файл существует и "initialized": true → переходи к Step 1
-
-2. Если не инициализирован:
-   - Спроси путь к vault через AskUserQuestion:
-     - Опция 1: ~/Documents/Obsidian/Projects
-     - Опция 2: ~/Documents/GitHub/obsidian/MCP/Projects
-     - Опция 3: Другой путь (ввести вручную)
-
-3. Создать config:
-   - mkdir -p ~/.config/obsidian-tracker
-   - Записать: {"vaultPath": "{user_path}", "initialized": true}
-
-4. Подтвердить: "✅ Obsidian Tracker инициализирован: {vault_path}"
+```bash
+# 1. Читай ИМЕННО этот файл (абсолютный путь):
+cat ~/.config/obsidian-tracker/config.json 2>/dev/null || echo "NOT_FOUND"
 ```
+
+**Если файл существует** и содержит `"initialized": true`:
+- Извлеки `vaultPath` из JSON
+- Переходи к Step 1
+
+**Если файл НЕ существует (NOT_FOUND)**:
+1. Спроси путь к Obsidian vault через AskUserQuestion:
+   - Опция 1: `~/Documents/Obsidian/Projects`
+   - Опция 2: `~/Documents/GitHub/obsidian/MCP/Projects`
+   - Опция 3: Другой путь
+
+2. Создай конфиг (выполни ОБЕ команды):
+   ```bash
+   mkdir -p ~/.config/obsidian-tracker
+   ```
+   Затем используй Write tool для создания файла `~/.config/obsidian-tracker/config.json`:
+   ```json
+   {"vaultPath": "/полный/путь/к/vault", "initialized": true}
+   ```
+
+3. Выведи: `✅ Obsidian Tracker инициализирован: {vault_path}`
 
 ## Logic
 
 1. **Ask user for project details via AskUserQuestion:**
-   - Project name
-   - Description
-   - Repository URL (optional)
-   - Local path (optional)
+   - Project name (ОБЯЗАТЕЛЬНО)
+   - Description (ОБЯЗАТЕЛЬНО)
+
+   **НЕ спрашивай:** Repository URL, Local path — эти поля НЕ нужны при создании проекта. Они добавляются позже вручную если потребуется.
 
 2. **Create project structure:**
    ```

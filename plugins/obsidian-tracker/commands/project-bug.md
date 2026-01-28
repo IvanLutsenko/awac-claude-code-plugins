@@ -7,27 +7,34 @@ allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion"]
 
 Creates a bug report in the specified project.
 
-## Step 0: Auto-Init (выполняется автоматически!)
+## Step 0: Auto-Init (ОБЯЗАТЕЛЬНО выполни первым!)
 
-**Перед началом работы** проверь конфигурацию:
+**СНАЧАЛА** проверь конфигурацию. Выполни ЭТУ ТОЧНУЮ команду:
 
-```yaml
-1. Проверить config:
-   - Прочитай: ~/.config/obsidian-tracker/config.json
-   - Если файл существует и "initialized": true → переходи к Arguments
-
-2. Если не инициализирован:
-   - Спроси путь к vault через AskUserQuestion:
-     - Опция 1: ~/Documents/Obsidian/Projects
-     - Опция 2: ~/Documents/GitHub/obsidian/MCP/Projects
-     - Опция 3: Другой путь (ввести вручную)
-
-3. Создать config:
-   - mkdir -p ~/.config/obsidian-tracker
-   - Записать: {"vaultPath": "{user_path}", "initialized": true}
-
-4. Подтвердить: "✅ Obsidian Tracker инициализирован: {vault_path}"
+```bash
+cat ~/.config/obsidian-tracker/config.json 2>/dev/null || echo "NOT_FOUND"
 ```
+
+**Если файл существует** и содержит `"initialized": true`:
+- Извлеки `vaultPath` из JSON
+- Переходи к Arguments
+
+**Если файл НЕ существует (NOT_FOUND)**:
+1. Спроси путь к Obsidian vault через AskUserQuestion:
+   - Опция 1: `~/Documents/Obsidian/Projects`
+   - Опция 2: `~/Documents/GitHub/obsidian/MCP/Projects`
+   - Опция 3: Другой путь
+
+2. Создай конфиг:
+   ```bash
+   mkdir -p ~/.config/obsidian-tracker
+   ```
+   Затем используй Write tool для создания `~/.config/obsidian-tracker/config.json`:
+   ```json
+   {"vaultPath": "/полный/путь/к/vault", "initialized": true}
+   ```
+
+3. Выведи: `✅ Obsidian Tracker инициализирован: {vault_path}`
 
 ## Arguments
 
