@@ -137,3 +137,351 @@
 [debug] [2025-11-12T07:57:21.553Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
 [debug] [2025-11-12T07:57:32.992Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
 [debug] [2025-11-12T07:57:32.992Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:20.725Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-21T06:20:20.726Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-21T06:20:20.726Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-21T06:20:20.726Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-21T06:20:20.727Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:20.727Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:20.727Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:20.727Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:20.727Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-21T06:20:20.727Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-21T06:20:20.727Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:20.727Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:20.727Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-21T06:20:20.727Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-21T06:20:20.728Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-21T06:20:21.314Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-21T06:20:21.315Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-21T06:20:21.320Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.320Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.321Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.321Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.328Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.328Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.328Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.328Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.328Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-21T06:20:21.328Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:21.329Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-21T06:20:21.329Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:21.329Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-21T06:20:21.329Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:21.330Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-21T06:20:21.330Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:21.427Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-21T06:20:21.427Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-21T06:20:21.427Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.427Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.427Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.427Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.428Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.428Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.428Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.428Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:21.428Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-21T06:20:21.428Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:21.428Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-21T06:20:21.428Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:21.428Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-21T06:20:21.428Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:21.429Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-21T06:20:21.429Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:22.025Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-21T06:20:22.025Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-21T06:20:22.025Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.025Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.025Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.025Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.026Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.026Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.026Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.026Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.026Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-21T06:20:22.026Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:22.026Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-21T06:20:22.026Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:22.027Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-21T06:20:22.027Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:22.027Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-21T06:20:22.027Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-21T06:20:22.351Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-21T06:20:22.351Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.351Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-21T06:20:22.351Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.368Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-21T06:20:22.368Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.758Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-21T06:20:22.758Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-21T06:20:22.763Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-21T06:20:22.763Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-21T06:20:22.798Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-21T06:20:22.798Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.836Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-21T06:20:22.836Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.854Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-21T06:20:22.854Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.858Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-21T06:20:22.858Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.859Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-21T06:20:22.859Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:22.964Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-21T06:20:22.965Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-21T06:20:22.965Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.965Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:22.965Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-21T06:20:23.188Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-21T06:20:23.188Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-21T06:20:23.194Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-21T06:20:23.194Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-21T06:20:23.218Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-21T06:20:23.218Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-21T06:20:23.388Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-21T06:20:23.388Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-21T06:20:23.388Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:23.388Z] Checked if tokens are valid: true, expires at: 1768979569848
+[debug] [2026-01-21T06:20:23.388Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-21T06:20:24.565Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-21T06:20:24.565Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-21T06:20:24.566Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-21T06:20:24.566Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-21T06:20:24.732Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-21T06:20:24.732Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:29.263Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T16:23:29.264Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:29.264Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T16:23:29.264Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:29.264Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:29.264Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:29.264Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:29.264Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:29.264Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T16:23:29.264Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:29.264Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:29.264Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:29.265Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T16:23:29.265Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T16:23:29.265Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T16:23:30.863Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T16:23:30.863Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T16:23:30.866Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.866Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.866Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.866Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.869Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.869Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.869Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.869Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:30.869Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-26T16:23:30.869Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:30.870Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-26T16:23:30.870Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:30.870Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-26T16:23:30.870Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:30.870Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-26T16:23:30.870Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.214Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T16:23:31.214Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T16:23:31.214Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.214Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.214Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.214Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.214Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.214Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.214Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.215Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-26T16:23:31.215Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.294Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T16:23:31.294Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T16:23:31.294Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.294Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.294Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.294Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.294Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.294Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.295Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.295Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-26T16:23:31.295Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T16:23:33.990Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T16:23:33.990Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:33.990Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:33.990Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:33.990Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T16:23:34.248Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T16:23:34.248Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T16:23:34.419Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T16:23:34.419Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:34.424Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T16:23:34.424Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:34.424Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:34.424Z] Checked if tokens are valid: true, expires at: 1769447298896
+[debug] [2026-01-26T16:23:34.424Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T16:23:34.498Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-26T16:23:34.498Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-26T16:23:34.502Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-26T16:23:34.502Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-26T16:23:34.607Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-26T16:23:34.607Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:34.613Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-26T16:23:34.613Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:34.617Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-26T16:23:34.617Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:34.628Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-26T16:23:34.628Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:34.673Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T16:23:34.673Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T16:23:35.987Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-26T16:23:35.987Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:35.987Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T16:23:35.987Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-26T16:23:35.988Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:30.312Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T17:48:30.313Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T17:48:30.313Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T17:48:30.313Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T17:48:30.313Z] Checked if tokens are valid: false, expires at: 1769447298896
+[debug] [2026-01-26T17:48:30.313Z] Checked if tokens are valid: false, expires at: 1769447298896
+[debug] [2026-01-26T17:48:30.313Z] > refreshing access token with scopes: []
+[debug] [2026-01-26T17:48:30.314Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-26T17:48:30.314Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-26T17:48:30.314Z] Checked if tokens are valid: false, expires at: 1769447298896
+[debug] [2026-01-26T17:48:30.314Z] Checked if tokens are valid: false, expires at: 1769447298896
+[debug] [2026-01-26T17:48:30.314Z] > refreshing access token with scopes: []
+[debug] [2026-01-26T17:48:30.314Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-26T17:48:30.314Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-26T17:48:30.315Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T17:48:30.315Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T17:48:30.315Z] Checked if tokens are valid: false, expires at: 1769447298896
+[debug] [2026-01-26T17:48:30.315Z] Checked if tokens are valid: false, expires at: 1769447298896
+[debug] [2026-01-26T17:48:30.315Z] > refreshing access token with scopes: []
+[debug] [2026-01-26T17:48:30.315Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-01-26T17:48:30.315Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-26T17:48:47.186Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-26T17:48:47.187Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-26T17:48:47.200Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T17:48:47.213Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-26T17:48:47.213Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-26T17:48:47.224Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T17:48:47.229Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-01-26T17:48:47.229Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-01-26T17:48:47.239Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T17:48:47.861Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T17:48:47.861Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T17:48:47.874Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.874Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.875Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.875Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.887Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.887Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.887Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.887Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:47.887Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-26T17:48:47.887Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:47.889Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-26T17:48:47.889Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:47.890Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-26T17:48:47.890Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:47.891Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-26T17:48:47.891Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.264Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T17:48:48.264Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T17:48:48.264Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.264Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.264Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.264Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.265Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.265Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.265Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.265Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.265Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-26T17:48:48.265Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.265Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-26T17:48:48.265Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.266Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-26T17:48:48.266Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.266Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-26T17:48:48.266Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.569Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T17:48:48.570Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:48.570Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [none]
+[debug] [2026-01-26T17:48:48.570Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.571Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-01-26T17:48:48.571Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.571Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [none]
+[debug] [2026-01-26T17:48:48.571Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:48.571Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [none]
+[debug] [2026-01-26T17:48:48.571Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com x-goog-quota-user=projects/sberbusiness-bef19
+[debug] [2026-01-26T17:48:49.610Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-26T17:48:49.610Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:49.637Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-26T17:48:49.637Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:49.873Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-26T17:48:49.873Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:50.063Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-26T17:48:50.063Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-26T17:48:50.132Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-26T17:48:50.133Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:50.236Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-26T17:48:50.236Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-26T17:48:50.379Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-26T17:48:50.379Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:50.386Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com 200
+[debug] [2026-01-26T17:48:50.386Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebasedataconnect.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:50.399Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-26T17:48:50.399Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:50.425Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com 200
+[debug] [2026-01-26T17:48:50.426Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/cloudfunctions.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:50.523Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T17:48:50.524Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T17:48:50.524Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:50.524Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:50.524Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T17:48:50.712Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com 403
+[debug] [2026-01-26T17:48:50.712Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseio.com [omitted]
+[debug] [2026-01-26T17:48:50.781Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T17:48:50.781Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T17:48:52.104Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T17:48:52.104Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T17:48:52.104Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:52.104Z] Checked if tokens are valid: true, expires at: 1769453326229
+[debug] [2026-01-26T17:48:52.104Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo [none]
+[debug] [2026-01-26T17:48:52.108Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com 200
+[debug] [2026-01-26T17:48:52.108Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/sberbusiness-bef19/services/firebaseapphosting.googleapis.com [omitted]
+[debug] [2026-01-26T17:48:52.164Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T17:48:52.164Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)
+[debug] [2026-01-26T17:48:52.823Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo 200
+[debug] [2026-01-26T17:48:52.823Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/sberbusiness-bef19/billingInfo {"name":"projects/sberbusiness-bef19/billingInfo","projectId":"sberbusiness-bef19","billingAccountName":"","billingEnabled":false}
+[debug] [2026-01-26T17:48:53.017Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-26T17:48:53.017Z] > authorizing via signed-in user (lutsenkoivan@gmail.com)

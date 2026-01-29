@@ -19,9 +19,47 @@
     "./commands/track-stop.md",
     "./commands/track-status.md"
   ],
-  "hooks": [
-    "./hooks/pre-compact.md",
-    "./hooks/session-start.md",
-    "./hooks/post-todo-update.md"
-  ]
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if .claude/obsidian-tracking.json exists. If it does, read it and include this info in your response so it survives compaction: 'OBSIDIAN TRACKING ACTIVE: Project={project}, Goal={goal}, Actions={actions.length}'. If file doesn't exist, do nothing."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "clear",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if .claude/obsidian-tracking.json exists. If yes: 1) Read the tracking data, 2) Call mcp__plugin_obsidian_tracker_obsidian__addSession with project, goal, actions, results='Session completed via /clear', 3) Delete .claude/obsidian-tracking.json, 4) Notify user: '📝 Session saved to Obsidian'. If file doesn't exist, do nothing silently."
+          }
+        ]
+      },
+      {
+        "matcher": "compact|startup|resume",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if .claude/obsidian-tracking.json exists. If yes, read it and notify: '🔔 Obsidian Tracking active: {project} - {goal}'. If no, do nothing silently."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "If .claude/obsidian-tracking.json exists: Read the tool input, find todos with status='completed', add them as '✅ {content}' to the actions array in the tracking file. Work silently, don't notify user."
+          }
+        ]
+      }
+    ]
+  }
 }
