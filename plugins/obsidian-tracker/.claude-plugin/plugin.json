@@ -1,19 +1,27 @@
 {
   "name": "obsidian-tracker",
-  "description": "Project tracking and bug logging with Obsidian integration",
-  "version": "1.4.0",
+  "description": "Project tracking and bug logging with Obsidian integration. Auto-tracks sessions via hooks.",
+  "version": "2.0.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
     "email": "ivan@lutsenko.com",
     "url": "https://github.com/IvanLutsenko"
   },
-  "keywords": ["obsidian", "projects", "tracking", "bugs", "documentation"],
+  "keywords": ["obsidian", "projects", "tracking", "bugs", "documentation", "hooks", "auto-sync"],
   "license": "MIT",
   "commands": [
     "./commands/projects.md",
     "./commands/project-new.md",
     "./commands/project-bug.md",
-    "./commands/session-log.md"
+    "./commands/session-log.md",
+    "./commands/track-start.md",
+    "./commands/track-stop.md",
+    "./commands/track-status.md"
+  ],
+  "hooks": [
+    "./hooks/pre-compact.md",
+    "./hooks/session-start.md",
+    "./hooks/post-todo-update.md"
   ]
 }

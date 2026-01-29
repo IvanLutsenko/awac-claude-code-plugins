@@ -1,41 +1,36 @@
 ---
 description: List all projects from Obsidian or show specific project details
 argument-hint: "[project-name]"
-allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion"]
 ---
 
 # Projects Command
 
 Lists all tracked projects from Obsidian or shows details for a specific project.
 
-## Step 0: Auto-Init (ОБЯЗАТЕЛЬНО выполни первым!)
+## Step 0: Check Configuration
 
-**СНАЧАЛА** проверь конфигурацию. Выполни ЭТУ ТОЧНУЮ команду:
+Вызови MCP tool для проверки конфигурации:
 
-```bash
-cat ~/.config/obsidian-tracker/config.json 2>/dev/null || echo "NOT_FOUND"
+```
+mcp__plugin_obsidian_tracker_obsidian__getConfig
 ```
 
-**Если файл существует** и содержит `"initialized": true`:
-- Извлеки `vaultPath` из JSON
-- Переходи к Step 1
+**Если `initialized: false` или `vaultPath: "NOT SET"`:**
 
-**Если файл НЕ существует (NOT_FOUND)**:
 1. Спроси путь к Obsidian vault через AskUserQuestion:
-   - Опция 1: `~/Documents/Obsidian/Projects`
+   - Опция 1: `~/Documents/Obsidian/Projects` (Recommended)
    - Опция 2: `~/Documents/GitHub/obsidian/MCP/Projects`
    - Опция 3: Другой путь
 
-2. Создай конфиг:
-   ```bash
-   mkdir -p ~/.config/obsidian-tracker
+2. Вызови MCP tool для инициализации:
    ```
-   Затем используй Write tool для создания `~/.config/obsidian-tracker/config.json`:
-   ```json
-   {"vaultPath": "/полный/путь/к/vault", "initialized": true}
+   mcp__plugin_obsidian_tracker_obsidian__initVault
+   с параметром vaultPath = выбранный путь
    ```
 
 3. Выведи: `✅ Obsidian Tracker инициализирован: {vault_path}`
+
+**Если `initialized: true`:** переходи к Logic.
 
 ## Arguments
 
@@ -44,28 +39,34 @@ cat ~/.config/obsidian-tracker/config.json 2>/dev/null || echo "NOT_FOUND"
 ## Examples
 
 ```
-/projects                    # List all projects
+/projects                           # List all projects
 /projects awac-claude-code-plugins  # Show specific project
 ```
 
 ## Logic
 
-1. **If no argument:**
-   - Call `obsidian://listProjects()` MCP tool
-   - Display table with:
-     - Project name
-     - Status (Active/Archived)
-     - Plugin count (if applicable)
-     - Open bugs count
-   - Show dashboards as links
+1. **If no argument provided:**
+
+   Вызови:
+   ```
+   mcp__plugin_obsidian_tracker_obsidian__listProjects
+   ```
+
+   Выведи таблицу:
+   | Project | Status | Bugs | Path |
+   |---------|--------|------|------|
+   | name    | Active | 2    | /... |
 
 2. **If project-name provided:**
-   - Call `obsidian://getProject(projectName)` MCP tool
-   - Display:
-     - Project description
-     - List of plugins/subprojects
-     - Open bugs (with links)
-     - Recent session logs
-     - Quick commands for this project
 
-3. **Output format:** Clean markdown table with Obsidian [[wiki-links]]
+   Вызови:
+   ```
+   mcp__plugin_obsidian_tracker_obsidian__getProject
+   с параметром name = project-name
+   ```
+
+   Выведи:
+   - Project description
+   - Open bugs (with count)
+   - Recent sessions
+   - Quick commands: `/project-bug {name}`, `/session-log {name}`

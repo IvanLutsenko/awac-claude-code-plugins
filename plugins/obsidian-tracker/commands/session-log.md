@@ -1,60 +1,59 @@
 ---
 description: Log current session to Obsidian project
-allowed-tools: ["Read", "Write", "Bash", "AskUserQuestion"]
+argument-hint: "[project-name]"
 ---
 
 # Session Log Command
 
 Logs the current Claude Code session to the specified project.
 
-## Step 0: Auto-Init (ОБЯЗАТЕЛЬНО выполни первым!)
+## Step 0: Check Configuration
 
-**СНАЧАЛА** проверь конфигурацию. Выполни ЭТУ ТОЧНУЮ команду:
-
-```bash
-cat ~/.config/obsidian-tracker/config.json 2>/dev/null || echo "NOT_FOUND"
+Вызови MCP tool:
+```
+mcp__plugin_obsidian_tracker_obsidian__getConfig
 ```
 
-**Если файл существует** и содержит `"initialized": true`:
-- Извлеки `vaultPath` из JSON
-- Переходи к Arguments
-
-**Если файл НЕ существует (NOT_FOUND)**:
-1. Спроси путь к Obsidian vault через AskUserQuestion:
-   - Опция 1: `~/Documents/Obsidian/Projects`
-   - Опция 2: `~/Documents/GitHub/obsidian/MCP/Projects`
-   - Опция 3: Другой путь
-
-2. Создай конфиг:
-   ```bash
-   mkdir -p ~/.config/obsidian-tracker
-   ```
-   Затем используй Write tool для создания `~/.config/obsidian-tracker/config.json`:
-   ```json
-   {"vaultPath": "/полный/путь/к/vault", "initialized": true}
-   ```
-
-3. Выведи: `✅ Obsidian Tracker инициализирован: {vault_path}`
+**Если `initialized: false`:** выполни инициализацию как в `/projects` команде.
 
 ## Arguments
 
-- `project` - Project name (required)
+- `project-name` (optional) - Project to log session to
 
 ## Logic
 
-1. **Resolve project** (ask if not provided)
+1. **Resolve project:**
+
+   Если project-name не указан:
+   ```
+   mcp__plugin_obsidian_tracker_obsidian__listProjects
+   ```
+   Покажи список и спроси через AskUserQuestion.
 
 2. **Collect session info:**
-   - Start time (from conversation history)
-   - Goal/topic (summarize from messages)
-   - Actions taken (list tool calls)
-   - Results achieved
-   - Next steps (ask user)
+   - Goal: Summarize main topic from conversation
+   - Actions: List key tool calls and operations
+   - Results: What was achieved
+   - Next steps: Ask user via AskUserQuestion
 
-3. **Create/update session file:**
-   - Path: `{project}/Sessions/Session - YYYY-MM-DD.md`
-   - Append if exists, create if not
+3. **Create session via MCP:**
+   ```
+   mcp__plugin_obsidian_tracker_obsidian__addSession
+   с параметрами:
+     project = project name
+     goal = session goal
+     actions = ["action1", "action2", ...]
+     results = what was achieved
+     nextSteps = next steps
+   ```
 
-4. **Call MCP:** `obsidian://addSession(project, sessionData)`
+4. **Output:**
+   ```
+   📝 Session logged to "{project}"
+   📁 Path: {path}
 
-5. **Output:** Confirmation with session summary
+   Summary:
+   - Goal: {goal}
+   - Actions: {count} recorded
+   - Next: {nextSteps}
+   ```

@@ -65,9 +65,9 @@ Multi-platform crash analysis for Android & iOS with git blame forensics and cod
 /crash-report-ios                    # Analyze iOS crash
 ```
 
-**Status:** ✅ Production Ready | **Version:** 3.0.0
+**Status:** ✅ Production Ready | **Version:** 3.1.0
 
-**What's New in 3.0.0:**
+**What's New in 3.1.0:**
 - 🍎 **iOS Support**: Swift, Objective-C crash analysis
 - 🔍 **Multi-platform**: Unified workflow for Android & iOS
 - 👥 **Multi-agent**: 5 specialized agents (classifier, fetcher, forensics per platform)
@@ -83,7 +83,7 @@ Multi-platform crash analysis for Android & iOS with git blame forensics and cod
 
 ### Obsidian Tracker
 
-Project tracking and bug logging with Obsidian integration.
+Project tracking and bug logging with Obsidian integration. **Auto-tracks sessions via hooks.**
 
 📚 **[Full Documentation](plugins/obsidian-tracker/README.md)**
 
@@ -95,24 +95,27 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 
 **Quick Start:**
 ```bash
-/init                                        # Initialize with vault path
-/projects                                    # List all projects
-/project-new myproject --title "Description" # Create new project
-/project-bug myproject --title "Bug desc"    # Create bug report
-/session-log myproject                       # Log current session
+/track-start my-project     # Start auto-tracking session
+/projects                   # List all projects
+/project-new                # Create new project
+/project-bug my-project     # Create bug report
+/track-stop                 # Save session to Obsidian
+# or just /clear — auto-saves!
 ```
 
-**Status:** ✅ Production Ready | **Version:** 1.2.0
+**Status:** ✅ Production Ready | **Version:** 2.0.0
 
-**What's New in 1.2.0:**
-- 🧙 **Vault init wizard**: Automatic vault setup
-- 🔍 **Project search**: Find projects by name/tags
+**What's New in 2.0.0:**
+- 🔄 **Auto-tracking**: Hooks automatically record your work
+- 📝 **Auto-save on /clear**: Session logged to Obsidian automatically
+- 🧠 **Survives /compact**: Tracking context preserved after compression
+- 🎯 **MCP-based**: All commands now use MCP tools properly
 
 **Features:**
+- Auto-tracking via hooks (PreCompact, SessionStart, PostToolUse)
 - Project management with Obsidian as single source of truth
 - Bug tracking with priority levels
-- Session logging for continuity
-- Bi-directional sync (Claude ↔ Obsidian)
+- Session logging (manual or automatic)
 - MCP server for Obsidian vault access
 
 ---

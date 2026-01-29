@@ -82,7 +82,7 @@ async function validateVaultPath(vaultPath: string): Promise<boolean> {
 const server = new Server(
   {
     name: "obsidian-tracker",
-    version: "1.2.0",
+    version: "2.0.0",
   },
   {
     capabilities: {
@@ -400,14 +400,35 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!args) throw new Error("Missing arguments");
         const projectName = args.name as string;
         const projectPath = getProjectPath(vaultPath, projectName);
-        const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
 
-        const { frontmatter, body } = await parseMarkdown(dashboardPath);
+        // Check if project exists
+        const projectExists = await validateVaultPath(projectPath);
+        if (!projectExists) {
+          throw new Error(`Project "${projectName}" not found in vault`);
+        }
+
+        const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
+        let frontmatter: Record<string, any> = {};
+        let body = "";
+
+        try {
+          const parsed = await parseMarkdown(dashboardPath);
+          frontmatter = parsed.frontmatter;
+          body = parsed.body;
+        } catch {
+          // No dashboard file
+          body = "No dashboard found";
+        }
 
         // List bugs
-        const bugFiles = (await fs.readdir(projectPath))
-          .filter(f => f.startsWith("BUG -"))
-          .map(f => f.replace("BUG - ", "").replace(".md", ""));
+        let bugFiles: string[] = [];
+        try {
+          bugFiles = (await fs.readdir(projectPath))
+            .filter(f => f.startsWith("BUG -"))
+            .map(f => f.replace("BUG - ", "").replace(".md", ""));
+        } catch {
+          // Error reading directory
+        }
 
         // List sessions
         const sessionsPath = path.join(projectPath, "Sessions");
@@ -424,6 +445,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             type: "text",
             text: JSON.stringify({
               name: projectName,
+              path: projectPath,
               frontmatter,
               dashboard: body,
               bugs: bugFiles,
@@ -441,14 +463,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         await fs.mkdir(projectPath, { recursive: true });
 
-        const dashboard = `# ${projectName} - Dashboard
+        const createdDate = new Date().toISOString().split("T")[0];
+        const projectTag = projectName.toLowerCase().replace(/\s+/g, "-");
+        const dashboard = `---
+status: Active
+description: ${args.description ?? ""}
+repository: ${args.repository ?? ""}
+localPath: ${args.localPath ?? ""}
+created: ${createdDate}
+tags: [project, ${projectTag}]
+---
+
+# ${projectName} - Dashboard
 
 ## Status
 - **Description:** ${args.description ?? "N/A"}
 - **Repository:** ${args.repository ?? "N/A"}
 - **Local path:** ${args.localPath ?? "N/A"}
 - **Status:** Active
-- **Created:** ${new Date().toISOString().split("T")[0]}
+- **Created:** ${createdDate}
 
 ## Plugins/Subprojects
 
@@ -457,7 +490,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 ## Quick Commands
 
 ---
-#project #${projectName.toLowerCase().replace(/\s+/g, "-")}
+#project #${projectTag}
 `;
 
         await fs.writeFile(
@@ -487,6 +520,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!args) throw new Error("Missing arguments");
         const projectName = args.project as string;
         const projectPath = getProjectPath(vaultPath, projectName);
+
+        // Check if project exists
+        const projectExists = await validateVaultPath(projectPath);
+        if (!projectExists) {
+          throw new Error(`Project "${projectName}" not found in vault`);
+        }
+
         const title = args.title as string;
         const priority = (args.priority as string) ?? "medium";
         const description = args.description as string;
@@ -534,11 +574,19 @@ ${description}
         if (!args) throw new Error("Missing arguments");
         const projectName = args.project as string;
         const projectPath = getProjectPath(vaultPath, projectName);
-        const sessionsPath = path.join(projectPath, "Sessions");
 
+        // Check if project exists
+        const projectExists = await validateVaultPath(projectPath);
+        if (!projectExists) {
+          throw new Error(`Project "${projectName}" not found in vault`);
+        }
+
+        const sessionsPath = path.join(projectPath, "Sessions");
         await fs.mkdir(sessionsPath, { recursive: true });
 
-        const date = new Date().toISOString().split("T")[0];
+        const now = new Date();
+        const date = now.toISOString().split("T")[0];
+        const time = now.toISOString().split("T")[1].slice(0, 5); // HH:MM in UTC
         const sessionFileName = `Session - ${date}.md`;
         const sessionPath = path.join(sessionsPath, sessionFileName);
 
@@ -551,15 +599,19 @@ ${description}
         }
 
         const actions = args.actions as string[] | undefined;
+        const actionsText = actions && actions.length > 0
+          ? actions.map((a: string) => `- ${a}`).join("\n")
+          : "- No actions recorded";
+
         const sessionEntry = `
 
-## Session - ${new Date().toLocaleTimeString()}
+## Session - ${time} UTC
 
 ### Goal
 ${args.goal ?? "No goal specified"}
 
 ### Actions
-${(actions ?? []).map((a: string) => `- ${a}`).join("\n")}
+${actionsText}
 
 ### Results
 ${args.results ?? "In progress..."}
@@ -592,24 +644,44 @@ ${args.nextSteps ?? "TBD"}
         const results: Array<{ project: string; file: string; match: string }> = [];
 
         const isTagSearch = query.startsWith("tag:");
+        const searchTerm = isTagSearch ? query.slice(4).trim() : query.toLowerCase();
 
-        if (isTagSearch) {
-          const tag = query.slice(4);
-          for (const entry of entries) {
-            if (entry.isDirectory()) {
-              const projectPath = path.join(vaultPath, entry.name);
-              const files = await fs.readdir(projectPath);
+        for (const entry of entries) {
+          if (entry.isDirectory()) {
+            const projectPath = path.join(vaultPath, entry.name);
+            let files: string[];
+            try {
+              files = await fs.readdir(projectPath);
+            } catch {
+              continue;
+            }
 
-              for (const file of files) {
-                if (file.endsWith(".md")) {
+            for (const file of files) {
+              if (file.endsWith(".md")) {
+                try {
                   const content = await fs.readFile(path.join(projectPath, file), "utf-8");
-                  if (content.includes(`#${tag}`) || content.includes(`#${tag}\``)) {
-                    results.push({
-                      project: entry.name,
-                      file,
-                      match: "tag",
-                    });
+                  if (isTagSearch) {
+                    // Tag search: look for #tag followed by space, newline, or end
+                    const tagRegex = new RegExp(`#${searchTerm}(?:\\s|$|\\])`, "i");
+                    if (tagRegex.test(content)) {
+                      results.push({
+                        project: entry.name,
+                        file,
+                        match: `tag:#${searchTerm}`,
+                      });
+                    }
+                  } else {
+                    // Text search: case-insensitive content match
+                    if (content.toLowerCase().includes(searchTerm)) {
+                      results.push({
+                        project: entry.name,
+                        file,
+                        match: "content",
+                      });
+                    }
                   }
+                } catch {
+                  // Skip unreadable files
                 }
               }
             }
@@ -619,7 +691,7 @@ ${args.nextSteps ?? "TBD"}
         return {
           content: [{
             type: "text",
-            text: JSON.stringify({ query, results }, null, 2),
+            text: JSON.stringify({ query, results, count: results.length }, null, 2),
           }],
         };
       }
