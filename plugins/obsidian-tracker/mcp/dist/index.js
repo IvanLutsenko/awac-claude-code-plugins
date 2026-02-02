@@ -41,13 +41,21 @@ async function saveConfig(config) {
  * Get vault path with validation
  */
 async function getVaultPath() {
-    // First check environment variable
-    if (process.env.OBSIDIAN_VAULT) {
-        return process.env.OBSIDIAN_VAULT;
-    }
-    // Then check config file
+    // First check config file (takes priority)
     const config = await loadConfig();
-    return config.vaultPath || null;
+    if (config.vaultPath) {
+        return config.vaultPath;
+    }
+    // Then check environment variable (expanding $HOME if needed)
+    if (process.env.OBSIDIAN_VAULT) {
+        let envPath = process.env.OBSIDIAN_VAULT;
+        // Expand $HOME if present
+        if (envPath.includes("$HOME")) {
+            envPath = envPath.replace(/\$HOME/g, os.homedir());
+        }
+        return envPath;
+    }
+    return null;
 }
 /**
  * Validate vault path exists
