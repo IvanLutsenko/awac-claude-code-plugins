@@ -40,6 +40,17 @@
         "url": "https://github.com/IvanLutsenko"
       },
       "category": "productivity"
+    },
+    {
+      "name": "locale-notifications",
+      "version": "1.0.0",
+      "description": "Локалізовані macOS сповіщення для Claude Code (uk/ru/kk/en)",
+      "source": "./plugins/locale-notifications",
+      "author": {
+        "name": "Ivan Lutsenko",
+        "url": "https://github.com/IvanLutsenko"
+      },
+      "category": "productivity"
     }
   ]
 }
