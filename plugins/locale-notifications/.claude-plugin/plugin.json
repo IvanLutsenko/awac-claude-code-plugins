@@ -1,0 +1,25 @@
+{
+  "name": "locale-notifications",
+  "description": "macOS notifications with locale-aware messages (ru/uk/kk/en)",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ivan Lutsenko",
+    "email": "ivan@lutsenko.com",
+    "url": "https://github.com/IvanLutsenko"
+  },
+  "keywords": ["notifications", "macos", "locale", "i18n"],
+  "license": "MIT",
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "locale=$(defaults read -g AppleLocale 2>/dev/null || echo 'en'); case \"$locale\" in ru*) msg='Claude ждёт внимания';; uk*) msg='Claude чекає на увагу';; kk*) msg='Claude назар аударуды күтуде';; *) msg='Claude needs attention';; esac; osascript -e \"display notification \\\"$msg\\\" with title \\\"Claude Code\\\"\""
+          }
+        ]
+      }
+    ]
+  }
+}
