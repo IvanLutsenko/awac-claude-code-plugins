@@ -1,7 +1,7 @@
 {
   "name": "obsidian-tracker",
   "description": "Project tracking and bug logging with Obsidian integration. Auto-tracks sessions via hooks.",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
@@ -41,11 +41,20 @@
         ]
       },
       {
-        "matcher": "compact|startup|resume",
+        "matcher": "compact|resume",
         "hooks": [
           {
             "type": "prompt",
             "prompt": "Check if .claude/obsidian-tracking.json exists. If yes, read it and notify: '🔔 Obsidian Tracking active: {project} - {goal}'. If no, do nothing silently."
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Auto-detect Obsidian project: 1) Call mcp__obsidian-tracker__listProjects to get all projects, 2) Check if current working directory matches any project's local_path (from frontmatter), 3) If match found AND .claude/obsidian-tracking.json doesn't exist: create .claude/obsidian-tracking.json with {project, goal:'', actions:[], startedAt:now} and notify '🔔 Auto-tracking: {project}', 4) If .claude/obsidian-tracking.json already exists, notify '🔔 Tracking active: {project}', 5) If no match, do nothing silently."
           }
         ]
       }

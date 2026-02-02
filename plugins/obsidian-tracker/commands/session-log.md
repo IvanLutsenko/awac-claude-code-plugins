@@ -28,11 +28,25 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    ```
    mcp__plugin_obsidian_tracker_obsidian__listProjects
    ```
-   Покажи список и спроси через AskUserQuestion.
+   Покажи нумерованный список:
+   | # | Project | Status |
+   |---|---------|--------|
+   | 1 | name    | Active |
+
+   Пользователь может ввести номер или имя проекта.
 
 2. **Collect session info:**
+
+   **Сначала проверь `.claude/obsidian-tracking.json`:**
+   - Если файл существует — используй данные из него (project, goal, actions)
+   - Если goal пустой — сгенерируй из контекста разговора
+   - Добавь недостающие actions из контекста
+
+   **Если файла нет:**
    - Goal: Summarize main topic from conversation
    - Actions: List key tool calls and operations
+
+   **Всегда спрашивай:**
    - Results: What was achieved
    - Next steps: Ask user via AskUserQuestion
 
@@ -57,3 +71,6 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    - Actions: {count} recorded
    - Next: {nextSteps}
    ```
+
+5. **Cleanup tracking:**
+   Удали `.claude/obsidian-tracking.json` после успешного логирования.

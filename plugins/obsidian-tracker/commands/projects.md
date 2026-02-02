@@ -52,10 +52,15 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    mcp__plugin_obsidian_tracker_obsidian__listProjects
    ```
 
-   Выведи таблицу:
-   | Project | Status | Bugs | Path |
-   |---------|--------|------|------|
-   | name    | Active | 2    | /... |
+   Выведи нумерованную таблицу:
+   | # | Project | Status | Bugs |
+   |---|---------|--------|------|
+   | 1 | name    | Active | 2    |
+   | 2 | name2   | Active | 0    |
+
+   Подсказка: `Введи номер проекта или /projects <name> для деталей`
+
+   **Если пользователь вводит число** — выбери соответствующий проект и покажи детали (как в пункте 2)
 
 2. **If project-name provided:**
 
@@ -70,3 +75,16 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    - Open bugs (with count)
    - Recent sessions
    - Quick commands: `/project-bug {name}`, `/session-log {name}`
+
+   **Auto-start tracking:**
+   После вывода информации о проекте, автоматически запусти трекинг:
+   1. Создай файл `.claude/obsidian-tracking.json` с содержимым:
+      ```json
+      {
+        "project": "{project-name}",
+        "goal": "",
+        "actions": [],
+        "startedAt": "{ISO timestamp}"
+      }
+      ```
+   2. Выведи: `🔔 Tracking started for {project-name}`

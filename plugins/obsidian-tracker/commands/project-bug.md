@@ -37,7 +37,12 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    ```
    mcp__plugin_obsidian_tracker_obsidian__listProjects
    ```
-   Покажи список и спроси через AskUserQuestion.
+   Покажи нумерованный список:
+   | # | Project | Status |
+   |---|---------|--------|
+   | 1 | name    | Active |
+
+   Пользователь может ввести номер или имя проекта.
 
 2. **Collect bug info via AskUserQuestion:**
    - Title (если не передан через --title)
@@ -60,3 +65,10 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    📁 Path: {path}
    🔴 Priority: {priority}
    ```
+
+5. **Auto-start tracking (если ещё не активен):**
+   Если `.claude/obsidian-tracking.json` не существует:
+   1. Создай файл с `{project, goal:'Bug: {title}', actions:['🐛 Created bug: {title}'], startedAt:now}`
+   2. Выведи: `🔔 Tracking started for {project}`
+
+   Если файл существует — добавь в actions: `🐛 Created bug: {title}`
