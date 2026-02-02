@@ -120,6 +120,32 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 
 ---
 
+### Locale Notifications
+
+Уведомления macOS с локализованными сообщениями. Поддержка русского, украинского, казахского и английского.
+
+**Установка:**
+```bash
+/plugin install locale-notifications
+```
+
+**Статус:** ✅ Production Ready | **Версия:** 1.0.0
+
+**Поддерживаемые локали:**
+| Локаль | Сообщение |
+|--------|-----------|
+| `uk*` | Claude чекає на увагу |
+| `ru*` | Claude ждёт внимания |
+| `kk*` | Claude назар аударуды күтуде |
+| default | Claude needs attention |
+
+**Как работает:**
+- Использует хук `Notification` для перехвата уведомлений Claude Code
+- Определяет системную локаль через `defaults read -g AppleLocale`
+- Показывает нативное уведомление macOS с локализованным текстом
+
+---
+
 ## Author
 
 Ivan Lutsenko

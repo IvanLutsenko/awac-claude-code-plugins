@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "locale=$(defaults read -g AppleLocale 2>/dev/null || echo 'en'); case \"$locale\" in ru*) msg='Claude ждёт внимания';; uk*) msg='Claude чекає на увагу';; kk*) msg='Claude назар аударуды күтуде';; *) msg='Claude needs attention';; esac; osascript -e \"display notification \\\"$msg\\\" with title \\\"Claude Code\\\"\""
+            "command": "locale=$(defaults read -g AppleLocale 2>/dev/null || echo 'en'); case \"$locale\" in uk*) msg='Claude чекає на увагу';; ru*) msg='Claude ждёт внимания';; kk*) msg='Claude назар аударуды күтуде';; *) msg='Claude needs attention';; esac; osascript -e \"display notification \\\"$msg\\\" with title \\\"Claude Code\\\"\""
           }
         ]
       }
