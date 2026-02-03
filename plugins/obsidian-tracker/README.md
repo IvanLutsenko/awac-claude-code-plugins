@@ -99,4 +99,15 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-2.0.0
+2.1.1
+
+## Changelog
+
+### 2.1.1
+- Fixed MCP server not loading: changed command format to use `node` with `${CLAUDE_PLUGIN_ROOT}` instead of relative shell script path
+
+### 2.1.0
+- Added hooks for auto-tracking
+
+### 2.0.0
+- Initial release with MCP server and auto-tracking hooks
