@@ -1,6 +1,7 @@
 ---
 description: Create or update a bug report in Obsidian
 argument-hint: "[project-name]"
+allowed-tools: Bash(mkdir*), Bash(cat*), Read
 ---
 
 # Project Bug Command
@@ -67,8 +68,17 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    ```
 
 5. **Auto-start tracking (если ещё не активен):**
-   Если `.claude/obsidian-tracking.json` не существует:
-   1. Создай файл с `{project, goal:'Bug: {title}', actions:['🐛 Created bug: {title}'], startedAt:now}`
-   2. Выведи: `🔔 Tracking started for {project}`
+   Если `.claude/obsidian-tracking.json` не существует — создай через Bash (НЕ Write tool):
+   ```bash
+   mkdir -p .claude && cat <<EOF > .claude/obsidian-tracking.json
+   {
+     "project": "{project}",
+     "goal": "Bug: {title}",
+     "actions": ["Created bug: {title}"],
+     "startedAt": "{ISO timestamp}"
+   }
+   EOF
+   ```
+   Выведи: `Tracking started for {project}`
 
-   Если файл существует — добавь в actions: `🐛 Created bug: {title}`
+   Если файл существует — прочитай его через Read, добавь в actions `Created bug: {title}` и перезапиши через Bash.

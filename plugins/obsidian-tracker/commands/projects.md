@@ -1,6 +1,7 @@
 ---
 description: List all projects from Obsidian or show specific project details
 argument-hint: "[project-name]"
+allowed-tools: Bash(mkdir*), Bash(cat*), Bash(date*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__getProject
 ---
 
 # Projects Command
@@ -77,14 +78,15 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    - Quick commands: `/project-bug {name}`, `/session-log {name}`
 
    **Auto-start tracking:**
-   После вывода информации о проекте, автоматически запусти трекинг:
-   1. Создай файл `.claude/obsidian-tracking.json` с содержимым:
-      ```json
-      {
-        "project": "{project-name}",
-        "goal": "",
-        "actions": [],
-        "startedAt": "{ISO timestamp}"
-      }
-      ```
-   2. Выведи: `🔔 Tracking started for {project-name}`
+   После вывода информации о проекте, автоматически запусти трекинг через Bash (НЕ через Write tool — он требует предварительного Read для нового файла):
+   ```bash
+   mkdir -p .claude && cat <<'EOF' > .claude/obsidian-tracking.json
+   {
+     "project": "{project-name}",
+     "goal": "",
+     "actions": [],
+     "startedAt": "{ISO timestamp из `date -u`}"
+   }
+   EOF
+   ```
+   Выведи: `Tracking started for {project-name}`

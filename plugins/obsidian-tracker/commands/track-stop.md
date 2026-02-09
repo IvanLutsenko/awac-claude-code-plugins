@@ -1,5 +1,6 @@
 ---
 description: Stop tracking and save session to Obsidian
+allowed-tools: Bash(cat*), Bash(rm .claude/obsidian-tracking.json), Read
 ---
 
 # Track Stop Command

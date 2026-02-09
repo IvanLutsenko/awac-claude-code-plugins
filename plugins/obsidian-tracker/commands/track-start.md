@@ -1,6 +1,7 @@
 ---
 description: Start tracking current session for Obsidian
 argument-hint: "[project-name]"
+allowed-tools: Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__listProjects
 ---
 
 # Track Start Command
@@ -47,20 +48,17 @@ cat .claude/obsidian-tracking.json 2>/dev/null || echo "NO_TRACKING"
 
 ## Step 4: Create tracking marker
 
-Создай директорию и файл:
+Создай директорию и файл через Bash (НЕ через Write tool — он требует предварительного Read для нового файла):
 
 ```bash
-mkdir -p .claude
-```
-
-Используй Write tool для создания `.claude/obsidian-tracking.json`:
-```json
+mkdir -p .claude && cat <<EOF > .claude/obsidian-tracking.json
 {
   "project": "{project-name}",
   "goal": "{goal}",
   "started": "{ISO timestamp}",
   "actions": []
 }
+EOF
 ```
 
 ## Step 5: Confirm

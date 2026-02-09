@@ -1,6 +1,6 @@
 ---
 description: Анализ логов iOS Crashlytics с обязательным git blame анализом и фиксами на уровне кода. Мультиагентная архитектура: classifier-ios → firebase-fetcher → forensics-ios.
-allowed-tools: Bash(git log:*), Bash(git blame:*), Task
+allowed-tools: Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(curl:*), Task
 ---
 
 # iOS Crash Analysis - Multi-Agent Edition
@@ -29,33 +29,63 @@ allowed-tools: Bash(git log:*), Bash(git blame:*), Task
 
 ### ШАГ 0: Firebase Auto-Init (выполняется автоматически!)
 
-**Перед началом работы** проверь и настрой Firebase:
+**Перед началом работы** проверь и настрой Firebase. Три уровня доступа: MCP → CLI API → Manual.
+
+**НИКОГДА** не используй `mcp__plugin_crashlytics_firebase__firebase_login` — авторизация через MCP сломана (ошибка "Unable to verify client"). Если CLI не авторизован, проси пользователя выполнить `firebase login` в терминале.
+
+#### Уровень 1: MCP (предпочтительный)
 
 ```yaml
-1. Проверить окружение:
+1. Загрузи MCP tools:
+   ToolSearch: "+firebase get_environment"
+
+2. Попробуй:
    mcp__plugin_crashlytics_firebase__firebase_get_environment
 
-2. Если не авторизован:
-   - Выведи сообщение: "⚠️ Firebase не настроен. Запускаю авторизацию..."
-   - Вызови: mcp__plugin_crashlytics_firebase__firebase_login
-
-3. Если нет активного проекта:
-   - Вызови: mcp__plugin_crashlytics_firebase__firebase_list_projects
-   - Выбери нужный проект
-   - Вызови: mcp__plugin_crashlytics_firebase__firebase_update_environment
-
-4. Получить app_id для iOS:
-   - Вызови: mcp__plugin_crashlytics_firebase__firebase_list_apps(platform="ios")
-   - Сохрани app_id для последующих вызовов
+3. Если работает → используй MCP для всех запросов (Шаги 1-5)
+4. Если ошибка → переходи к Уровню 2
 ```
 
-**Если Firebase недоступен** — продолжай с ручным вводом стектрейса (fallback mode).
+#### Уровень 2: CLI API fallback (через токен Firebase CLI)
 
-### ШАГ 1: Получи данные от пользователя
+```yaml
+1. Проверь CLI:
+   Bash: which firebase 2>/dev/null && firebase login:list 2>/dev/null
 
-Попроси предоставить:
+2. Получи project_id и app_id:
+   Bash: firebase projects:list --json 2>/dev/null | python3 -c "..."
+   Bash: firebase apps:list --project {PROJECT_ID} --json 2>/dev/null | python3 -c "..."
+   (фильтруй platform="IOS")
+
+3. Получи access_token из ~/.config/configstore/firebase-tools.json:
+   Bash: python3 -c "
+     import json, urllib.request, urllib.parse, os
+     config = json.load(open(os.path.expanduser('~/.config/configstore/firebase-tools.json')))
+     data = urllib.parse.urlencode({
+       'client_id': '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
+       'client_secret': 'j9iVZfS8kkCEFUPaAeJV0sAi',
+       'refresh_token': config['tokens']['refresh_token'],
+       'grant_type': 'refresh_token'
+     }).encode()
+     req = urllib.request.Request('https://oauth2.googleapis.com/token', data=data)
+     print(json.loads(urllib.request.urlopen(req).read())['access_token'])"
+
+4. Запрашивай данные через REST API (см. Шаг 3 Вариант B)
+```
+
+#### Уровень 3: Manual fallback
+
+Сгенерируй Console URL и попроси ручной ввод:
+```
+https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}
+```
+
+### ШАГ 1: Получи данные
+
+**Если пользователь предоставил Firebase Issue ID** — сначала попробуй загрузить данные автоматически (Шаг 3). Стектрейс и контекст запрашивай только если автозагрузка не удалась.
+
+**Если Issue ID нет** — попроси предоставить:
 - **Стектрейс** (обязательно)
-- **Firebase Issue ID** (если есть — для автозагрузки)
 - **Контекст**: количество крашей, % пользователей, устройство, iOS версия
 
 ### ШАГ 2: Вызови crash-classifier-ios
@@ -87,9 +117,11 @@ component: UI/Network/Database/Services/Background
 trigger: user_action/background_task/lifecycle_event/async_operation
 ```
 
-### ШАГ 3: Вызови firebase-fetcher (опционально)
+### ШАГ 3: Получи данные из Firebase (опционально)
 
-Если предоставлен **Firebase Issue ID**:
+Если предоставлен **Firebase Issue ID**, данные загружаются по приоритету:
+
+**Вариант A: MCP работает (Шаг 0, Уровень 1 успешен)**
 
 ```yaml
 Task(
@@ -103,7 +135,22 @@ Task(
 )
 ```
 
-**Если Firebase недоступен** — агент вернёт fallback mode, продолжай с ручным вводом.
+**Вариант B: CLI API (Шаг 0, Уровень 2 — MCP не работает)**
+
+Если на Шаге 0 получены project_id, app_id, access_token — запроси данные напрямую:
+
+```bash
+curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
+  "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{PROJECT_ID}/apps/{APP_ID}/issues/{ISSUE_ID}"
+
+curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
+  "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{PROJECT_ID}/apps/{APP_ID}/issues/{ISSUE_ID}/events?pageSize=3"
+```
+
+**Вариант C: Manual fallback** — Console URL + ручной ввод:
+```
+https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}
+```
 
 ### ШАГ 4: Вызови crash-forensics-ios
 

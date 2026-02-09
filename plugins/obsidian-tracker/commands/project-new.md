@@ -1,5 +1,6 @@
 ---
 description: Create a new project in Obsidian
+allowed-tools: Read
 ---
 
 # Project New Command

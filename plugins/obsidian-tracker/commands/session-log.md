@@ -1,6 +1,7 @@
 ---
 description: Log current session to Obsidian project
 argument-hint: "[project-name]"
+allowed-tools: Bash(cat*), Bash(rm .claude/obsidian-tracking.json), Read
 ---
 
 # Session Log Command

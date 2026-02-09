@@ -31,6 +31,11 @@ color: blue
 
 Запомни:
   - project_id → для console_url
+
+Если вернулась ошибка (Internal error, timeout и т.д.):
+  - НЕ вызывай firebase_login через MCP (сломана: "Unable to verify client")
+  - Сразу переходи к Сценарию C (Firebase недоступен)
+  - Верни fallback_mode с пояснением
 ```
 
 ### Шаг 2: Получи project details
@@ -173,7 +178,7 @@ firebase_data:
 
 | Ошибка | Действие |
 |--------|----------|
-| `not authenticated` | `firebase_login` требуется |
+| `not authenticated` | Верни fallback mode. НЕ вызывай `firebase_login` через MCP — сломана. Пользователь должен выполнить `firebase login` в терминале. |
 | `no active project` | `firebase_update_environment` требуется |
 | `app not found` | Используй `firebase_list_apps` |
 | `issue not found` | Попробуй `topIssues` report |
@@ -205,6 +210,7 @@ mcp__plugin_crashlytics_firebase__crashlytics_get_report
 - **Handle gracefully** — если Firebase недоступен, верни fallback mode
 - **Минимум вызовов** — Haiku модель для скорости
 - **ОБЯЗАТЕЛЬНО console_url** — всегда включай ссылку на issue
+- **НИКОГДА не вызывай `firebase_login`** — авторизация через MCP сломана (ошибка "Unable to verify client"). Если не авторизован, сразу возвращай fallback mode.
 
 ## Генерация console_url
 

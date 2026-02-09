@@ -1,5 +1,6 @@
 ---
 description: Show current tracking status
+allowed-tools: Bash(cat*), Read
 ---
 
 # Track Status Command
