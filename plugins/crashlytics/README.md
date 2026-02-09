@@ -2,7 +2,7 @@
 
 Анализ краш-логов с корневой причиной, code-level фиксами и определением разработчика через git blame.
 
-**Версия:** 3.0.0 — Android & iOS
+**Версия:** 3.2.0 — Android & iOS
 
 ---
 
@@ -48,10 +48,11 @@ Firebase Issue ID: deadbeefdeadbeefdeadbeef
 
 | Режим | Что требуется | Что вы получите |
 |-------|---------------|-----------------|
-| **Firebase Mode** | Firebase Issue ID | Автозагрузка стектрейсов, метрики, device info |
+| **Firebase MCP** | Firebase Issue ID + MCP server | Автозагрузка через MCP (предпочтительный) |
+| **Firebase CLI API** | Firebase Issue ID + `firebase login` | Автозагрузка через REST API с токеном CLI |
 | **Manual Mode** | Стектрейс из логов | Тот же анализ, но данные вводятся вручную |
 
-Если Firebase недоступен — плагин автоматически переходит в Manual Mode.
+Плагин автоматически переключается между режимами: MCP → CLI API → Manual.
 
 ---
 
@@ -59,7 +60,7 @@ Firebase Issue ID: deadbeefdeadbeefdeadbeef
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v3.0.0                        │
+│                      crashlytics v3.2.0                        │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -199,10 +200,29 @@ Compact формат для copy-paste в тикет.
 
 | Проблема | Решение |
 |----------|---------|
-| "Firebase MCP unavailable" | Проверьте `firebase login` и активный проект |
+| "Firebase MCP unavailable" | Нормально — плагин переключится на CLI API fallback |
+| "Unable to verify client" | Не используйте MCP login. Авторизуйтесь через `firebase login` в терминале |
+| MCP Internal error | Известная проблема `experimental:mcp`. CLI API fallback сработает автоматически |
 | "Файлы не найдены" | Убедитесь что вы в корне git репозитория |
 | "git blame не работает" | Проверьте наличие коммитов в истории |
 | "Assignee = TBD" | Ручной анализ ownership требуется |
+
+---
+
+## Changelog
+
+### 3.2.0
+- 3-уровневый Firebase fallback: MCP → CLI API (token из firebase-tools.json) → Console URL + ручной ввод
+- Запрет `firebase_login` через MCP (сломан: "Unable to verify client")
+- `allowed-tools` для автоматического одобрения Firebase CLI и curl/python3 команд
+- Автозагрузка данных по Issue ID без ручного ввода стектрейса
+
+### 3.1.0
+- Multi-agent architecture: classifier → firebase-fetcher → forensics
+- iOS support
+
+### 3.0.0
+- Initial release with Android & iOS support
 
 ---
 

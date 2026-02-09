@@ -1,6 +1,6 @@
 {
   "name": "crashlytics",
-  "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. Supports Swift, Kotlin, Java, Objective-C.",
+  "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. 3-level Firebase fallback (MCP → CLI API → Manual). Supports Swift, Kotlin, Java, Objective-C.",
   "version": "3.2.0",
   "mcpServers": "./.mcp.json",
   "author": {

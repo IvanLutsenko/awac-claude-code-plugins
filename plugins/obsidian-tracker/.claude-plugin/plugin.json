@@ -1,6 +1,6 @@
 {
   "name": "obsidian-tracker",
-  "description": "Project tracking and bug logging with Obsidian integration. Auto-tracks sessions via hooks.",
+  "description": "Project tracking and bug logging with Obsidian integration. Auto-tracks sessions via hooks. All commands auto-approved via allowed-tools.",
   "version": "2.2.0",
   "mcpServers": "./.mcp.json",
   "author": {
