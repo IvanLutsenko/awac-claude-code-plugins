@@ -1,7 +1,7 @@
 {
   "name": "crashlytics",
   "description": "Multi-platform crash analysis for Android & iOS with git blame forensics, code-level fixes, and quality gate reviewer. 3-level Firebase fallback (MCP → CLI API → Manual). Configurable via /crash-config.",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",

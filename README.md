@@ -61,25 +61,25 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 
 **Quick Start:**
 ```bash
-/crash-report-android               # Analyze Android crash
-/crash-report-ios                    # Analyze iOS crash
+/crash-report ca8f7f21e3...        # Unified (auto-detects platform from config)
+/crash-report-android               # Explicit Android
+/crash-report-ios                    # Explicit iOS
 /crash-config                       # Configure plugin settings
 ```
 
-**Status:** ✅ Production Ready | **Version:** 4.0.0
+**Status:** ✅ Production Ready | **Version:** 4.1.0
 
-**What's New in 4.0.0:**
-- Quality gate: `report-reviewer` agent validates mandatory fields before output
-- Interactive `/crash-config` for language, branch, model, output format, Firebase
-- Forensics model upgraded to Opus (Sonnet/Haiku as fallback)
-- Configuration system via `.claude/crashlytics.local.md`
-- Full English translation
+**What's New in 4.1.0:**
+- Unified `/crash-report` command — auto-detects platform from config
+- Config auto-created on first run (no manual setup required)
+- MCP retry-first strategy (retries 2x before REST fallback)
+- REST API fallback: token never leaked to stdout
 
 **Features:**
 - 4-step multi-agent pipeline: classifier → fetcher → forensics → reviewer
 - Git blame forensics with mandatory assignee identification
 - Code-level fixes (before/after) ready to copy-paste
-- 3-level Firebase fallback: MCP → CLI API → Manual
+- 3-level Firebase fallback: MCP (with retries) → CLI API → Manual
 - Configurable per-project settings
 
 ---

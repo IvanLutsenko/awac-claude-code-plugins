@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.0.0 — Android & iOS
+**Version:** 4.1.0 — Android & iOS
 
 ---
 
@@ -21,25 +21,19 @@ For Firebase integration (recommended):
 
 ## Quick Start
 
-### Minimal example (no Firebase)
+### Unified command (recommended)
 
 ```bash
-/crash-report-android
+/crash-report ca8f7f21e3ec633d0d1dca453409435b
 ```
 
-Then provide a stack trace:
-```
-Exception java.lang.NullPointerException: Attempt to invoke virtual method
-  on a null object reference
-  at com.example.payment.PaymentProcessor.processPayment(PaymentProcessor.java:45)
-```
+Auto-detects platform from config. Accepts issue ID, console URL, or stack trace.
 
-### With Firebase Issue ID (recommended)
+### Platform-specific
 
 ```bash
-/crash-report-ios
-
-Firebase Issue ID: deadbeefdeadbeefdeadbeef
+/crash-report-android              # Explicit Android
+/crash-report-ios                  # Explicit iOS
 ```
 
 ### Configure the plugin
@@ -49,6 +43,7 @@ Firebase Issue ID: deadbeefdeadbeefdeadbeef
 ```
 
 Interactive setup for language, branch, model, output format, and Firebase project.
+Config auto-created with defaults on first run if missing.
 
 ---
 
@@ -60,7 +55,7 @@ Interactive setup for language, branch, model, output format, and Firebase proje
 | **Firebase CLI API** | Firebase Issue ID + `firebase login` | Auto-load via REST API with CLI token |
 | **Manual Mode** | Stack trace from logs | Same analysis, data entered manually |
 
-The plugin automatically falls back between modes: MCP → CLI API → Manual.
+The plugin falls back between modes: MCP (with retries) → CLI API → Manual.
 
 ---
 
@@ -68,7 +63,7 @@ The plugin automatically falls back between modes: MCP → CLI API → Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.0.0                         │
+│                      crashlytics v4.1.0                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -98,6 +93,7 @@ The plugin automatically falls back between modes: MCP → CLI API → Manual.
 
 | Command | Platform | Description |
 |---------|----------|-------------|
+| `/crash-report` | Auto | Unified command — auto-detects platform from config |
 | `/crash-report-android` | Android | Analyze Kotlin/Java crashes |
 | `/crash-report-ios` | iOS | Analyze Swift/Objective-C crashes |
 | `/crash-config` | Both | Interactive plugin configuration |
@@ -230,7 +226,7 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
 |---------|----------|
 | "Firebase MCP unavailable" | Normal — plugin falls back to CLI API |
 | "Unable to verify client" | Do not use MCP login. Authorize via `firebase login` in terminal |
-| MCP Internal error | Known issue with `experimental:mcp`. CLI API fallback works automatically |
+| MCP Internal error | Known issue with `experimental:mcp`. Plugin retries 2x then falls to CLI API |
 | "Files not found" | Make sure you're in the git repository root |
 | "git blame not working" | Check that the repository has commit history |
 | "Assignee = TBD" | Manual ownership analysis required |
@@ -238,6 +234,14 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
 ---
 
 ## Changelog
+
+### 4.1.0
+- Unified `/crash-report` command — auto-detects platform from config
+- Config auto-created with defaults on first run (no more manual setup required)
+- MCP retry-first strategy: retries up to 2 times before REST API fallback
+- REST API fallback: single script, token never printed to stdout
+- Fixed `firebase projects:list` JSON parsing for different CLI versions
+- Removed duplicate REST code from Step 3
 
 ### 4.0.0
 - Quality gate: `report-reviewer` agent validates all mandatory fields before output
