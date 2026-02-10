@@ -104,10 +104,10 @@ Located at `.claude/obsidian-tracking.json`:
 ## Changelog
 
 ### 2.2.0
-- `allowed-tools` во всех 7 командах — MCP tools, Bash, Read авто-одобряются без ручного confirm
-- Создание tracking файла через `Bash(cat <<EOF)` вместо Write tool (Write требует предварительного Read для нового файла)
-- MCP tools (`getConfig`, `listProjects`, `getProject`, `addSession`, `addBug`) в allowed-tools
-- Точечный `rm` permission: только `.claude/obsidian-tracking.json`
+- `allowed-tools` in all 7 commands — MCP tools, Bash, Read auto-approved without manual confirm
+- Tracking file creation via `Bash(cat <<EOF)` instead of Write tool (Write requires prior Read for new files)
+- MCP tools (`getConfig`, `listProjects`, `getProject`, `addSession`, `addBug`) in allowed-tools
+- Scoped `rm` permission: only `.claude/obsidian-tracking.json`
 
 ### 2.1.1
 - Fixed MCP server not loading: changed command format to use `node` with `${CLAUDE_PLUGIN_ROOT}` instead of relative shell script path

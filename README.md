@@ -50,7 +50,7 @@ Automated unit test generation for Kotlin/Android business logic with corporate 
 
 ### Crashlytics
 
-Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes.
+Multi-platform crash analysis for Android & iOS with git blame forensics, code-level fixes, and quality gate reviewer.
 
 📚 **[Full Documentation](plugins/crashlytics/README.md)**
 
@@ -63,21 +63,24 @@ Multi-platform crash analysis for Android & iOS with git blame forensics and cod
 ```bash
 /crash-report-android               # Analyze Android crash
 /crash-report-ios                    # Analyze iOS crash
+/crash-config                       # Configure plugin settings
 ```
 
-**Status:** ✅ Production Ready | **Version:** 3.1.0
+**Status:** ✅ Production Ready | **Version:** 4.0.0
 
-**What's New in 3.1.0:**
-- 🍎 **iOS Support**: Swift, Objective-C crash analysis
-- 🔍 **Multi-platform**: Unified workflow for Android & iOS
-- 👥 **Multi-agent**: 5 specialized agents (classifier, fetcher, forensics per platform)
+**What's New in 4.0.0:**
+- Quality gate: `report-reviewer` agent validates mandatory fields before output
+- Interactive `/crash-config` for language, branch, model, output format, Firebase
+- Forensics model upgraded to Opus (Sonnet/Haiku as fallback)
+- Configuration system via `.claude/crashlytics.local.md`
+- Full English translation
 
 **Features:**
-- Automatic stacktrace classification
-- Git blame forensics (mandatory!)
-- Developer assignment from git history
-- Root cause analysis with code-level fixes
-- Firebase MCP integration
+- 4-step multi-agent pipeline: classifier → fetcher → forensics → reviewer
+- Git blame forensics with mandatory assignee identification
+- Code-level fixes (before/after) ready to copy-paste
+- 3-level Firebase fallback: MCP → CLI API → Manual
+- Configurable per-project settings
 
 ---
 
@@ -122,27 +125,27 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 
 ### Locale Notifications
 
-Уведомления macOS с локализованными сообщениями. Поддержка русского, украинского, казахского и английского.
+macOS notifications for Claude Code in your system language.
 
-**Установка:**
+📚 **[Full Documentation](plugins/locale-notifications/README.md)**
+
+**Installation:**
 ```bash
 /plugin install locale-notifications
 ```
 
-**Статус:** ✅ Production Ready | **Версия:** 1.0.0
+**Status:** ✅ Production Ready | **Version:** 2.0.0
 
-**Поддерживаемые локали:**
-| Локаль | Сообщение |
-|--------|-----------|
-| `uk*` | Claude чекає на увагу |
-| `ru*` | Claude ждёт внимания |
-| `kk*` | Claude назар аударуды күтуде |
-| default | Claude needs attention |
+**What's New in 2.0.0:**
+- Auto-translation via Google Translate API — any language supported
+- Local caching — one API call, then works offline
+- Custom message support via config file
 
-**Как работает:**
-- Использует хук `Notification` для перехвата уведомлений Claude Code
-- Определяет системную локаль через `defaults read -g AppleLocale`
-- Показывает нативное уведомление macOS с локализованным текстом
+**How it works:**
+- Hooks into Claude Code `Notification` events
+- Detects system locale via `defaults read -g AppleLocale`
+- Auto-translates and caches the notification message
+- Displays native macOS notification via `osascript`
 
 ---
 

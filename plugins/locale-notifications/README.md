@@ -1,35 +1,62 @@
 # Locale Notifications
 
-Уведомления macOS с локализованными сообщениями для Claude Code.
+macOS notifications for Claude Code in your system language.
 
-## Установка
+## Installation
 
 ```bash
 /plugin install locale-notifications
 ```
 
-## Поддерживаемые локали
+## How It Works
 
-| Локаль | Сообщение |
-|--------|-----------|
-| `uk*` (Украинский) | Claude чекає на увагу |
-| `ru*` (Русский) | Claude ждёт внимания |
-| `kk*` (Казахский) | Claude назар аударуды күтуде |
-| default (Английский) | Claude needs attention |
+1. Detects system locale via `defaults read -g AppleLocale`
+2. Auto-translates "Claude needs attention" to your language via Google Translate
+3. Caches the translation locally (`~/.cache/locale-notifications/`) — only one API call ever
+4. Displays a native macOS notification via `osascript`
 
-## Как работает
+Any language supported — no hardcoded translation list.
 
-Плагин использует хук `Notification`, который срабатывает при любом уведомлении Claude Code:
+## Custom Message
 
-1. Определяет системную локаль через `defaults read -g AppleLocale`
-2. Выбирает сообщение в зависимости от локали
-3. Показывает нативное уведомление macOS через `osascript`
+To set a custom notification message (any language, any text), create `.claude/locale-notifications.local.md`:
 
-## Требования
+```yaml
+message: Your custom message here
+```
 
-- macOS (использует `osascript` и `defaults`)
-- Claude Code
+The custom message takes priority over auto-translation.
 
-## Лицензия
+## Cache
+
+Translations are cached at `~/.cache/locale-notifications/{lang}.txt`.
+
+To reset (e.g., after changing system locale):
+```bash
+rm -rf ~/.cache/locale-notifications
+```
+
+## Requirements
+
+- macOS (uses `osascript` and `defaults`)
+- `python3` (pre-installed on macOS)
+- Internet connection (first notification only, then cached)
+
+## Version
+
+2.0.0
+
+## Changelog
+
+### 2.0.0
+- Auto-translation via Google Translate API — any language supported
+- Local caching — one API call, then works offline
+- Custom message support via `.claude/locale-notifications.local.md`
+- External script (`notify.sh`) instead of inline command
+
+### 1.0.0
+- Initial release with 4 hardcoded languages (en/ru/uk/kk)
+
+## License
 
 MIT

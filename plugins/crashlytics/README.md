@@ -1,40 +1,40 @@
 # Crashlytics Plugin
 
-Анализ краш-логов с корневой причиной, code-level фиксами и определением разработчика через git blame.
+Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Версия:** 3.2.0 — Android & iOS
+**Version:** 4.0.0 — Android & iOS
 
 ---
 
 ## Prerequisites
 
-Обязательно:
-- Git репозиторий с историей коммитов
-- Claude Code с установленным плагином `crashlytics`
+Required:
+- Git repository with commit history
+- Claude Code with the `crashlytics` plugin installed
 
-Для работы с Firebase (рекомендуется):
-- Firebase проект с Crashlytics
+For Firebase integration (recommended):
+- Firebase project with Crashlytics enabled
 - Firebase CLI: `npm install -g firebase-tools`
-- Авторизация: `firebase login`
+- Authorization: `firebase login`
 
 ---
 
 ## Quick Start
 
-### Минимальный пример (без Firebase)
+### Minimal example (no Firebase)
 
 ```bash
 /crash-report-android
 ```
 
-Затем предоставьте стектрейс:
+Then provide a stack trace:
 ```
 Exception java.lang.NullPointerException: Attempt to invoke virtual method
   on a null object reference
   at com.example.payment.PaymentProcessor.processPayment(PaymentProcessor.java:45)
 ```
 
-### С Firebase Issue ID (рекомендуется)
+### With Firebase Issue ID (recommended)
 
 ```bash
 /crash-report-ios
@@ -42,130 +42,158 @@ Exception java.lang.NullPointerException: Attempt to invoke virtual method
 Firebase Issue ID: deadbeefdeadbeefdeadbeef
 ```
 
----
+### Configure the plugin
 
-## Режимы работы
+```bash
+/crash-config
+```
 
-| Режим | Что требуется | Что вы получите |
-|-------|---------------|-----------------|
-| **Firebase MCP** | Firebase Issue ID + MCP server | Автозагрузка через MCP (предпочтительный) |
-| **Firebase CLI API** | Firebase Issue ID + `firebase login` | Автозагрузка через REST API с токеном CLI |
-| **Manual Mode** | Стектрейс из логов | Тот же анализ, но данные вводятся вручную |
-
-Плагин автоматически переключается между режимами: MCP → CLI API → Manual.
+Interactive setup for language, branch, model, output format, and Firebase project.
 
 ---
 
-## Как это работает
+## Operating Modes
+
+| Mode | Requirements | What you get |
+|------|-------------|--------------|
+| **Firebase MCP** | Firebase Issue ID + MCP server | Auto-load via MCP (preferred) |
+| **Firebase CLI API** | Firebase Issue ID + `firebase login` | Auto-load via REST API with CLI token |
+| **Manual Mode** | Stack trace from logs | Same analysis, data entered manually |
+
+The plugin automatically falls back between modes: MCP → CLI API → Manual.
+
+---
+
+## How It Works
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v3.2.0                        │
+│                      crashlytics v4.0.0                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
               ▼                               ▼
      ┌─────────────────┐            ┌─────────────────┐
-     │   Android       │            │      iOS        │
-     │   /crash-report │            │  /crash-report  │
-     │   -android      │            │      -ios       │
+     │   Android        │            │      iOS        │
+     │   /crash-report  │            │  /crash-report  │
+     │   -android       │            │      -ios       │
      ├─────────────────┤            ├─────────────────┤
-     │ classifier      │            │  classifier     │
-     │ firebase-fetcher│            │  firebase-fetcher│
-     │ forensics       │            │  forensics      │
+     │ classifier       │            │  classifier     │
+     │ firebase-fetcher │            │  firebase-fetcher│
+     │ forensics        │            │  forensics      │
+     │ reviewer         │            │  reviewer       │
      └─────────────────┘            └─────────────────┘
 ```
 
-### Три шага анализа
+### Four-step analysis
 
-1. **Classifier** — определяет приоритет, компонент, триггер
-2. **Firebase Fetcher** — загружает данные из Firebase (если доступно)
-3. **Forensics** — git blame + code-level фикс
-
----
-
-## Команды
-
-| Команда | Платформа | Описание |
-|---------|-----------|----------|
-| `/crash-report-android` | Android | Анализ Kotlin/Java крашей |
-| `/crash-report-ios` | iOS | Анализ Swift/Objective-C крашей |
+1. **Classifier** (Haiku) — determines component and trigger
+2. **Firebase Fetcher** (Haiku) — loads data from Firebase (if available)
+3. **Forensics** (Opus) — git blame + code-level fix + assignee
+4. **Reviewer** (Haiku) — quality gate validating all mandatory fields
 
 ---
 
-## Входные данные
+## Commands
 
-| Поле | Обязательно | Описание |
-|------|-------------|----------|
-| Стектрейс | Да | Из Firebase Crashlytics или логов |
-| Firebase Issue ID | Нет | Для автозагрузки данных |
-| Количество крашей | Нет | Для определения приоритета |
-| % пользователей | Нет | Для определения приоритета |
-| Устройство / OS | Нет | Контекст |
+| Command | Platform | Description |
+|---------|----------|-------------|
+| `/crash-report-android` | Android | Analyze Kotlin/Java crashes |
+| `/crash-report-ios` | iOS | Analyze Swift/Objective-C crashes |
+| `/crash-config` | Both | Interactive plugin configuration |
 
 ---
 
-## Выходные данные
+## Configuration
 
-Плагин возвращает два формата:
+Run `/crash-config` to set up:
 
-### 1. Детальный анализ
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `language` | English | Output language |
+| `default_branch` | master | Branch for git blame |
+| `default_platform` | android | Default platform |
+| `forensics_model` | opus | Model for forensics agent (opus/sonnet/haiku) |
+| `output_format` | both | Output: both / detailed_only / jira_only |
+| `firebase_project_id` | — | Firebase project ID (skip auto-detection) |
+| `firebase_app_id_android` | — | Android app ID |
+| `firebase_app_id_ios` | — | iOS app ID |
+
+Config is stored in `.claude/crashlytics.local.md` (per-project, gitignored).
+
+---
+
+## Input Data
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| Stack trace | Yes | From Firebase Crashlytics or logs |
+| Firebase Issue ID | No | For automatic data loading |
+| Crash count | No | Context for analysis |
+| % users | No | Context for analysis |
+| Device / OS | No | Context |
+
+---
+
+## Output
+
+The plugin returns two formats:
+
+### 1. Detailed Analysis
 
 ```
-### Краш: NullPointerException в PaymentProcessor
+### Crash: NullPointerException in PaymentProcessor
 
-**Базовая информация**:
-- Исключение: NullPointerException
-- Затронутые пользователи: 8%
-- Версия: 2.5.0
-- Приоритет: Critical
+**Basic info**:
+- Exception: NullPointerException
+- Affected users: 8%
+- App version: 2.5.0
+- Component: payments
 
-**Анализ стектрейса**:
+**Stack trace analysis**:
 - PaymentProcessor.processPayment():45
 - PaymentFragment.onPayClicked():89
 
-**Проверенные файлы**:
-- src/main/java/com/example/payment/PaymentProcessor.java:45
-  Автор: Илья Лагутенко (git blame)
-  Коммит: a1b2c3d4
+**Checked files**:
+- src/main/java/.../PaymentProcessor.java:45
+  Author: John Smith (git blame)
+  Commit: a1b2c3d4
 
-**Корневая причина**:
-paymentProcessor не инициализирован перед вызовом processPayment()
+**Executed commands**:
+- git blame master -- PaymentProcessor.java -L 40,50
+- git log master --oneline -10 -- PaymentProcessor.java
 
-**Предлагаемое решение**:
-До:
+**Root cause**:
+paymentProcessor not initialized before calling processPayment()
+
+**Proposed fix**:
+Before:
   paymentProcessor.processPayment(card);
 
-После:
+After:
   paymentProcessor?.processPayment(card)
     ?: logError("PaymentProcessor not initialized")
 
-**Assignee**: Илья Лагутенко
-- git blame строка 45 показал: Илья Лагутенко
+**Assignee**: John Smith
+- Source: git blame line 45 showed: John Smith
+
+**Context & Prevention**:
+- Trigger: User tapped "Pay" button
+- Why now: Initialization order changed in v2.5.0
+- Prevention: Add null check or lateinit validation
 ```
 
 ### 2. JIRA Brief
 
-Compact формат для copy-paste в тикет.
-
----
-
-## Критерии приоритета
-
-| Priority | Когда назначается | Примеры |
-|----------|-------------------|---------|
-| 🔴 Critical | Платежи/Безопасность, >5% пользователей | NPE в PaymentProcessor, KeystoreException |
-| 🟠 High | Важные функции 1-5%, новые краши | NPE в главном экране, NetworkException |
-| 🟡 Medium | Редкие <1% пользователей | Edge case NPE, IndexOutOfBounds |
-| 🟢 Low | Single occurrence | Логирующие ошибки |
+Compact format for copy-paste into a ticket, including stack trace, fix (before/after), reproduction steps, and Firebase console link.
 
 ---
 
 ## Firebase Integration
 
-### Настройка
+### Setup
 
-1. Проверьте `.mcp.json` в плагине:
+1. Check `.mcp.json` in the plugin:
    ```json
    {
      "mcpServers": {
@@ -177,20 +205,20 @@ Compact формат для copy-paste в тикет.
    }
    ```
 
-2. Авторизуйтесь:
+2. Authorize:
    ```bash
    firebase login
    ```
 
-3. Активируйте проект:
+3. Set active project:
    ```bash
    firebase use your-project-id
    ```
 
-### Что загружает firebase-fetcher
+### What firebase-fetcher loads
 
-- Детали issue (title, status, events count)
-- Sample events с полными стектрейсами
+- Issue details (title, status, event count)
+- Sample events with full stack traces
 - Device info (model, OS version)
 - App version
 
@@ -198,24 +226,36 @@ Compact формат для copy-paste в тикет.
 
 ## Troubleshooting
 
-| Проблема | Решение |
-|----------|---------|
-| "Firebase MCP unavailable" | Нормально — плагин переключится на CLI API fallback |
-| "Unable to verify client" | Не используйте MCP login. Авторизуйтесь через `firebase login` в терминале |
-| MCP Internal error | Известная проблема `experimental:mcp`. CLI API fallback сработает автоматически |
-| "Файлы не найдены" | Убедитесь что вы в корне git репозитория |
-| "git blame не работает" | Проверьте наличие коммитов в истории |
-| "Assignee = TBD" | Ручной анализ ownership требуется |
+| Problem | Solution |
+|---------|----------|
+| "Firebase MCP unavailable" | Normal — plugin falls back to CLI API |
+| "Unable to verify client" | Do not use MCP login. Authorize via `firebase login` in terminal |
+| MCP Internal error | Known issue with `experimental:mcp`. CLI API fallback works automatically |
+| "Files not found" | Make sure you're in the git repository root |
+| "git blame not working" | Check that the repository has commit history |
+| "Assignee = TBD" | Manual ownership analysis required |
 
 ---
 
 ## Changelog
 
+### 4.0.0
+- Quality gate: `report-reviewer` agent validates all mandatory fields before output
+- Interactive `/crash-config` command for plugin configuration
+- Default forensics model changed to Opus (Sonnet as fallback)
+- Severity/priority removed from classifiers — forensics handles context
+- Full English translation of all agents and commands
+- Configuration system via `.claude/crashlytics.local.md`
+- `console_url` and `branch` passed explicitly to forensics agents
+- Mandatory "Executed commands" section in detailed analysis
+- Mandatory "Context & Prevention" (Trigger, Why now, Prevention)
+- Mandatory reproduction steps and Firebase link in JIRA Brief
+
 ### 3.2.0
-- 3-уровневый Firebase fallback: MCP → CLI API (token из firebase-tools.json) → Console URL + ручной ввод
-- Запрет `firebase_login` через MCP (сломан: "Unable to verify client")
-- `allowed-tools` для автоматического одобрения Firebase CLI и curl/python3 команд
-- Автозагрузка данных по Issue ID без ручного ввода стектрейса
+- 3-level Firebase fallback: MCP → CLI API (token from firebase-tools.json) → Console URL + manual input
+- Blocked `firebase_login` via MCP (broken: "Unable to verify client")
+- `allowed-tools` for automatic approval of Firebase CLI and curl/python3 commands
+- Auto-load data by Issue ID without manual stack trace input
 
 ### 3.1.0
 - Multi-agent architecture: classifier → firebase-fetcher → forensics
@@ -226,6 +266,6 @@ Compact формат для copy-paste в тикет.
 
 ---
 
-## Лицензия
+## License
 
 MIT
