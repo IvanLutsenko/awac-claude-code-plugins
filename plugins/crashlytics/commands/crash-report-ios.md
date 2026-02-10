@@ -1,133 +1,196 @@
 ---
-description: Анализ логов iOS Crashlytics с обязательным git blame анализом и фиксами на уровне кода. Мультиагентная архитектура: classifier-ios → firebase-fetcher → forensics-ios.
+description: Analyze iOS Crashlytics logs with mandatory git blame analysis and code-level fixes. Multi-agent architecture: classifier-ios → firebase-fetcher → forensics-ios → reviewer.
 allowed-tools: Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(curl:*), Task
 ---
 
 # iOS Crash Analysis - Multi-Agent Edition
 
-Анализ краш-ошибок из Firebase Crashlytics с использованием трёх специализированных агентов.
+Analyze crash errors from Firebase Crashlytics using specialized agents.
 
-**ВАЖНО**: ВСЕ ответы, анализы, отчёты и коммуникация ТОЛЬКО НА РУССКОМ ЯЗЫКЕ.
+## Configuration
+
+**Before starting**, check if a config file exists at `.claude/crashlytics.local.md`.
+If it exists, read and use these settings:
+- `language` — output language (default: English)
+- `default_branch` — branch for git blame (default: master)
+- `default_platform` — should be ios for this command
+- `forensics_model` — model for forensics agent (default: opus)
+- `output_format` — both / detailed_only / jira_only (default: both)
+- `firebase_project_id` — pre-configured project ID (skip auto-detection if set)
+- `firebase_app_id_ios` — pre-configured app ID (skip auto-detection if set)
+
+If config doesn't exist, use defaults and suggest running `/crash-config` to set up.
 
 ## Multi-Agent Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                   /crash-report-ios                            │
+│                     /crash-report-ios                            │
 └─────────────────────────────────────────────────────────────────┘
                               │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│  classifier  │───▶│  fetcher     │───▶│  forensics   │
-│   iOS        │    │  (Firebase)  │    │   iOS        │
-│  (Haiku)     │    │  (Haiku)     │    │  (Sonnet)    │
-└──────────────┘    └──────────────┘    └──────────────┘
+   ┌──────────────┬───────────┼───────────┬──────────────┐
+   ▼              ▼           ▼           ▼              ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│classifier│→│ fetcher  │→│forensics │→│ reviewer │→│  output  │
+│   iOS    │ │ (Haiku)  │ │ (Opus)   │ │ (Haiku)  │ │          │
+│ (Haiku)  │ │          │ │          │ │          │ │ Detailed │
+│Component │ │Firebase  │ │Git blame │ │Quality   │ │+ JIRA    │
+│Trigger   │ │Stacks    │ │Code fix  │ │Gate      │ │  Brief   │
+│          │ │Device    │ │Assignee  │ │Checklist │ │          │
+└──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
 ## Workflow
 
-### ШАГ 0: Firebase Auto-Init (выполняется автоматически!)
+### STEP 0: Firebase Auto-Init (runs automatically!)
 
-**Перед началом работы** проверь и настрой Firebase. Три уровня доступа: MCP → CLI API → Manual.
+**Before starting** check and configure Firebase. Three access levels: MCP → CLI API → Manual.
 
-**НИКОГДА** не используй `mcp__plugin_crashlytics_firebase__firebase_login` — авторизация через MCP сломана (ошибка "Unable to verify client"). Если CLI не авторизован, проси пользователя выполнить `firebase login` в терминале.
+**NEVER** use `mcp__plugin_crashlytics_firebase__firebase_login` — MCP auth is broken ("Unable to verify client"). If CLI is not authorized, ask the user to run `firebase login` in terminal.
 
-#### Уровень 1: MCP (предпочтительный)
+If `firebase_project_id` and `firebase_app_id_ios` are set in config — skip auto-detection and use those values directly.
+
+#### Level 1: MCP (preferred)
 
 ```yaml
-1. Загрузи MCP tools:
+1. Load MCP tools:
    ToolSearch: "+firebase get_environment"
 
-2. Попробуй:
+2. Try:
    mcp__plugin_crashlytics_firebase__firebase_get_environment
 
-3. Если работает → используй MCP для всех запросов (Шаги 1-5)
-4. Если ошибка → переходи к Уровню 2
+3. If works → use MCP for all requests (Steps 1-5)
+   Build console_url: "https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}"
+4. If error → go to Level 2
 ```
 
-#### Уровень 2: CLI API fallback (через токен Firebase CLI)
+#### Level 2: CLI API fallback (via Firebase CLI token)
+
+If MCP unavailable but Firebase CLI is authorized — get data via REST API:
 
 ```yaml
-1. Проверь CLI:
+1. Check CLI:
    Bash: which firebase 2>/dev/null && firebase login:list 2>/dev/null
 
-2. Получи project_id и app_id:
-   Bash: firebase projects:list --json 2>/dev/null | python3 -c "..."
-   Bash: firebase apps:list --project {PROJECT_ID} --json 2>/dev/null | python3 -c "..."
-   (фильтруй platform="IOS")
+   If CLI not authorized → go to Level 3
 
-3. Получи access_token из ~/.config/configstore/firebase-tools.json:
+2. Get project_id and app_id via CLI:
+   Bash: firebase projects:list --json 2>/dev/null | python3 -c "
+     import sys,json
+     for p in json.load(sys.stdin)['results']:
+       print(f\"{p['projectId']} — {p.get('displayName','')}\")"
+
+   Bash: firebase apps:list --project {PROJECT_ID} --json 2>/dev/null | python3 -c "
+     import sys,json
+     for a in json.load(sys.stdin)['result']:
+       if a.get('platform')=='IOS':
+         print(f\"{a['appId']} | {a.get('displayName','')}\")"
+
+3. Build console_url immediately after getting project_id and app_id:
+   console_url = "https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}"
+   Save this URL — it's needed for forensics and reviewer.
+
+4. Get access_token from saved Firebase CLI credentials:
    Bash: python3 -c "
      import json, urllib.request, urllib.parse, os
      config = json.load(open(os.path.expanduser('~/.config/configstore/firebase-tools.json')))
+     refresh_token = config['tokens']['refresh_token']
      data = urllib.parse.urlencode({
        'client_id': '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
        'client_secret': 'j9iVZfS8kkCEFUPaAeJV0sAi',
-       'refresh_token': config['tokens']['refresh_token'],
+       'refresh_token': refresh_token,
        'grant_type': 'refresh_token'
      }).encode()
      req = urllib.request.Request('https://oauth2.googleapis.com/token', data=data)
-     print(json.loads(urllib.request.urlopen(req).read())['access_token'])"
+     resp = json.loads(urllib.request.urlopen(req).read())
+     print(resp['access_token'])"
 
-4. Запрашивай данные через REST API (см. Шаг 3 Вариант B)
+   NOTE: client_id and client_secret are public OAuth credentials from Firebase CLI
+
+5. Get crash data via Crashlytics REST API:
+   Bash: curl -s -H "Authorization: Bearer {ACCESS_TOKEN}" \
+     "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{PROJECT_ID}/apps/{APP_ID}/issues/{ISSUE_ID}"
+
+   Bash: curl -s -H "Authorization: Bearer {ACCESS_TOKEN}" \
+     "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{PROJECT_ID}/apps/{APP_ID}/issues/{ISSUE_ID}/events?pageSize=3"
+
+6. Parse JSON response via python3 and extract:
+   - title, type (FATAL/NON_FATAL), status
+   - stack traces from events
+   - device info, app version
+   - event count
 ```
 
-#### Уровень 3: Manual fallback
+#### Level 3: Manual fallback (link + manual input)
 
-Сгенерируй Console URL и попроси ручной ввод:
+If neither MCP nor API worked:
+
+```yaml
+1. MUST generate a Firebase Console link:
+   https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}
+
+   If project_id/app_id known from CLI (Level 2, step 2) — substitute them.
+   If not — ask the user to go to Firebase Console manually.
+
+2. Ask the user to copy from Firebase Console:
+   - Stack trace (required)
+   - Crash title
+   - Event count, % users, version
 ```
-https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}
-```
 
-### ШАГ 1: Получи данные
+**General rules:**
+- Try levels sequentially: MCP → CLI API → Manual
+- DO NOT stop on MCP error — immediately try CLI API
+- Always generate Console URL if project_id and app_id are available
+- If Issue ID exists — always try to get data automatically
 
-**Если пользователь предоставил Firebase Issue ID** — сначала попробуй загрузить данные автоматически (Шаг 3). Стектрейс и контекст запрашивай только если автозагрузка не удалась.
+### STEP 1: Get data
 
-**Если Issue ID нет** — попроси предоставить:
-- **Стектрейс** (обязательно)
-- **Контекст**: количество крашей, % пользователей, устройство, iOS версия
+**If user provided a Firebase Issue ID** — first try loading data automatically (Step 3). Only ask for stack trace and context if auto-loading failed.
 
-### ШАГ 2: Вызови crash-classifier-ios
+**If no Issue ID** — ask to provide:
+- **Stack trace** (required)
+- **Context**: crash count, % users, device, iOS version
+
+### STEP 2: Call crash-classifier-ios
 
 ```yaml
 Task(
   subagent_type="crash-classifier-ios",
   model="haiku",
-  prompt="Классифицируй этот iOS краш:
+  prompt="Classify this iOS crash:
 
-    Стектрейс:
+    Stack trace:
     {stack_trace}
 
-    Контекст:
-    - Событий: {event_count}
-    - Пользователей: {user_count}%
-    - Версия: {app_version}
-    - Устройство: {device}
+    Context:
+    - Events: {event_count}
+    - Users: {user_count}%
+    - Version: {app_version}
+    - Device: {device}
     - iOS: {ios_version}
   "
 )
 ```
 
-**Ожидаемый вывод:**
+**Expected output:**
 ```yaml
-priority: critical/high/medium/low
 crash_type: Fatal error / SIGABRT / NSException
 component: UI/Network/Database/Services/Background
 trigger: user_action/background_task/lifecycle_event/async_operation
 ```
 
-### ШАГ 3: Получи данные из Firebase (опционально)
+### STEP 3: Get data from Firebase (optional)
 
-Если предоставлен **Firebase Issue ID**, данные загружаются по приоритету:
+If a **Firebase Issue ID** was provided, data is loaded by priority:
 
-**Вариант A: MCP работает (Шаг 0, Уровень 1 успешен)**
+**Option A: MCP works (Step 0, Level 1 succeeded)**
 
 ```yaml
 Task(
   subagent_type="firebase-fetcher",
   model="haiku",
-  prompt="Получи детали краша из Firebase:
+  prompt="Get crash details from Firebase:
 
     Issue ID: {issue_id}
     App ID: {app_id} (iOS)
@@ -135,9 +198,9 @@ Task(
 )
 ```
 
-**Вариант B: CLI API (Шаг 0, Уровень 2 — MCP не работает)**
+**Option B: CLI API (Step 0, Level 2 — MCP didn't work)**
 
-Если на Шаге 0 получены project_id, app_id, access_token — запроси данные напрямую:
+If at Step 0 you got project_id, app_id, access_token — request data directly:
 
 ```bash
 curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
@@ -147,153 +210,155 @@ curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
   "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{PROJECT_ID}/apps/{APP_ID}/issues/{ISSUE_ID}/events?pageSize=3"
 ```
 
-**Вариант C: Manual fallback** — Console URL + ручной ввод:
+**Option C: Manual fallback** — Console URL + manual input:
 ```
 https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}
 ```
 
-### ШАГ 4: Вызови crash-forensics-ios
+### STEP 4: Call crash-forensics-ios
+
+Use `forensics_model` from config (default: opus). If opus is unavailable, fall back to sonnet.
 
 ```yaml
 Task(
   subagent_type="crash-forensics-ios",
-  model="sonnet",
-  prompt="Проанализируй iOS краш с git blame:
+  model="{forensics_model from config, default opus}",
+  prompt="Analyze this iOS crash with git blame:
 
-    Классификация: {classifier_output}
-    Данные Firebase: {firebase_output}
-    Стектрейс: {stack_trace}
+    Classification: {classifier_output}
+    Firebase data: {firebase_output}
+    Stack trace: {stack_trace}
+
+    console_url: {console_url}
+    branch: {default_branch from config, default master}
   "
 )
 ```
 
-Агент выполнит:
-1. Поиск Swift/Objective-C файлов в codebase
-2. Git blame анализ
-3. Определение assignee
-4. Предложение фикса (Swift/Objective-C)
+The agent will:
+1. Search Swift/Objective-C files in the codebase
+2. Git blame analysis (on the configured branch)
+3. Determine assignee
+4. Propose a fix (Swift/Objective-C)
 
-### ШАГ 5: Вывод результатов
+### STEP 4.5: Call crash-report-reviewer (Quality Gate)
 
-Агент crash-forensics-ios вернёт два формата:
+After receiving the result from forensics, **before outputting to user**:
 
-**Формат 1: Детальный анализ**
-- Базовая информация
-- Анализ стектрейса
-- Проверенные файлы с git blame
-- Корневая причина
-- Решение (before/after в Swift/Objective-C)
-- Assignee с обоснованием
-- Контекст и предотвращение
+```yaml
+Task(
+  subagent_type="crash-report-reviewer",
+  model="haiku",
+  prompt="Validate this crash report against mandatory fields:
 
-**Формат 2: JIRA Brief**
-- Название и проблема
-- Ключевые строки стектрейса
-- Корневая причина (1-2 предложения)
-- Фикс кода (ready to copy-paste)
-- Приоритет, файл, assignee
-- Воспроизведение
+    {forensics_output}
 
-## Fallback режим (если агенты недоступны)
-
-Если Task tool не может вызвать агентов, выполни анализ напрямую:
-
-1. **Классификация**: Определи тип, приоритет, компонент, триггер
-2. **Поиск файлов**: Glob/Grep по классам из стектрейса
-3. **Git blame**: `git blame -L X,Y file.swift`
-4. **Assignee**: Выбери 2-3 кандидата с обоснованием
-5. **Фикс**: Предложи code-level решение (Swift/Objective-C)
-6. **Вывод**: Детальный анализ + JIRA Brief
-
-## Критерии приоритета
-
-| Priority | Когда | Примеры |
-|----------|-------|---------|
-| 🔴 Critical | Платежи/Авторизация/Безопасность, >5% пользователей | Force unwrap nil в PaymentProcessor, Keychain errors |
-| 🟠 High | Важные функции 1-5% пользователей, новые краши | Nil unwrap в главном экране, Index out of range |
-| 🟡 Medium | Редкие <1% пользователей, некритичный функционал | Optional edge cases, Background task failures |
-| 🟢 Low | Single occurrence, non-blocking | Логирующие ошибки |
-
-## iOS Специфичные паттерны крашей
-
-### Force unwrap nil (самый частый!)
-```swift
-// ❌ Краш
-let name: String? = nil
-print(name!)  // Fatal error: Unexpectedly found nil
+    console_url: {console_url}
+  "
+)
 ```
 
-### Index out of range
-```swift
-// ❌ Краш
-let items = [1, 2, 3]
-let item = items[5]  // Fatal error: Index out of range
+**Handling the reviewer result:**
+- If `pass: true` — output the report as-is
+- If `pass: false` — fill in missing fields yourself:
+  - Use data from previous steps (classifier, firebase, forensics)
+  - If data for a field is unavailable — mark as `[DATA UNAVAILABLE]`
+  - **DO NOT re-call forensics** — fill in at the command level
+
+### STEP 5: Output results
+
+The crash-forensics-ios agent returns two formats:
+
+**Format 1: Detailed Analysis**
+- Basic info
+- Stack trace analysis
+- Checked files with git blame
+- Root cause
+- Fix (before/after in Swift/Objective-C)
+- Assignee with justification
+- Context and prevention
+
+**Format 2: JIRA Brief**
+- Name and problem
+- Key stack trace lines
+- Root cause (1-2 sentences)
+- Code fix (ready to copy-paste)
+- Component, assignee
+- Reproduction steps
+
+## Fallback mode (if agents unavailable)
+
+If Task tool cannot call agents, perform analysis directly:
+
+1. **Classification**: Determine type, component, trigger
+2. **File search**: Glob/Grep by classes from stack trace
+3. **Git blame**: `git blame master -- file.swift -L X,Y`
+4. **Assignee**: Select 2-3 candidates with justification
+5. **Fix**: Propose code-level solution (Swift/Objective-C)
+6. **Output**: Detailed analysis + JIRA Brief
+
+## Pre-submit checklist
+
+### MUST verify:
+- [ ] Classification completed (component, trigger)
+- [ ] .swift/.m files found via Glob/Grep or reason explained
+- [ ] git blame executed on configured branch with real commands
+- [ ] Assignee determined with source (git blame line X)
+- [ ] Report formats match config (both by default)
+- [ ] Reviewer passed (`pass: true`) or missing fields filled in
+- [ ] console_url included in JIRA Brief
+
+### DO NOT SUBMIT IF:
+- Code search was not performed
+- No git blame for found files
+- Assignee = "TBD" without analysis
+- Only one report format (when both required)
+- Reviewer returned `pass: false` and fields were NOT filled in
+
+## Usage example
+
 ```
+User: /crash-report-ios
 
-### Main thread checker
-```swift
-// ❌ Краш
-DispatchQueue.global().async {
-    self.label.text = "Hello"  // UI on background thread!
-}
-```
+Claude: iOS Crash Analysis - Multi-Agent
 
-## Чеклист перед отправкой
-
-### ✅ ОБЯЗАТЕЛЬНО ПРОВЕРЬ:
-- [ ] Классификация выполнена (priority, component, trigger)
-- [ ] Файлы .swift/.m найдены через Glob/Grep или причина объяснена
-- [ ] git blame выполнен с реальными командами
-- [ ] Assignee определен с источником (git blame строка X)
-- [ ] Два формата отчета (Детальный + JIRA)
-
-### 🚫 НЕ ОТПРАВЛЯЙ ЕСЛИ:
-- Поиск кода не выполнен
-- Нет git blame для найденных файлов
-- Assignee = "TBD" без анализа
-- Только один формат отчета
-
-## Пример использования
-
-```
-Пользователь: /crash-report-ios
-
-Claude: 🔍 iOS Crash Analysis - Multi-Agent
-
-Пожалуйста, предоставьте:
-1. Стектрейс (обязательно)
-2. Firebase Issue ID (если есть)
-3. Количество крашей и % пользователей
-4. Устройство и iOS версия
+Please provide:
+1. Stack trace (required)
+2. Firebase Issue ID (if available)
+3. Crash count and % users
+4. Device and iOS version
 
 ---
 
-[Пользователь предоставляет данные]
+[User provides data]
 
 Claude:
-📊 Шаг 1: Классификация...
-[Вызывает crash-classifier-ios]
+Step 1: Classification...
+[Calls crash-classifier-ios]
 
-📡 Шаг 2: Загрузка из Firebase...
-[Вызывает firebase-fetcher]
+Step 2: Loading from Firebase...
+[Calls firebase-fetcher]
 
-🔬 Шаг 3: Git blame анализ...
-[Вызывает crash-forensics-ios]
+Step 3: Git blame analysis...
+[Calls crash-forensics-ios]
 
-✅ Анализ завершён
+Step 4: Quality check...
+[Calls report-reviewer]
 
-### Детальный анализ
+Analysis complete.
+
+### Detailed Analysis
 [...(detailed analysis)]
 
 ### JIRA Brief
 [...(JIRA format)]
 ```
 
-## Важно
+## Important
 
 ```yaml
-Git blame + поиск кода = ОБЯЗАТЕЛЬНО
-"TBD" = "я проанализировал и ownership неясен", НЕ "я не проверил"
-Задокументируй точные выполненные команды
-Каждый отчёт должен иметь git blame с выводом
+Git blame + code search = MANDATORY
+"TBD" = "I analyzed and ownership is unclear", NOT "I didn't check"
+Document exact executed commands
+Every report must have git blame with output
 ```

@@ -1,7 +1,7 @@
 {
   "name": "crashlytics",
-  "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. 3-level Firebase fallback (MCP → CLI API → Manual). Supports Swift, Kotlin, Java, Objective-C.",
-  "version": "3.2.0",
+  "description": "Multi-platform crash analysis for Android & iOS with git blame forensics, code-level fixes, and quality gate reviewer. 3-level Firebase fallback (MCP → CLI API → Manual). Configurable via /crash-config.",
+  "version": "4.0.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
@@ -12,13 +12,15 @@
   "license": "MIT",
   "commands": [
     "./commands/crash-report-android.md",
-    "./commands/crash-report-ios.md"
+    "./commands/crash-report-ios.md",
+    "./commands/crash-config.md"
   ],
   "agents": [
     "./agents/classifier-android.md",
     "./agents/classifier-ios.md",
     "./agents/firebase-fetcher.md",
     "./agents/forensics-android.md",
-    "./agents/forensics-ios.md"
+    "./agents/forensics-ios.md",
+    "./agents/report-reviewer.md"
   ]
 }
