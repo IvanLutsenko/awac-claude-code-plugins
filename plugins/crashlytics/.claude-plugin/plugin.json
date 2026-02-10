@@ -11,6 +11,7 @@
   "keywords": ["crashlytics", "crash-report", "firebase", "android", "ios", "swift", "kotlin", "debugging", "git-blame", "multi-agent"],
   "license": "MIT",
   "commands": [
+    "./commands/crash-report.md",
     "./commands/crash-report-android.md",
     "./commands/crash-report-ios.md",
     "./commands/crash-config.md"
