@@ -51,6 +51,17 @@
         "url": "https://github.com/IvanLutsenko"
       },
       "category": "productivity"
+    },
+    {
+      "name": "auto-theme",
+      "version": "1.0.0",
+      "description": "Auto-sync Claude Code theme with macOS system appearance (dark/light mode)",
+      "source": "./plugins/auto-theme",
+      "author": {
+        "name": "Ivan Lutsenko",
+        "url": "https://github.com/IvanLutsenko"
+      },
+      "category": "productivity"
     }
   ]
 }
