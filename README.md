@@ -123,6 +123,26 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 
 ---
 
+### Auto Theme
+
+Automatically syncs Claude Code theme with macOS system appearance (dark/light mode).
+
+**Installation:**
+```bash
+/plugin install auto-theme
+```
+
+**Status:** ✅ Production Ready | **Version:** 1.0.0
+
+**How it works:**
+- Hooks into `UserPromptSubmit` — checks macOS appearance on every message
+- Detects dark/light mode via `defaults read -g AppleInterfaceStyle`
+- Updates `~/.claude.json` theme key when system appearance changes
+- Fast-path ~40ms when theme already matches (no file write)
+- Preserves variant suffix (`-ansi`, `-daltonized`) if selected
+
+---
+
 ### Locale Notifications
 
 macOS notifications for Claude Code in your system language.
