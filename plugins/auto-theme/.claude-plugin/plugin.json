@@ -1,0 +1,26 @@
+{
+  "name": "auto-theme",
+  "description": "Automatically syncs Claude Code theme with macOS system appearance (dark/light mode). Checks on every user message via UserPromptSubmit hook.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ivan Lutsenko",
+    "email": "ivan@lutsenko.com",
+    "url": "https://github.com/IvanLutsenko"
+  },
+  "keywords": ["theme", "dark-mode", "light-mode", "macos", "appearance", "auto"],
+  "license": "MIT",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/sync-theme.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
