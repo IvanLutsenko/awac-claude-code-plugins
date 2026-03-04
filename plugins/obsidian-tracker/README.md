@@ -41,11 +41,15 @@ Session saved to Obsidian
 
 ### Hooks
 
-| Hook | Trigger | Action |
-|------|---------|--------|
-| PreCompact | Before context compression | Preserves tracking info in summary |
-| SessionStart | `/clear`, startup, resume | On clear: save + cleanup. Otherwise: remind |
-| PostToolUse | TodoWrite | Records completed todos to tracking file |
+| Hook | Trigger | Type | Action |
+|------|---------|------|--------|
+| PreCompact | Before context compression | prompt | Preserves tracking info in summary |
+| SessionStart:clear | `/clear` | command | Save session to Obsidian + cleanup |
+| SessionStart:compact\|resume | Context compact, resume | command | Remind about active tracking |
+| SessionStart:startup | Fresh session | command | Auto-detect project, start tracking |
+| PostToolUse:TodoWrite | TodoWrite | prompt | Records completed todos to tracking file |
+
+> SessionStart hooks use `command` type (bash scripts in `hooks/`) for resilience — they never error even if the MCP server is unavailable.
 
 ### Tracking file
 
@@ -99,9 +103,14 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-2.2.0
+2.3.0
 
 ## Changelog
+
+### 2.3.0
+- SessionStart hooks converted from `prompt` to `command` type (bash scripts in `hooks/`)
+- Hooks no longer error when MCP server is unavailable — graceful degradation
+- Added `hooks/session-clear.sh`, `hooks/session-resume.sh`, `hooks/session-startup.sh`
 
 ### 2.2.0
 - `allowed-tools` in all 7 commands — MCP tools, Bash, Read auto-approved without manual confirm

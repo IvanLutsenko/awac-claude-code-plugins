@@ -1,7 +1,7 @@
 {
   "name": "obsidian-tracker",
   "description": "Project tracking and bug logging with Obsidian integration. Auto-tracks sessions via hooks. All commands auto-approved via allowed-tools.",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
@@ -35,8 +35,9 @@
         "matcher": "clear",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Check if .claude/obsidian-tracking.json exists. If yes: 1) Read the tracking data, 2) Call mcp__plugin_obsidian_tracker_obsidian__addSession with project, goal, actions, results='Session completed via /clear', 3) Delete .claude/obsidian-tracking.json, 4) Notify user: '📝 Session saved to Obsidian'. If file doesn't exist, do nothing silently."
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-clear.sh",
+            "timeout": 5
           }
         ]
       },
@@ -44,8 +45,9 @@
         "matcher": "compact|resume",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Check if .claude/obsidian-tracking.json exists. If yes, read it and notify: '🔔 Obsidian Tracking active: {project} - {goal}'. If no, do nothing silently."
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-resume.sh",
+            "timeout": 5
           }
         ]
       },
@@ -53,8 +55,9 @@
         "matcher": "startup",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Auto-detect Obsidian project: 1) Call mcp__obsidian-tracker__listProjects to get all projects, 2) Check if current working directory matches any project's local_path (from frontmatter), 3) If match found AND .claude/obsidian-tracking.json doesn't exist: create .claude/obsidian-tracking.json with {project, goal:'', actions:[], startedAt:now} and notify '🔔 Auto-tracking: {project}', 4) If .claude/obsidian-tracking.json already exists, notify '🔔 Tracking active: {project}', 5) If no match, do nothing silently."
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-startup.sh",
+            "timeout": 5
           }
         ]
       }
