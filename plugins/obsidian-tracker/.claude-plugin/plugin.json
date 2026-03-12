@@ -1,14 +1,14 @@
 {
   "name": "obsidian-tracker",
-  "description": "Project tracking and bug logging with Obsidian integration. Auto-tracks sessions via hooks. All commands auto-approved via allowed-tools.",
-  "version": "2.3.0",
+  "description": "Project tracking, task management with kanban boards, bug logging, and session management via Obsidian. Auto-tracks sessions via hooks.",
+  "version": "3.0.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
     "email": "ivan@lutsenko.com",
     "url": "https://github.com/IvanLutsenko"
   },
-  "keywords": ["obsidian", "projects", "tracking", "bugs", "documentation", "hooks", "auto-sync"],
+  "keywords": ["obsidian", "projects", "tracking", "tasks", "kanban", "bugs", "documentation", "hooks", "auto-sync"],
   "license": "MIT",
   "commands": [
     "./commands/projects.md",
@@ -17,7 +17,13 @@
     "./commands/session-log.md",
     "./commands/track-start.md",
     "./commands/track-stop.md",
-    "./commands/track-status.md"
+    "./commands/track-status.md",
+    "./commands/task.md",
+    "./commands/done.md",
+    "./commands/today.md",
+    "./commands/pulse.md",
+    "./commands/import.md",
+    "./commands/project-archive.md"
   ],
   "hooks": {
     "PreCompact": [

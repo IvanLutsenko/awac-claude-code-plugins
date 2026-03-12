@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Obsidian Tracker MCP Server
+ * Obsidian Tracker MCP Server v3.0.0
  *
- * Provides integration with Obsidian vault for project tracking,
+ * Project tracking, task management with kanban boards,
  * bug logging, and session management.
  */
 
@@ -17,24 +17,18 @@ import fs from "fs/promises";
 import path from "path";
 import os from "os";
 
-// Config file path
+const BOARD_COLUMNS = ["Backlog", "In Progress", "Review", "Done"];
+
 const CONFIG_DIR = path.join(os.homedir(), ".config", "obsidian-tracker");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
-// Config interface
 interface Config {
   vaultPath?: string;
   initialized: boolean;
 }
 
-// Default config
-const DEFAULT_CONFIG: Config = {
-  initialized: false,
-};
+const DEFAULT_CONFIG: Config = { initialized: false };
 
-/**
- * Load config from file
- */
 async function loadConfig(): Promise<Config> {
   try {
     const data = await fs.readFile(CONFIG_FILE, "utf-8");
@@ -44,40 +38,24 @@ async function loadConfig(): Promise<Config> {
   }
 }
 
-/**
- * Save config to file
- */
 async function saveConfig(config: Config): Promise<void> {
   await fs.mkdir(CONFIG_DIR, { recursive: true });
   await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
 }
 
-/**
- * Get vault path with validation
- */
 async function getVaultPath(): Promise<string | null> {
-  // First check config file (takes priority)
   const config = await loadConfig();
-  if (config.vaultPath) {
-    return config.vaultPath;
-  }
-
-  // Then check environment variable (expanding $HOME if needed)
+  if (config.vaultPath) return config.vaultPath;
   if (process.env.OBSIDIAN_VAULT) {
     let envPath = process.env.OBSIDIAN_VAULT;
-    // Expand $HOME if present
     if (envPath.includes("$HOME")) {
       envPath = envPath.replace(/\$HOME/g, os.homedir());
     }
     return envPath;
   }
-
   return null;
 }
 
-/**
- * Validate vault path exists
- */
 async function validateVaultPath(vaultPath: string): Promise<boolean> {
   try {
     const stat = await fs.stat(vaultPath);
@@ -87,34 +65,137 @@ async function validateVaultPath(vaultPath: string): Promise<boolean> {
   }
 }
 
-// Create server
-const server = new Server(
-  {
-    name: "obsidian-tracker",
-    version: "2.0.0",
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
+// --- Markdown helpers ---
+
+async function parseMarkdown(filePath: string) {
+  const content = await fs.readFile(filePath, "utf-8");
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+  let frontmatter: Record<string, any> = {};
+  let body = content;
+
+  if (frontmatterMatch) {
+    const fm = frontmatterMatch[1];
+    body = content.slice(frontmatterMatch[0].length);
+    for (const line of fm.split("\n")) {
+      const match = line.match(/^(\w+):\s*(.+)$/);
+      if (match) {
+        const [, key, value] = match;
+        frontmatter[key] = value.replace(/^["']|["']$/g, "");
+      }
+    }
   }
+
+  return { frontmatter, body };
+}
+
+// --- Board (kanban) helpers ---
+
+async function parseBoard(boardPath: string): Promise<Map<string, string[]>> {
+  const columns = new Map<string, string[]>();
+  for (const col of BOARD_COLUMNS) columns.set(col, []);
+
+  try {
+    const content = await fs.readFile(boardPath, "utf-8");
+    let currentColumn: string | null = null;
+
+    for (const line of content.split("\n")) {
+      const headerMatch = line.match(/^## (.+)$/);
+      if (headerMatch) {
+        const colName = headerMatch[1].trim();
+        if (BOARD_COLUMNS.includes(colName)) currentColumn = colName;
+        continue;
+      }
+      if (currentColumn && line.match(/^- \[[ x]\] /)) {
+        columns.get(currentColumn)!.push(line);
+      }
+    }
+  } catch {
+    // Board doesn't exist yet
+  }
+
+  return columns;
+}
+
+async function writeBoard(boardPath: string, columns: Map<string, string[]>): Promise<void> {
+  let content = "---\nkanban-plugin: basic\n---\n";
+  for (const col of BOARD_COLUMNS) {
+    content += `\n## ${col}\n`;
+    for (const item of columns.get(col) || []) {
+      content += `${item}\n`;
+    }
+  }
+  await fs.writeFile(boardPath, content);
+}
+
+async function getNextTaskId(projectPath: string): Promise<number> {
+  try {
+    const files = await fs.readdir(projectPath);
+    const ids = files
+      .map(f => f.match(/^TASK-(\d+)/))
+      .filter((m): m is RegExpMatchArray => m !== null)
+      .map(m => parseInt(m[1], 10));
+    return ids.length > 0 ? Math.max(...ids) + 1 : 1;
+  } catch {
+    return 1;
+  }
+}
+
+async function updateTaskFrontmatter(taskPath: string, updates: Record<string, string>): Promise<void> {
+  let content = await fs.readFile(taskPath, "utf-8");
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+
+  if (fmMatch) {
+    let fm = fmMatch[1];
+    for (const [key, value] of Object.entries(updates)) {
+      const regex = new RegExp(`^${key}:.*$`, "m");
+      if (regex.test(fm)) {
+        fm = fm.replace(regex, `${key}: ${value}`);
+      } else {
+        fm += `\n${key}: ${value}`;
+      }
+    }
+    content = `---\n${fm}\n---` + content.slice(fmMatch[0].length);
+    await fs.writeFile(taskPath, content);
+  }
+}
+
+// --- Path helpers ---
+
+function getProjectPath(vaultPath: string, name: string) {
+  return path.join(vaultPath, name);
+}
+
+async function requireVault(): Promise<string> {
+  const vaultPath = await getVaultPath();
+  if (!vaultPath) {
+    throw new Error("Obsidian Tracker not initialized. Please run initVault first.");
+  }
+  const isValid = await validateVaultPath(vaultPath);
+  if (!isValid) {
+    throw new Error(`Vault path "${vaultPath}" does not exist or is not a directory.`);
+  }
+  return vaultPath;
+}
+
+// --- Server ---
+
+const server = new Server(
+  { name: "obsidian-tracker", version: "3.0.0" },
+  { capabilities: { tools: {} } }
 );
 
-/**
- * List all available tools
- */
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
         name: "initVault",
-        description: "Initialize Obsidian Tracker with vault path. MUST be called first before using other tools.",
+        description: "Initialize Obsidian Tracker with vault path",
         inputSchema: {
           type: "object",
           properties: {
             vaultPath: {
               type: "string",
-              description: "Full path to Obsidian vault Projects folder (e.g., /Users/username/Documents/Obsidian/Projects)",
+              description: "Full path to Obsidian vault Projects folder",
             },
           },
           required: ["vaultPath"],
@@ -123,17 +204,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "getConfig",
         description: "Get current Obsidian Tracker configuration",
-        inputSchema: {
-          type: "object",
-          properties: {},
-        },
+        inputSchema: { type: "object", properties: {} },
       },
       {
         name: "listProjects",
         description: "List all projects from Obsidian vault",
         inputSchema: {
           type: "object",
-          properties: {},
+          properties: {
+            includeArchived: {
+              type: "boolean",
+              description: "Include archived projects (default: false)",
+            },
+          },
         },
       },
       {
@@ -142,36 +225,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            name: {
-              type: "string",
-              description: "Project name",
-            },
+            name: { type: "string", description: "Project name" },
           },
           required: ["name"],
         },
       },
       {
         name: "createProject",
-        description: "Create a new project in Obsidian",
+        description: "Create a new project in Obsidian with kanban board",
         inputSchema: {
           type: "object",
           properties: {
-            name: {
-              type: "string",
-              description: "Project name",
-            },
-            description: {
-              type: "string",
-              description: "Project description",
-            },
-            repository: {
-              type: "string",
-              description: "Repository URL",
-            },
-            localPath: {
-              type: "string",
-              description: "Local file path",
-            },
+            name: { type: "string", description: "Project name" },
+            description: { type: "string", description: "Project description" },
+            repository: { type: "string", description: "Repository URL" },
+            localPath: { type: "string", description: "Local file path" },
           },
           required: ["name", "description"],
         },
@@ -182,18 +250,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            project: {
-              type: "string",
-              description: "Project name",
-            },
-            title: {
-              type: "string",
-              description: "Bug title",
-            },
-            description: {
-              type: "string",
-              description: "Bug description",
-            },
+            project: { type: "string", description: "Project name" },
+            title: { type: "string", description: "Bug title" },
+            description: { type: "string", description: "Bug description" },
             priority: {
               type: "string",
               enum: ["critical", "high", "medium", "low"],
@@ -209,27 +268,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            project: {
-              type: "string",
-              description: "Project name",
-            },
-            goal: {
-              type: "string",
-              description: "Session goal",
-            },
+            project: { type: "string", description: "Project name" },
+            goal: { type: "string", description: "Session goal" },
             actions: {
               type: "array",
               items: { type: "string" },
               description: "Actions taken",
             },
-            results: {
-              type: "string",
-              description: "Results achieved",
-            },
-            nextSteps: {
-              type: "string",
-              description: "Next steps",
-            },
+            results: { type: "string", description: "Results achieved" },
+            nextSteps: { type: "string", description: "Next steps" },
           },
           required: ["project", "goal"],
         },
@@ -240,75 +287,112 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
-            query: {
-              type: "string",
-              description: "Search query (supports tag: syntax)",
-            },
+            query: { type: "string", description: "Search query (supports tag: syntax)" },
           },
           required: ["query"],
+        },
+      },
+      {
+        name: "archiveProject",
+        description: "Archive a project (move to _archive folder)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+          },
+          required: ["project"],
+        },
+      },
+      {
+        name: "restoreProject",
+        description: "Restore an archived project back to active",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+          },
+          required: ["project"],
+        },
+      },
+      {
+        name: "deleteProject",
+        description: "Permanently delete a project",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            fromArchive: {
+              type: "boolean",
+              description: "Delete from archive (default: true). Set false to delete active project.",
+            },
+          },
+          required: ["project"],
+        },
+      },
+      {
+        name: "addTask",
+        description: "Create a task with auto-increment ID and add to kanban board",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            title: { type: "string", description: "Task title" },
+            priority: {
+              type: "string",
+              enum: ["critical", "high", "medium", "low"],
+              description: "Task priority (default: medium)",
+            },
+            effort: { type: "string", description: "Estimated effort (e.g., '2h', '1d')" },
+            assignee: { type: "string", description: "Assignee name" },
+            extra: {
+              type: "object",
+              description: "Additional custom YAML fields",
+              additionalProperties: true,
+            },
+          },
+          required: ["project", "title"],
+        },
+      },
+      {
+        name: "updateTask",
+        description: "Move a task between kanban board columns",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            taskId: { type: "number", description: "Task ID number" },
+            status: {
+              type: "string",
+              enum: ["Backlog", "In Progress", "Review", "Done"],
+              description: "Target column",
+            },
+            actual: { type: "string", description: "Actual time spent (e.g., '1h')" },
+          },
+          required: ["project", "taskId", "status"],
+        },
+      },
+      {
+        name: "listTasks",
+        description: "List tasks from kanban board with statuses",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            status: {
+              type: "string",
+              enum: ["Backlog", "In Progress", "Review", "Done"],
+              description: "Filter by status (optional)",
+            },
+          },
+          required: ["project"],
         },
       },
     ],
   };
 });
 
-/**
- * Parse frontmatter and content from markdown file
- */
-async function parseMarkdown(filePath: string) {
-  const content = await fs.readFile(filePath, "utf-8");
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n/);
+// --- Tool implementations ---
 
-  let frontmatter: Record<string, any> = {};
-  let body = content;
-
-  if (frontmatterMatch) {
-    const fm = frontmatterMatch[1];
-    body = content.slice(frontmatterMatch[0].length);
-
-    // Simple YAML parser for basic fields
-    const lines = fm.split("\n");
-    for (const line of lines) {
-      const match = line.match(/^(\w+):\s*(.+)$/);
-      if (match) {
-        const [, key, value] = match;
-        frontmatter[key] = value.replace(/^["']|["']$/g, "");
-      }
-    }
-  }
-
-  return { frontmatter, body };
-}
-
-/**
- * Get project directory path
- */
-function getProjectPath(vaultPath: string, name: string) {
-  return path.join(vaultPath, name);
-}
-
-/**
- * Require vault to be initialized
- */
-async function requireVault(): Promise<string> {
-  const vaultPath = await getVaultPath();
-  if (!vaultPath) {
-    throw new Error(
-      "Obsidian Tracker not initialized. Please run initVault first with your Obsidian vault path."
-    );
-  }
-  const isValid = await validateVaultPath(vaultPath);
-  if (!isValid) {
-    throw new Error(
-      `Vault path "${vaultPath}" does not exist or is not a directory. Please run initVault with a valid path.`
-    );
-  }
-  return vaultPath;
-}
-
-/**
- * Handle tool calls
- */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
@@ -318,32 +402,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!args) throw new Error("Missing arguments");
         const vaultPath = args.vaultPath as string;
 
-        // Validate path exists
         const isValid = await validateVaultPath(vaultPath);
         if (!isValid) {
-          // Try to create it
           try {
             await fs.mkdir(vaultPath, { recursive: true });
           } catch (e) {
-            throw new Error(
-              `Cannot create vault path "${vaultPath}": ${(e as Error).message}`
-            );
+            throw new Error(`Cannot create vault path "${vaultPath}": ${(e as Error).message}`);
           }
         }
 
-        // Save config
-        const config: Config = {
-          vaultPath,
-          initialized: true,
-        };
-        await saveConfig(config);
+        await saveConfig({ vaultPath, initialized: true });
 
         return {
           content: [{
             type: "text",
             text: JSON.stringify({
               success: true,
-              message: `Obsidian Tracker initialized successfully!`,
+              message: "Obsidian Tracker initialized successfully!",
               vaultPath,
               configFile: CONFIG_FILE,
             }, null, 2),
@@ -370,29 +445,67 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "listProjects": {
         const vaultPath = await requireVault();
+        const includeArchived = (args?.includeArchived as boolean) ?? false;
         const entries = await fs.readdir(vaultPath, { withFileTypes: true });
         const projects = [];
 
         for (const entry of entries) {
-          if (entry.isDirectory()) {
+          if (entry.isDirectory() && entry.name !== "_archive") {
             const projectPath = path.join(vaultPath, entry.name);
             const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
 
             try {
               const { frontmatter } = await parseMarkdown(dashboardPath);
-              const bugFiles = (await fs.readdir(projectPath))
-                .filter(f => f.startsWith("BUG -"));
+              const files = await fs.readdir(projectPath);
+              const bugCount = files.filter(f => f.startsWith("BUG -")).length;
+              const taskCount = files.filter(f => /^TASK-\d+/.test(f)).length;
 
               projects.push({
                 name: entry.name,
                 status: frontmatter.status || "Unknown",
                 description: frontmatter.description || "",
-                bugs: bugFiles.length,
+                bugs: bugCount,
+                tasks: taskCount,
+                archived: false,
                 path: projectPath,
               });
             } catch {
               // No dashboard, skip
             }
+          }
+        }
+
+        if (includeArchived) {
+          const archivePath = path.join(vaultPath, "_archive");
+          try {
+            const archiveEntries = await fs.readdir(archivePath, { withFileTypes: true });
+            for (const entry of archiveEntries) {
+              if (entry.isDirectory()) {
+                const projectPath = path.join(archivePath, entry.name);
+                const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
+
+                try {
+                  const { frontmatter } = await parseMarkdown(dashboardPath);
+                  const files = await fs.readdir(projectPath);
+                  const bugCount = files.filter(f => f.startsWith("BUG -")).length;
+                  const taskCount = files.filter(f => /^TASK-\d+/.test(f)).length;
+
+                  projects.push({
+                    name: entry.name,
+                    status: frontmatter.status || "Archived",
+                    description: frontmatter.description || "",
+                    bugs: bugCount,
+                    tasks: taskCount,
+                    archived: true,
+                    path: projectPath,
+                  });
+                } catch {
+                  // No dashboard, skip
+                }
+              }
+            }
+          } catch {
+            // No _archive directory
           }
         }
 
@@ -410,11 +523,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const projectName = args.name as string;
         const projectPath = getProjectPath(vaultPath, projectName);
 
-        // Check if project exists
         const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) {
-          throw new Error(`Project "${projectName}" not found in vault`);
-        }
+        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
 
         const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
         let frontmatter: Record<string, any> = {};
@@ -425,29 +535,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           frontmatter = parsed.frontmatter;
           body = parsed.body;
         } catch {
-          // No dashboard file
           body = "No dashboard found";
         }
 
-        // List bugs
         let bugFiles: string[] = [];
         try {
           bugFiles = (await fs.readdir(projectPath))
             .filter(f => f.startsWith("BUG -"))
             .map(f => f.replace("BUG - ", "").replace(".md", ""));
-        } catch {
-          // Error reading directory
-        }
+        } catch {}
 
-        // List sessions
         const sessionsPath = path.join(projectPath, "Sessions");
         let sessions: string[] = [];
         try {
-          const sessionFiles = await fs.readdir(sessionsPath);
-          sessions = sessionFiles.filter(f => f.endsWith(".md"));
-        } catch {
-          // No sessions directory
-        }
+          sessions = (await fs.readdir(sessionsPath)).filter(f => f.endsWith(".md"));
+        } catch {}
+
+        // Task summary from board
+        const boardPath = path.join(projectPath, "Board.md");
+        const columns = await parseBoard(boardPath);
+        const taskSummary = {
+          backlog: columns.get("Backlog")?.length ?? 0,
+          inProgress: columns.get("In Progress")?.length ?? 0,
+          review: columns.get("Review")?.length ?? 0,
+          done: columns.get("Done")?.length ?? 0,
+        };
 
         return {
           content: [{
@@ -459,6 +571,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               dashboard: body,
               bugs: bugFiles,
               sessions,
+              tasks: taskSummary,
             }, null, 2),
           }],
         };
@@ -502,15 +615,12 @@ tags: [project, ${projectTag}]
 #project #${projectTag}
 `;
 
-        await fs.writeFile(
-          path.join(projectPath, "!Project Dashboard.md"),
-          dashboard
-        );
+        await fs.writeFile(path.join(projectPath, "!Project Dashboard.md"), dashboard);
+        await fs.writeFile(path.join(projectPath, "README.md"), `# ${projectName}\n\n${args.description ?? "N/A"}\n`);
 
-        await fs.writeFile(
-          path.join(projectPath, "README.md"),
-          `# ${projectName}\n\n${args.description ?? "N/A"}\n`
-        );
+        // Kanban board
+        const boardContent = "---\nkanban-plugin: basic\n---\n\n## Backlog\n\n## In Progress\n\n## Review\n\n## Done\n";
+        await fs.writeFile(path.join(projectPath, "Board.md"), boardContent);
 
         return {
           content: [{
@@ -530,19 +640,13 @@ tags: [project, ${projectTag}]
         const projectName = args.project as string;
         const projectPath = getProjectPath(vaultPath, projectName);
 
-        // Check if project exists
         const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) {
-          throw new Error(`Project "${projectName}" not found in vault`);
-        }
+        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
 
         const title = args.title as string;
         const priority = (args.priority as string) ?? "medium";
         const description = args.description as string;
         const date = new Date().toISOString().split("T")[0];
-
-        const bugFileName = `BUG - ${title}.md`;
-        const bugPath = path.join(projectPath, bugFileName);
 
         const bugContent = `# ${title}
 
@@ -564,6 +668,7 @@ ${description}
 #bug #${priority}
 `;
 
+        const bugPath = path.join(projectPath, `BUG - ${title}.md`);
         await fs.writeFile(bugPath, bugContent);
 
         return {
@@ -584,28 +689,21 @@ ${description}
         const projectName = args.project as string;
         const projectPath = getProjectPath(vaultPath, projectName);
 
-        // Check if project exists
         const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) {
-          throw new Error(`Project "${projectName}" not found in vault`);
-        }
+        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
 
         const sessionsPath = path.join(projectPath, "Sessions");
         await fs.mkdir(sessionsPath, { recursive: true });
 
         const now = new Date();
         const date = now.toISOString().split("T")[0];
-        const time = now.toISOString().split("T")[1].slice(0, 5); // HH:MM in UTC
-        const sessionFileName = `Session - ${date}.md`;
-        const sessionPath = path.join(sessionsPath, sessionFileName);
+        const time = now.toISOString().split("T")[1].slice(0, 5);
+        const sessionPath = path.join(sessionsPath, `Session - ${date}.md`);
 
-        // Check if session file already exists for today
         let existingContent = "";
         try {
           existingContent = await fs.readFile(sessionPath, "utf-8");
-        } catch {
-          // File doesn't exist yet
-        }
+        } catch {}
 
         const actions = args.actions as string[] | undefined;
         const actionsText = actions && actions.length > 0
@@ -670,28 +768,16 @@ ${args.nextSteps ?? "TBD"}
                 try {
                   const content = await fs.readFile(path.join(projectPath, file), "utf-8");
                   if (isTagSearch) {
-                    // Tag search: look for #tag followed by space, newline, or end
                     const tagRegex = new RegExp(`#${searchTerm}(?:\\s|$|\\])`, "i");
                     if (tagRegex.test(content)) {
-                      results.push({
-                        project: entry.name,
-                        file,
-                        match: `tag:#${searchTerm}`,
-                      });
+                      results.push({ project: entry.name, file, match: `tag:#${searchTerm}` });
                     }
                   } else {
-                    // Text search: case-insensitive content match
                     if (content.toLowerCase().includes(searchTerm)) {
-                      results.push({
-                        project: entry.name,
-                        file,
-                        match: "content",
-                      });
+                      results.push({ project: entry.name, file, match: "content" });
                     }
                   }
-                } catch {
-                  // Skip unreadable files
-                }
+                } catch {}
               }
             }
           }
@@ -705,6 +791,284 @@ ${args.nextSteps ?? "TBD"}
         };
       }
 
+      // --- Archive / Restore / Delete ---
+
+      case "archiveProject": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectName = args.project as string;
+        const projectPath = getProjectPath(vaultPath, projectName);
+
+        const projectExists = await validateVaultPath(projectPath);
+        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
+
+        const archivePath = path.join(vaultPath, "_archive");
+        await fs.mkdir(archivePath, { recursive: true });
+
+        const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
+        try {
+          await updateTaskFrontmatter(dashboardPath, { status: "Archived" });
+        } catch {
+          // Dashboard may not exist, proceed anyway
+        }
+
+        const archivedPath = path.join(archivePath, projectName);
+        await fs.rename(projectPath, archivedPath);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              message: `Project "${projectName}" archived`,
+              archivedPath,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "restoreProject": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectName = args.project as string;
+        const archivedPath = path.join(vaultPath, "_archive", projectName);
+
+        const exists = await validateVaultPath(archivedPath);
+        if (!exists) throw new Error(`Archived project "${projectName}" not found in _archive`);
+
+        const dashboardPath = path.join(archivedPath, "!Project Dashboard.md");
+        try {
+          await updateTaskFrontmatter(dashboardPath, { status: "Active" });
+        } catch {
+          // Dashboard may not exist
+        }
+
+        const restoredPath = getProjectPath(vaultPath, projectName);
+        await fs.rename(archivedPath, restoredPath);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              message: `Project "${projectName}" restored`,
+              restoredPath,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "deleteProject": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectName = args.project as string;
+        const fromArchive = (args.fromArchive as boolean) ?? true;
+
+        const targetPath = fromArchive
+          ? path.join(vaultPath, "_archive", projectName)
+          : getProjectPath(vaultPath, projectName);
+
+        const exists = await validateVaultPath(targetPath);
+        if (!exists) {
+          const location = fromArchive ? "_archive" : "vault";
+          throw new Error(`Project "${projectName}" not found in ${location}`);
+        }
+
+        await fs.rm(targetPath, { recursive: true, force: true });
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              message: `Project "${projectName}" permanently deleted`,
+              deletedPath: targetPath,
+            }, null, 2),
+          }],
+        };
+      }
+
+      // --- Task management ---
+
+      case "addTask": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectName = args.project as string;
+        const projectPath = getProjectPath(vaultPath, projectName);
+
+        const projectExists = await validateVaultPath(projectPath);
+        if (!projectExists) throw new Error(`Project "${projectName}" not found`);
+
+        const title = args.title as string;
+        const priority = (args.priority as string) ?? "medium";
+        const effort = (args.effort as string) ?? "";
+        const assignee = (args.assignee as string) ?? "";
+        const extra = (args.extra as Record<string, any>) ?? {};
+        const createdDate = new Date().toISOString().split("T")[0];
+
+        const taskId = await getNextTaskId(projectPath);
+        const taskFileName = `TASK-${taskId} - ${title}.md`;
+        const taskPath = path.join(projectPath, taskFileName);
+
+        let yaml = `---\npriority: ${priority}\n`;
+        if (effort) yaml += `effort: ${effort}\n`;
+        if (assignee) yaml += `assignee: ${assignee}\n`;
+        yaml += `created: ${createdDate}\n`;
+        for (const [key, value] of Object.entries(extra)) {
+          yaml += `${key}: ${value}\n`;
+        }
+        yaml += `---\n`;
+
+        const taskContent = `${yaml}
+# TASK-${taskId}: ${title}
+
+## Description
+
+## Notes
+
+---
+#task #${priority}
+`;
+
+        await fs.writeFile(taskPath, taskContent);
+
+        // Add to board
+        const boardPath = path.join(projectPath, "Board.md");
+        const columns = await parseBoard(boardPath);
+        columns.get("Backlog")!.push(`- [ ] [[TASK-${taskId} - ${title}]]`);
+        await writeBoard(boardPath, columns);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              taskId,
+              path: taskPath,
+              message: `Task TASK-${taskId} created: "${title}"`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "updateTask": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectName = args.project as string;
+        const projectPath = getProjectPath(vaultPath, projectName);
+
+        const projectExists = await validateVaultPath(projectPath);
+        if (!projectExists) throw new Error(`Project "${projectName}" not found`);
+
+        const taskId = args.taskId as number;
+        const targetStatus = args.status as string;
+        const actual = args.actual as string | undefined;
+
+        const boardPath = path.join(projectPath, "Board.md");
+        const columns = await parseBoard(boardPath);
+
+        // Find and remove task from current column
+        let taskLine: string | null = null;
+        let sourceColumn: string | null = null;
+        const taskPattern = new RegExp(`\\[\\[TASK-${taskId}\\s*-`);
+
+        for (const [col, items] of columns) {
+          const idx = items.findIndex(line => taskPattern.test(line));
+          if (idx !== -1) {
+            taskLine = items[idx];
+            sourceColumn = col;
+            items.splice(idx, 1);
+            break;
+          }
+        }
+
+        if (!taskLine) throw new Error(`Task TASK-${taskId} not found on board`);
+
+        // Update checkbox
+        if (targetStatus === "Done") {
+          taskLine = taskLine.replace("- [ ]", "- [x]");
+        } else {
+          taskLine = taskLine.replace("- [x]", "- [ ]");
+        }
+
+        columns.get(targetStatus)!.push(taskLine);
+        await writeBoard(boardPath, columns);
+
+        // Update task file frontmatter
+        if (actual || targetStatus === "Done") {
+          const files = await fs.readdir(projectPath);
+          const taskFile = files.find(f => f.startsWith(`TASK-${taskId} `));
+          if (taskFile) {
+            const updates: Record<string, string> = {};
+            if (actual) updates.actual = actual;
+            if (targetStatus === "Done") {
+              updates.completed = new Date().toISOString().split("T")[0];
+            }
+            await updateTaskFrontmatter(path.join(projectPath, taskFile), updates);
+          }
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              taskId,
+              from: sourceColumn,
+              to: targetStatus,
+              actual: actual ?? null,
+              message: `Task TASK-${taskId}: ${sourceColumn} → ${targetStatus}`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "listTasks": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectName = args.project as string;
+        const projectPath = getProjectPath(vaultPath, projectName);
+
+        const projectExists = await validateVaultPath(projectPath);
+        if (!projectExists) throw new Error(`Project "${projectName}" not found`);
+
+        const statusFilter = args.status as string | undefined;
+        const boardPath = path.join(projectPath, "Board.md");
+        const columns = await parseBoard(boardPath);
+
+        const tasks: Array<{ id: number; title: string; status: string }> = [];
+
+        for (const [col, items] of columns) {
+          if (statusFilter && col !== statusFilter) continue;
+          for (const item of items) {
+            const match = item.match(/\[\[TASK-(\d+)\s*-\s*(.+?)\]\]/);
+            if (match) {
+              tasks.push({
+                id: parseInt(match[1], 10),
+                title: match[2].trim(),
+                status: col,
+              });
+            }
+          }
+        }
+
+        tasks.sort((a, b) => a.id - b.id);
+
+        const summary = {
+          backlog: columns.get("Backlog")?.length ?? 0,
+          inProgress: columns.get("In Progress")?.length ?? 0,
+          review: columns.get("Review")?.length ?? 0,
+          done: columns.get("Done")?.length ?? 0,
+        };
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ project: projectName, tasks, summary }, null, 2),
+          }],
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -712,9 +1076,7 @@ ${args.nextSteps ?? "TBD"}
     return {
       content: [{
         type: "text",
-        text: JSON.stringify({
-          error: (error as Error).message,
-        }, null, 2),
+        text: JSON.stringify({ error: (error as Error).message }, null, 2),
       }],
       isError: true,
     };
