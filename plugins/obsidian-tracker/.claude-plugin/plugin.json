@@ -37,7 +37,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-clear.sh",
-            "timeout": 5
+            "timeout": 15
           }
         ]
       },
@@ -47,7 +47,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-resume.sh",
-            "timeout": 5
+            "timeout": 15
           }
         ]
       },
@@ -57,7 +57,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-startup.sh",
-            "timeout": 5
+            "timeout": 15
           }
         ]
       }
