@@ -1,14 +1,16 @@
 # Obsidian Tracker
 
-Project tracking and bug logging with Obsidian integration. **Auto-tracks sessions via hooks.**
+Project tracking, task management with kanban boards, bug logging, and session management via Obsidian. **Auto-tracks sessions via hooks.**
 
 ## Features
 
-- **Project Management**: List, create, and view projects
-- **Bug Tracking**: Create and manage bug reports
-- **Session Logging**: Record Claude Code sessions
+- **Project Management**: List, create, archive, restore, and delete projects
+- **Task Management**: Kanban board with Backlog/In Progress/Review/Done columns
+- **Bug Tracking**: Create and manage bug reports with priority levels
+- **Session Logging**: Record Claude Code sessions (manual or automatic)
 - **Auto-Tracking**: Automatic session logging via hooks
-- **Search**: Find projects by tags
+- **Project Lifecycle**: Active → Archived → Deleted
+- **Search**: Find projects by tags or content
 
 ## Commands
 
@@ -18,6 +20,12 @@ Project tracking and bug logging with Obsidian integration. **Auto-tracks sessio
 | `/projects [name]` | Show project details |
 | `/project-new` | Create new project |
 | `/project-bug [project]` | Create bug report |
+| `/project-archive [action] [project]` | Archive, restore, or delete a project |
+| `/task [project] [title]` | Create a task on the kanban board |
+| `/done [project] [task-id]` | Mark task as done |
+| `/today [project]` | Show today's tasks and progress |
+| `/pulse [project]` | Project health and activity overview |
+| `/import [project]` | Import data into a project |
 | `/session-log [project]` | Manual session log |
 | `/track-start [project]` | Start auto-tracking |
 | `/track-stop` | Stop tracking + save to Obsidian |
@@ -69,9 +77,15 @@ Located at `.claude/obsidian-tracking.json`:
 |------|-------------|
 | `initVault` | Initialize with vault path |
 | `getConfig` | Get current configuration |
-| `listProjects` | List all projects |
+| `listProjects` | List all projects (supports `includeArchived`) |
 | `getProject` | Get project details |
 | `createProject` | Create new project |
+| `archiveProject` | Archive a project (move to `_archive/`) |
+| `restoreProject` | Restore an archived project |
+| `deleteProject` | Permanently delete a project |
+| `addTask` | Create task with auto-increment ID + kanban board |
+| `updateTask` | Move task between kanban columns |
+| `listTasks` | List tasks with board statuses |
 | `addBug` | Add bug report |
 | `addSession` | Add session log |
 | `search` | Search by tag (e.g., `tag:bug`) |
@@ -93,19 +107,30 @@ Located at `.claude/obsidian-tracking.json`:
 ## Obsidian Structure
 
 ```
-{vault}/Projects/{project-name}/
-├── !Project Dashboard.md    # Main dashboard
-├── README.md                 # Project description
-├── BUG - {title}.md         # Bug reports
-└── Sessions/
-    └── Session - YYYY-MM-DD.md  # Session logs
+{vault}/
+├── {project-name}/
+│   ├── !Project Dashboard.md    # Main dashboard (frontmatter: status, description, etc.)
+│   ├── README.md                 # Project description
+│   ├── Board.md                  # Kanban board (Backlog/In Progress/Review/Done)
+│   ├── TASK-{id} - {title}.md   # Task files
+│   ├── BUG - {title}.md         # Bug reports
+│   └── Sessions/
+│       └── Session - YYYY-MM-DD.md  # Session logs
+└── _archive/
+    └── {archived-project}/       # Archived projects (same structure)
 ```
 
 ## Version
 
-2.3.0
+3.0.0
 
 ## Changelog
+
+### 3.0.0
+- Task management: `addTask`, `updateTask`, `listTasks` with kanban board integration
+- Project lifecycle: `archiveProject`, `restoreProject`, `deleteProject`
+- `listProjects` now supports `includeArchived` parameter, `_archive/` folder
+- New commands: `/task`, `/done`, `/today`, `/pulse`, `/import`, `/project-archive`
 
 ### 2.3.0
 - SessionStart hooks converted from `prompt` to `command` type (bash scripts in `hooks/`)

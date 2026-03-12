@@ -86,7 +86,7 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 
 ### Obsidian Tracker
 
-Project tracking and bug logging with Obsidian integration. **Auto-tracks sessions via hooks.**
+Project tracking, task management with kanban boards, bug logging, and session management via Obsidian. **Auto-tracks sessions via hooks.**
 
 📚 **[Full Documentation](plugins/obsidian-tracker/README.md)**
 
@@ -101,25 +101,26 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 /track-start my-project     # Start auto-tracking session
 /projects                   # List all projects
 /project-new                # Create new project
-/project-bug my-project     # Create bug report
+/task my-project "Fix bug"  # Create task on kanban board
+/done my-project 1          # Mark task as done
+/project-archive archive old-project  # Archive a project
 /track-stop                 # Save session to Obsidian
-# or just /clear — auto-saves!
 ```
 
-**Status:** ✅ Production Ready | **Version:** 2.0.0
+**Status:** ✅ Production Ready | **Version:** 3.0.0
 
-**What's New in 2.0.0:**
-- 🔄 **Auto-tracking**: Hooks automatically record your work
-- 📝 **Auto-save on /clear**: Session logged to Obsidian automatically
-- 🧠 **Survives /compact**: Tracking context preserved after compression
-- 🎯 **MCP-based**: All commands now use MCP tools properly
+**What's New in 3.0.0:**
+- Task management with kanban board (Backlog/In Progress/Review/Done)
+- Project lifecycle: archive, restore, permanently delete
+- New commands: `/task`, `/done`, `/today`, `/pulse`, `/import`, `/project-archive`
 
 **Features:**
 - Auto-tracking via hooks (PreCompact, SessionStart, PostToolUse)
 - Project management with Obsidian as single source of truth
+- Kanban task board with auto-increment IDs
+- Project archiving and lifecycle management
 - Bug tracking with priority levels
 - Session logging (manual or automatic)
-- MCP server for Obsidian vault access
 
 ---
 
