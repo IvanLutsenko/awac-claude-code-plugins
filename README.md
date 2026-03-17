@@ -67,13 +67,11 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 /crash-config                       # Configure plugin settings
 ```
 
-**Status:** ✅ Production Ready | **Version:** 4.1.0
+**Status:** ✅ Production Ready | **Version:** 4.1.1
 
-**What's New in 4.1.0:**
-- Unified `/crash-report` command — auto-detects platform from config
-- Config auto-created on first run (no manual setup required)
-- MCP retry-first strategy (retries 2x before REST fallback)
-- REST API fallback: token never leaked to stdout
+**What's New in 4.1.1:**
+- **Fix:** `experimental:mcp` → `mcp` — Firebase MCP graduated to GA, Crashlytics tools now available
+- Updated troubleshooting and docs
 
 **Features:**
 - 4-step multi-agent pipeline: classifier → fetcher → forensics → reviewer

@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.1.0 — Android & iOS
+**Version:** 4.1.1 — Android & iOS
 
 ---
 
@@ -63,7 +63,7 @@ The plugin falls back between modes: MCP (with retries) → CLI API → Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.1.0                         │
+│                      crashlytics v4.1.1                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -195,7 +195,7 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
      "mcpServers": {
        "firebase": {
          "command": "sh",
-         "args": ["-c", "NODE_OPTIONS='--max-old-space-size=4096' npx -y firebase-tools@latest experimental:mcp"]
+         "args": ["-c", "NODE_OPTIONS='--max-old-space-size=4096' npx -y firebase-tools@latest mcp"]
        }
      }
    }
@@ -226,7 +226,7 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
 |---------|----------|
 | "Firebase MCP unavailable" | Normal — plugin falls back to CLI API |
 | "Unable to verify client" | Do not use MCP login. Authorize via `firebase login` in terminal |
-| MCP Internal error | Known issue with `experimental:mcp`. Plugin retries 2x then falls to CLI API |
+| MCP Internal error | Plugin retries 2x then falls to CLI API. Check `firebase --version` ≥ 14 |
 | "Files not found" | Make sure you're in the git repository root |
 | "git blame not working" | Check that the repository has commit history |
 | "Assignee = TBD" | Manual ownership analysis required |
@@ -234,6 +234,10 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
 ---
 
 ## Changelog
+
+### 4.1.1
+- **Fix:** `experimental:mcp` → `mcp` — Firebase MCP graduated to GA, old command didn't register Crashlytics tools
+- Updated troubleshooting: removed obsolete `experimental:mcp` references
 
 ### 4.1.0
 - Unified `/crash-report` command — auto-detects platform from config
