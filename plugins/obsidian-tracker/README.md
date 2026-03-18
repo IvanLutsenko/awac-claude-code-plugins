@@ -5,8 +5,9 @@ Project tracking, task management with kanban boards, bug logging, and session m
 ## Features
 
 - **Project Management**: List, create, archive, restore, and delete projects
+- **Subproject Tree**: Hierarchical project view with `X.Y` numbering for nested subprojects
 - **Task Management**: Kanban board with Backlog/In Progress/Review/Done columns
-- **Bug Tracking**: Create and manage bug reports with priority levels
+- **Bug Lifecycle**: Create, track, and close bug reports with priority levels
 - **Session Logging**: Record Claude Code sessions (manual or automatic)
 - **Auto-Tracking**: Automatic session logging via hooks
 - **Project Lifecycle**: Active → Archived → Deleted
@@ -115,7 +116,10 @@ Located at `.claude/obsidian-tracking.json`:
 │   ├── README.md                 # Project description
 │   ├── Board.md                  # Kanban board (Backlog/In Progress/Review/Done)
 │   ├── TASK-{id} - {title}.md   # Task files
-│   ├── BUG - {title}.md         # Bug reports
+│   ├── BUG - {title}.md         # Bug reports (Status: Open/Closed)
+│   ├── {subproject}/             # Subproject (detected by Dashboard or README.md)
+│   │   ├── !Project Dashboard.md
+│   │   └── BUG - {title}.md
 │   └── Sessions/
 │       └── Session - YYYY-MM-DD.md  # Session logs
 └── _archive/
