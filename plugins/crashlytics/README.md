@@ -2,21 +2,50 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.2.0 — Android & iOS
+**Version:** 4.2.1 — Android & iOS
 
 ---
 
 ## Prerequisites
 
-Required:
-- Git repository with commit history
-- Claude Code with the `crashlytics` plugin installed
+> **The plugin checks prerequisites automatically** on every run and shows what's missing.
+> If something is missing, it will show install instructions and offer to fix what it can.
 
-For Firebase integration (recommended):
-- Firebase project with Crashlytics enabled
-- Firebase CLI: `npm install -g firebase-tools`
-- Authorization: `firebase login`
-- **Crashlytics API enabled** in GCP project (see [Troubleshooting](#troubleshooting))
+### Required (without these the plugin won't analyze code)
+
+- **Git** — repository with commit history
+- **Claude Code** with the `crashlytics` plugin installed
+
+### Required for automatic crash data loading
+
+| # | Dependency | Install command | What it does |
+|---|-----------|----------------|-------------|
+| 1 | **Node.js** | `brew install node` (macOS) / `sudo apt install nodejs` (Linux) | Runtime for Firebase MCP server and CLI |
+| 2 | **firebase-tools** | `npm install -g firebase-tools` | Firebase CLI — project discovery + auth token |
+| 3 | **Firebase login** | `firebase login` (opens browser) | Creates token at `~/.config/configstore/firebase-tools.json` |
+| 4 | **python3** | Usually pre-installed on macOS/Linux | Runs the REST API script to fetch crash data |
+| 5 | **Crashlytics API** | Enable in [GCP Console](https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com) | Without this, REST API returns 403 |
+
+### Quick setup (copy-paste)
+
+```bash
+# 1. Install firebase-tools (requires Node.js)
+npm install -g firebase-tools
+
+# 2. Login (opens browser)
+firebase login
+
+# 3. Set active project
+firebase use your-project-id
+
+# 4. Enable Crashlytics API (replace YOUR_PROJECT_ID)
+# Option A: open in browser
+open "https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project=YOUR_PROJECT_ID"
+# Option B: via gcloud (if installed)
+gcloud services enable firebasecrashlytics.googleapis.com --project=YOUR_PROJECT_ID
+```
+
+> **Without Firebase setup** the plugin still works — but in Manual mode (you paste the stack trace yourself).
 
 ---
 
@@ -65,7 +94,7 @@ The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.2.0                         │
+│                      crashlytics v4.2.1                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -250,6 +279,12 @@ Instead, the plugin:
 ---
 
 ## Changelog
+
+### 4.2.1
+- **Added:** Automatic prerequisites check on every `/crash-report` run (Node.js, firebase-tools, auth, python3)
+- **Added:** Auto-install offer for firebase-tools if npm is available
+- **Added:** Detailed setup instructions in README with copy-paste commands
+- Plugin degrades gracefully: missing tools → Manual mode instead of cryptic errors
 
 ### 4.2.0
 - **Breaking:** Removed non-existent MCP Crashlytics data tools (`crashlytics_get_issue`, `crashlytics_list_events`, `crashlytics_batch_get_events`, `crashlytics_get_report`) — these were never implemented in Firebase MCP server
