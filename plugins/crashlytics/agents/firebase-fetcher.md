@@ -68,56 +68,7 @@ Use CLI REST API to fetch crash data. Token stays internal — never printed.
 ```yaml
 Input: issue_id (hex UUID), app_id, project_id
 
-Bash: python3 << 'PYEOF'
-import json, urllib.request, urllib.parse, os, sys
-
-# Get access token (stays internal — never print)
-config = json.load(open(os.path.expanduser('~/.config/configstore/firebase-tools.json')))
-token_data = urllib.parse.urlencode({
-    'client_id': '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-    'client_secret': 'j9iVZfS8kkCEFUPaAeJV0sAi',
-    'refresh_token': config['tokens']['refresh_token'],
-    'grant_type': 'refresh_token'
-}).encode()
-token = json.loads(urllib.request.urlopen(
-    urllib.request.Request('https://oauth2.googleapis.com/token', data=token_data)
-).read())['access_token']
-
-APP_ID = "{APP_ID}"
-PROJECT_NUM = APP_ID.split(":")[1] if ":" in APP_ID else "{PROJECT_ID}"
-ISSUE_ID = "{ISSUE_ID}"
-headers = {"Authorization": f"Bearer {token}"}
-
-base_urls = [
-    f"https://firebasecrashlytics.googleapis.com/v1beta1/projects/{PROJECT_NUM}/apps/{APP_ID}",
-    f"https://firebasecrashlytics.googleapis.com/v1beta1/projects/{'{PROJECT_ID}'}/apps/{APP_ID}",
-]
-issue_data = None
-for base in base_urls:
-    try:
-        req = urllib.request.Request(f"{base}/issues/{ISSUE_ID}", headers=headers)
-        issue_data = json.loads(urllib.request.urlopen(req).read())
-        print("ISSUE_DATA:" + json.dumps(issue_data, indent=2))
-        try:
-            ereq = urllib.request.Request(f"{base}/issues/{ISSUE_ID}/events?pageSize=3", headers=headers)
-            events = json.loads(urllib.request.urlopen(ereq).read())
-            print("EVENTS_DATA:" + json.dumps(events, indent=2))
-        except Exception as e:
-            print(f"WARN: Events fetch failed: {e}", file=sys.stderr)
-        break
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode() if hasattr(e, 'read') else ''
-        print(f"WARN: {base}/issues/{ISSUE_ID} → HTTP {e.code}", file=sys.stderr)
-        if e.code == 403 and 'not been used' in err_body:
-            print("API_NOT_ENABLED", file=sys.stderr)
-        continue
-    except Exception as e:
-        print(f"WARN: {base} → {e}", file=sys.stderr)
-        continue
-
-if not issue_data:
-    print("REST_FALLBACK_FAILED")
-PYEOF
+Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-crash-data.py "{APP_ID}" "{ISSUE_ID}" "{PROJECT_ID}"
 
 Parse output:
   - Lines starting with ISSUE_DATA: → issue JSON

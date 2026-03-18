@@ -128,9 +128,13 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-3.1.1
+3.1.2
 
 ## Changelog
+
+### 3.1.2
+- Extracted inline tracking heredoc to `scripts/start-tracking.sh` — eliminates Claude Code security prompts for `$()` and brace patterns
+- Updated `/projects`, `/track-start`, `/project-bug` to use external script
 
 ### 3.1.1
 - Fix: explicit ban on `&nbsp;` in `/projects` table output — terminal doesn't render HTML entities

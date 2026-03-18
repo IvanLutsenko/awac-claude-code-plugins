@@ -67,11 +67,10 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 /crash-config                       # Configure plugin settings
 ```
 
-**Status:** ✅ Production Ready | **Version:** 4.1.1
+**Status:** ✅ Production Ready | **Version:** 4.2.3
 
-**What's New in 4.1.1:**
-- **Fix:** `experimental:mcp` → `mcp` — Firebase MCP graduated to GA, Crashlytics tools now available
-- Updated troubleshooting and docs
+**What's New in 4.2.3:**
+- Inline bash/python extracted to external scripts — no more Claude Code security prompts
 
 **Features:**
 - 4-step multi-agent pipeline: classifier → fetcher → forensics → reviewer
@@ -105,10 +104,10 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 /track-stop                 # Save session to Obsidian
 ```
 
-**Status:** ✅ Production Ready | **Version:** 3.1.1
+**Status:** ✅ Production Ready | **Version:** 3.1.2
 
-**What's New in 3.1.1:**
-- Fix: no more `&nbsp;` in table output — uses plain spaces for subproject indentation
+**What's New in 3.1.2:**
+- Tracking heredoc extracted to script — no more Claude Code security prompts
 
 **Features:**
 - Auto-tracking via hooks (PreCompact, SessionStart, PostToolUse)

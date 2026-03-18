@@ -1,7 +1,7 @@
 ---
 description: "Analyze crash from Firebase Crashlytics. Auto-detects platform from config. Usage: /crash-report <issue_id | console_url | crash info>"
 argument-hint: "<issue_id | console_url | crash description>"
-allowed-tools: Bash(echo:*), Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob, AskUserQuestion
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(echo:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob, AskUserQuestion
 ---
 
 # Crash Analysis
@@ -51,32 +51,7 @@ Config values used throughout:
 Run ALL checks in a single Bash call. Display results as a checklist to the user.
 
 ```yaml
-Bash: |
-  echo "=== Crashlytics Prerequisites ==="
-  # 1. Node.js
-  if command -v node &>/dev/null; then
-    echo "OK node $(node --version)"
-  else
-    echo "MISSING node"
-  fi
-  # 2. firebase-tools
-  if command -v firebase &>/dev/null; then
-    echo "OK firebase $(firebase --version 2>/dev/null | head -1)"
-  else
-    echo "MISSING firebase"
-  fi
-  # 3. Firebase auth (token file)
-  if [ -f "$HOME/.config/configstore/firebase-tools.json" ]; then
-    echo "OK firebase-auth"
-  else
-    echo "MISSING firebase-auth"
-  fi
-  # 4. python3
-  if command -v python3 &>/dev/null; then
-    echo "OK python3 $(python3 --version 2>&1)"
-  else
-    echo "MISSING python3"
-  fi
+Bash: ${CLAUDE_PLUGIN_ROOT}/scripts/check-prerequisites.sh
 ```
 
 **Parse output and show checklist to user:**
@@ -142,55 +117,7 @@ MCP is used **only for project/app discovery** (these tools work). Crash data is
    ios: "https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}"
 
 5. If Issue ID available → fetch crash data via REST API:
-   Bash: python3 << 'PYEOF'
-   import json, urllib.request, urllib.parse, os, sys
-
-   config = json.load(open(os.path.expanduser('~/.config/configstore/firebase-tools.json')))
-   token_data = urllib.parse.urlencode({
-       'client_id': '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-       'client_secret': 'j9iVZfS8kkCEFUPaAeJV0sAi',
-       'refresh_token': config['tokens']['refresh_token'],
-       'grant_type': 'refresh_token'
-   }).encode()
-   token = json.loads(urllib.request.urlopen(
-       urllib.request.Request('https://oauth2.googleapis.com/token', data=token_data)
-   ).read())['access_token']
-
-   APP_ID = "{APP_ID}"
-   PROJECT_NUM = APP_ID.split(":")[1] if ":" in APP_ID else "{PROJECT_ID}"
-   ISSUE_ID = "{ISSUE_ID}"
-   headers = {"Authorization": f"Bearer {token}"}
-
-   base_urls = [
-       f"https://firebasecrashlytics.googleapis.com/v1beta1/projects/{PROJECT_NUM}/apps/{APP_ID}",
-       f"https://firebasecrashlytics.googleapis.com/v1beta1/projects/{'{PROJECT_ID}'}/apps/{APP_ID}",
-   ]
-   issue_data = None
-   for base in base_urls:
-       try:
-           req = urllib.request.Request(f"{base}/issues/{ISSUE_ID}", headers=headers)
-           issue_data = json.loads(urllib.request.urlopen(req).read())
-           print("ISSUE_DATA:" + json.dumps(issue_data, indent=2))
-           try:
-               ereq = urllib.request.Request(f"{base}/issues/{ISSUE_ID}/events?pageSize=3", headers=headers)
-               events = json.loads(urllib.request.urlopen(ereq).read())
-               print("EVENTS_DATA:" + json.dumps(events, indent=2))
-           except Exception as e:
-               print(f"WARN: Events fetch failed: {e}", file=sys.stderr)
-           break
-       except urllib.error.HTTPError as e:
-           err_body = e.read().decode() if hasattr(e, 'read') else ''
-           print(f"WARN: {base}/issues/{ISSUE_ID} → HTTP {e.code}", file=sys.stderr)
-           if e.code == 403 and 'not been used' in err_body:
-               print("API_NOT_ENABLED")
-           continue
-       except Exception as e:
-           print(f"WARN: {base} → {e}", file=sys.stderr)
-           continue
-
-   if not issue_data:
-       print("REST_FALLBACK_FAILED")
-   PYEOF
+   Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-crash-data.py "{APP_ID}" "{ISSUE_ID}" "{PROJECT_ID}"
 
 6. Parse output:
    - ISSUE_DATA: → issue JSON

@@ -1,7 +1,7 @@
 ---
 description: Create or update a bug report in Obsidian
 argument-hint: "[project-name]"
-allowed-tools: Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__addBug
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__addBug
 ---
 
 # Project Bug Command
@@ -68,16 +68,9 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    ```
 
 5. **Auto-start tracking (если ещё не активен):**
-   Если `.claude/obsidian-tracking.json` не существует — создай через Bash (НЕ Write tool):
+   Если `.claude/obsidian-tracking.json` не существует — создай через скрипт:
    ```bash
-   mkdir -p .claude && cat <<EOF > .claude/obsidian-tracking.json
-   {
-     "project": "{project}",
-     "goal": "Bug: {title}",
-     "actions": ["Created bug: {title}"],
-     "startedAt": "{ISO timestamp}"
-   }
-   EOF
+   ${CLAUDE_PLUGIN_ROOT}/scripts/start-tracking.sh "{project}" "Bug: {title}" "Created bug: {title}"
    ```
    Выведи: `Tracking started for {project}`
 

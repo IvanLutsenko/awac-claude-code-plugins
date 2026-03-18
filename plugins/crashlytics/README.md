@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.2.2 — Android & iOS
+**Version:** 4.2.3 — Android & iOS
 
 ---
 
@@ -279,6 +279,10 @@ Instead, the plugin:
 ---
 
 ## Changelog
+
+### 4.2.3
+- **Refactor:** Extracted inline bash/python into `scripts/check-prerequisites.sh` and `scripts/fetch-crash-data.py` — eliminates Claude Code security prompts for `$()` substitution and `f"...{}"` patterns
+- **Changed:** All 4 files (crash-report, crash-report-android, crash-report-ios, firebase-fetcher) now call external scripts instead of inline heredocs
 
 ### 4.2.2
 - **Fixed:** Added `Bash(echo:*)` to `allowed-tools` in all crash-report commands — prerequisites check no longer requires manual approval

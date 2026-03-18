@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+"""Fetch crash data from Firebase Crashlytics REST API.
+
+Usage: python3 fetch-crash-data.py <APP_ID> <ISSUE_ID> [PROJECT_ID]
+
+Output format:
+  ISSUE_DATA:{json}   - issue details
+  EVENTS_DATA:{json}  - sample events
+  API_NOT_ENABLED     - API needs to be enabled
+  REST_FALLBACK_FAILED - all attempts failed
+
+Note: client_id and client_secret are public OAuth credentials from Firebase CLI
+(embedded in firebase-tools source code, this is an installed app OAuth flow).
+The access token stays internal - never printed or logged.
+"""
+import json
+import os
+import sys
+import urllib.parse
+import urllib.request
+
+
+def get_access_token():
+    config_path = os.path.expanduser("~/.config/configstore/firebase-tools.json")
+    config = json.load(open(config_path))
+    token_data = urllib.parse.urlencode({
+        "client_id": "563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com",
+        "client_secret": "j9iVZfS8kkCEFUPaAeJV0sAi",
+        "refresh_token": config["tokens"]["refresh_token"],
+        "grant_type": "refresh_token",
+    }).encode()
+    resp = urllib.request.urlopen(
+        urllib.request.Request("https://oauth2.googleapis.com/token", data=token_data)
+    )
+    return json.loads(resp.read())["access_token"]
+
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: fetch-crash-data.py <APP_ID> <ISSUE_ID> [PROJECT_ID]", file=sys.stderr)
+        sys.exit(1)
+
+    app_id = sys.argv[1]
+    issue_id = sys.argv[2]
+    project_id = sys.argv[3] if len(sys.argv) > 3 else None
+
+    # Extract numeric project number from APP_ID format "1:PROJECT_NUM:android:hash"
+    project_num = app_id.split(":")[1] if ":" in app_id else project_id
+
+    try:
+        token = get_access_token()
+    except Exception as e:
+        print("AUTH_FAILED", file=sys.stderr)
+        print("REST_FALLBACK_FAILED")
+        sys.exit(0)
+
+    headers = {"Authorization": "Bearer " + token}
+
+    base_urls = [
+        "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{}/apps/{}".format(project_num, app_id),
+    ]
+    if project_id and project_id != project_num:
+        base_urls.append(
+            "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{}/apps/{}".format(project_id, app_id)
+        )
+
+    issue_data = None
+    for base in base_urls:
+        try:
+            req = urllib.request.Request("{}/issues/{}".format(base, issue_id), headers=headers)
+            issue_data = json.loads(urllib.request.urlopen(req).read())
+            print("ISSUE_DATA:" + json.dumps(issue_data, indent=2))
+            try:
+                ereq = urllib.request.Request(
+                    "{}/issues/{}/events?pageSize=3".format(base, issue_id), headers=headers
+                )
+                events = json.loads(urllib.request.urlopen(ereq).read())
+                print("EVENTS_DATA:" + json.dumps(events, indent=2))
+            except Exception as e:
+                print("WARN: Events fetch failed: {}".format(e), file=sys.stderr)
+            break
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode() if hasattr(e, "read") else ""
+            print("WARN: {}/issues/{} -> HTTP {}".format(base, issue_id, e.code), file=sys.stderr)
+            if e.code == 403 and "not been used" in err_body:
+                print("API_NOT_ENABLED")
+            continue
+        except Exception as e:
+            print("WARN: {} -> {}".format(base, e), file=sys.stderr)
+            continue
+
+    if not issue_data:
+        print("REST_FALLBACK_FAILED")
+
+
+if __name__ == "__main__":
+    main()
