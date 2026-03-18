@@ -3,8 +3,8 @@
 ## Active Plugins
 
 - **bereke-business-test-gen** (v2.7.0) — Kotlin unit test generation with coverage validation
-- **crashlytics** (v4.1.1) — Multi-platform crash analysis with git blame forensics
-- **obsidian-tracker** (v2.0.0) — Session logging to Obsidian vault
+- **crashlytics** (v4.2.1) — Multi-platform crash analysis with git blame forensics
+- **obsidian-tracker** (v3.1.0) — Project tracking, task management, session logging via Obsidian
 - **locale-notifications** (v2.0.0) — macOS notifications in system language
 
 ## Plugin Structure
@@ -62,11 +62,14 @@ git add . && git commit -m "feat(name): desc" && git push
 
 ## Release Checklist
 
-**ОБЯЗАТЕЛЬНО при каждом изменении плагина:**
+**ОБЯЗАТЕЛЬНО при каждом изменении плагина — НЕ ЗАБЫВАЙ:**
 
 1. **Version bump** — обнови `version` в `.claude-plugin/plugin.json` (semver: patch для фиксов, minor для фич, major для breaking changes)
-2. **Plugin README** — обнови `plugins/{name}/README.md`: версию, changelog, новые команды/фичи
-3. **Root README** — обнови `README.md` в корне: версию, "What's New", Quick Start если изменились команды
-4. **CLAUDE.md** — обнови версию плагина в секции Active Plugins (этот файл)
+2. **marketplace.json** — обнови версию и описание в `.claude-plugin/marketplace.json`
+3. **Plugin README** — обнови `plugins/{name}/README.md`: версию, changelog, новые команды/фичи
+4. **Root README** — обнови `README.md` в корне: версию, "What's New", Quick Start если изменились команды
+5. **CLAUDE.md** — обнови версию плагина в секции Active Plugins (этот файл)
+6. **Commit + Push** — всё это в одном коммите, затем `git push`
 
 Всё это делается в том же коммите что и изменения, не отдельно.
+**НЕ СЧИТАЙ ЗАДАЧУ ЗАВЕРШЁННОЙ ПОКА НЕ ВЫПОЛНЕНЫ ВСЕ 6 ПУНКТОВ.**
