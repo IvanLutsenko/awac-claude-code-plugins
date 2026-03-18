@@ -105,12 +105,10 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 /track-stop                 # Save session to Obsidian
 ```
 
-**Status:** ✅ Production Ready | **Version:** 3.0.0
+**Status:** ✅ Production Ready | **Version:** 3.1.1
 
-**What's New in 3.0.0:**
-- Task management with kanban board (Backlog/In Progress/Review/Done)
-- Project lifecycle: archive, restore, permanently delete
-- New commands: `/task`, `/done`, `/today`, `/pulse`, `/import`, `/project-archive`
+**What's New in 3.1.1:**
+- Fix: no more `&nbsp;` in table output — uses plain spaces for subproject indentation
 
 **Features:**
 - Auto-tracking via hooks (PreCompact, SessionStart, PostToolUse)

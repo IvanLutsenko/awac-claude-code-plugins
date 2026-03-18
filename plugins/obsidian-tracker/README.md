@@ -128,9 +128,12 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-3.1.0
+3.1.1
 
 ## Changelog
+
+### 3.1.1
+- Fix: explicit ban on `&nbsp;` in `/projects` table output — terminal doesn't render HTML entities
 
 ### 3.1.0
 - Subproject tree: `listProjects` scans subdirectories for subprojects (detected by `!Project Dashboard.md` or `README.md`)
