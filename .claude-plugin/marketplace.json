@@ -21,7 +21,7 @@
     },
     {
       "name": "crashlytics",
-      "version": "4.2.1",
+      "version": "4.2.2",
       "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. 2-level fallback (CLI REST API → Enhanced Manual).",
       "source": "./plugins/crashlytics",
       "author": {

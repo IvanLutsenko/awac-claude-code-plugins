@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.2.1 — Android & iOS
+**Version:** 4.2.2 — Android & iOS
 
 ---
 
@@ -94,7 +94,7 @@ The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.2.1                         │
+│                      crashlytics v4.2.2                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -279,6 +279,9 @@ Instead, the plugin:
 ---
 
 ## Changelog
+
+### 4.2.2
+- **Fixed:** Added `Bash(echo:*)` to `allowed-tools` in all crash-report commands — prerequisites check no longer requires manual approval
 
 ### 4.2.1
 - **Added:** Automatic prerequisites check on every `/crash-report` run (Node.js, firebase-tools, auth, python3)

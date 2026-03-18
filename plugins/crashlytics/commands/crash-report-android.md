@@ -1,6 +1,6 @@
 ---
 description: Analyze Android Crashlytics logs with mandatory git blame analysis and code-level fixes. Multi-agent architecture: classifier → firebase-fetcher → forensics → reviewer.
-allowed-tools: Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob
+allowed-tools: Bash(echo:*), Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob
 ---
 
 # Android Crash Analysis - Multi-Agent Edition

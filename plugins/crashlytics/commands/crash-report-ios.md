@@ -1,6 +1,6 @@
 ---
 description: Analyze iOS Crashlytics logs with mandatory git blame analysis and code-level fixes. Multi-agent architecture: classifier-ios → firebase-fetcher → forensics-ios → reviewer.
-allowed-tools: Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob
+allowed-tools: Bash(echo:*), Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob
 ---
 
 # iOS Crash Analysis - Multi-Agent Edition
