@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.1.1 — Android & iOS
+**Version:** 4.2.0 — Android & iOS
 
 ---
 
@@ -16,6 +16,7 @@ For Firebase integration (recommended):
 - Firebase project with Crashlytics enabled
 - Firebase CLI: `npm install -g firebase-tools`
 - Authorization: `firebase login`
+- **Crashlytics API enabled** in GCP project (see [Troubleshooting](#troubleshooting))
 
 ---
 
@@ -51,11 +52,12 @@ Config auto-created with defaults on first run if missing.
 
 | Mode | Requirements | What you get |
 |------|-------------|--------------|
-| **Firebase MCP** | Firebase Issue ID + MCP server | Auto-load via MCP (preferred) |
-| **Firebase CLI API** | Firebase Issue ID + `firebase login` | Auto-load via REST API with CLI token |
-| **Manual Mode** | Stack trace from logs | Same analysis, data entered manually |
+| **CLI REST API** | Firebase Issue ID + `firebase login` + Crashlytics API enabled | Auto-load crash data via REST API (primary) |
+| **Enhanced Manual** | Stack trace from logs | Same analysis, guided manual data entry with Console URLs |
 
-The plugin falls back between modes: MCP (with retries) → CLI API → Manual.
+MCP is used **only for project/app discovery** (`firebase_get_environment`, `firebase_list_apps`). Crashlytics data tools do not exist in the Firebase MCP server — all crash data is fetched via the CLI REST API.
+
+The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
 ---
 
@@ -63,7 +65,7 @@ The plugin falls back between modes: MCP (with retries) → CLI API → Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.1.1                         │
+│                      crashlytics v4.2.0                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -83,7 +85,7 @@ The plugin falls back between modes: MCP (with retries) → CLI API → Manual.
 ### Four-step analysis
 
 1. **Classifier** (Haiku) — determines component and trigger
-2. **Firebase Fetcher** (Haiku) — loads data from Firebase (if available)
+2. **Firebase Fetcher** (Haiku) — loads data via CLI REST API (MCP for discovery only)
 3. **Forensics** (Opus) — git blame + code-level fix + assignee
 4. **Reviewer** (Haiku) — quality gate validating all mandatory fields
 
@@ -211,6 +213,10 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
    firebase use your-project-id
    ```
 
+4. **Enable Crashlytics API** (required for REST API data fetch):
+   - GCP Console: `https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project=YOUR_PROJECT_ID`
+   - Or via gcloud: `gcloud services enable firebasecrashlytics.googleapis.com --project=YOUR_PROJECT_ID`
+
 ### What firebase-fetcher loads
 
 - Issue details (title, status, event count)
@@ -218,15 +224,25 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
 - Device info (model, OS version)
 - App version
 
+### How data fetching works
+
+The Firebase MCP server does **not** provide Crashlytics data tools (`crashlytics_get_issue`, `crashlytics_list_events`, etc.). These tools are referenced in MCP resource guides but are not implemented.
+
+Instead, the plugin:
+1. Uses MCP for **project/app discovery** (`firebase_get_environment`, `firebase_list_apps`) — these work
+2. Fetches crash data via **CLI REST API** using the token from `~/.config/configstore/firebase-tools.json`
+3. Falls back to **Enhanced Manual mode** with Console URLs and step-by-step instructions
+
 ---
 
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| "Firebase MCP unavailable" | Normal — plugin falls back to CLI API |
+| REST API returns 403/404 | Crashlytics API not enabled. Enable at: `https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project=YOUR_PROJECT_ID` |
 | "Unable to verify client" | Do not use MCP login. Authorize via `firebase login` in terminal |
-| MCP Internal error | Plugin retries 2x then falls to CLI API. Check `firebase --version` ≥ 14 |
+| MCP Internal error | Normal for discovery — plugin retries once then uses CLI fallback |
+| `REST_FALLBACK_FAILED` | Check `firebase login:list` — may need to re-authenticate |
 | "Files not found" | Make sure you're in the git repository root |
 | "git blame not working" | Check that the repository has commit history |
 | "Assignee = TBD" | Manual ownership analysis required |
@@ -235,9 +251,20 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
 
 ## Changelog
 
+### 4.2.0
+- **Breaking:** Removed non-existent MCP Crashlytics data tools (`crashlytics_get_issue`, `crashlytics_list_events`, `crashlytics_batch_get_events`, `crashlytics_get_report`) — these were never implemented in Firebase MCP server
+- **Changed:** 3-level → 2-level fallback: CLI REST API → Enhanced Manual
+- **Changed:** MCP now used only for project/app discovery (working tools: `firebase_get_environment`, `firebase_list_apps`)
+- **Changed:** firebase-fetcher agent rewritten: `tools: Bash, Read` instead of `ListMcpResourcesTool, ReadMcpResourceTool`
+- **Added:** API_NOT_ENABLED detection with enable instructions (GCP Console URL + gcloud command)
+- **Added:** Enhanced Manual fallback with step-by-step Console instructions
+- **Added:** Prerequisites: Crashlytics API must be enabled in GCP
+- **Fixed:** 4.1.1 changelog (previously claimed MCP tools work — they don't)
+
 ### 4.1.1
-- **Fix:** `experimental:mcp` → `mcp` — Firebase MCP graduated to GA, old command didn't register Crashlytics tools
+- **Fix:** `experimental:mcp` → `mcp` — Firebase MCP graduated to GA, old command didn't register tools
 - Updated troubleshooting: removed obsolete `experimental:mcp` references
+- Note: this fixed MCP discovery tools but Crashlytics data tools were never available
 
 ### 4.1.0
 - Unified `/crash-report` command — auto-detects platform from config

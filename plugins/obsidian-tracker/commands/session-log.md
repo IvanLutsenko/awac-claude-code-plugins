@@ -1,7 +1,7 @@
 ---
 description: Log current session to Obsidian project
 argument-hint: "[project-name]"
-allowed-tools: Bash(cat*), Bash(rm .claude/obsidian-tracking.json), Read
+allowed-tools: Bash(cat*), Bash(rm .claude/obsidian-tracking.json), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__addSession
 ---
 
 # Session Log Command

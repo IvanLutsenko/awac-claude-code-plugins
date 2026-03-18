@@ -20,6 +20,7 @@ Project tracking, task management with kanban boards, bug logging, and session m
 | `/projects [name]` | Show project details |
 | `/project-new` | Create new project |
 | `/project-bug [project]` | Create bug report |
+| `/bug-close [project]` | Close a bug report |
 | `/project-archive [action] [project]` | Archive, restore, or delete a project |
 | `/task [project] [title]` | Create a task on the kanban board |
 | `/done [project] [task-id]` | Mark task as done |
@@ -77,7 +78,7 @@ Located at `.claude/obsidian-tracking.json`:
 |------|-------------|
 | `initVault` | Initialize with vault path |
 | `getConfig` | Get current configuration |
-| `listProjects` | List all projects (supports `includeArchived`) |
+| `listProjects` | List all projects with subproject tree (supports `includeArchived`) |
 | `getProject` | Get project details |
 | `createProject` | Create new project |
 | `archiveProject` | Archive a project (move to `_archive/`) |
@@ -87,6 +88,7 @@ Located at `.claude/obsidian-tracking.json`:
 | `updateTask` | Move task between kanban columns |
 | `listTasks` | List tasks with board statuses |
 | `addBug` | Add bug report |
+| `closeBug` | Close a bug report (exact or partial title match) |
 | `addSession` | Add session log |
 | `search` | Search by tag (e.g., `tag:bug`) |
 
@@ -122,9 +124,18 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-3.0.0
+3.1.0
 
 ## Changelog
+
+### 3.1.0
+- Subproject tree: `listProjects` scans subdirectories for subprojects (detected by `!Project Dashboard.md` or `README.md`)
+- `/projects` renders tree with `X.Y` numbering (e.g., `4.1`, `4.2`)
+- Bug lifecycle: `closeBug` MCP tool + `/bug-close` command
+- `listProjects` now counts only open bugs (reads file content to check status)
+- `getProject` returns structured bug objects with `title`, `status`, `priority` instead of plain strings
+- Fixed missing `allowed-tools` in commands: `project-bug`, `project-new`, `session-log`, `track-stop`
+- All MCP tools now listed in `allowed-tools` of every command that uses them
 
 ### 3.0.0
 - Task management: `addTask`, `updateTask`, `listTasks` with kanban board integration

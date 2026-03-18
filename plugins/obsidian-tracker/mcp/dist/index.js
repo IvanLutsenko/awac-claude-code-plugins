@@ -140,6 +140,66 @@ async function updateTaskFrontmatter(taskPath, updates) {
 function getProjectPath(vaultPath, name) {
     return path.join(vaultPath, name);
 }
+async function scanProject(projectPath, name, archived, isSubproject = false) {
+    const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
+    const readmePath = path.join(projectPath, "README.md");
+    let frontmatter = {};
+    let hasDashboard = false;
+    try {
+        const parsed = await parseMarkdown(dashboardPath);
+        frontmatter = parsed.frontmatter;
+        hasDashboard = true;
+    }
+    catch {
+        // No dashboard — for subprojects, check README
+        if (isSubproject) {
+            try {
+                await fs.stat(readmePath);
+                // README exists, treat as subproject
+            }
+            catch {
+                return null; // Neither dashboard nor README
+            }
+        }
+        else {
+            return null; // Top-level projects require a dashboard
+        }
+    }
+    const files = await fs.readdir(projectPath);
+    const bugFiles = files.filter(f => f.startsWith("BUG -") && f.endsWith(".md"));
+    const taskCount = files.filter(f => /^TASK-\d+/.test(f)).length;
+    let openBugs = 0;
+    for (const bf of bugFiles) {
+        try {
+            const bugContent = await fs.readFile(path.join(projectPath, bf), "utf-8");
+            if (!bugContent.includes("**Status:** Closed"))
+                openBugs++;
+        }
+        catch {
+            openBugs++;
+        }
+    }
+    // Scan subdirectories for subprojects
+    const subprojects = [];
+    const entries = await fs.readdir(projectPath, { withFileTypes: true });
+    for (const sub of entries) {
+        if (sub.isDirectory() && sub.name !== "Sessions" && sub.name !== "_archive") {
+            const subProject = await scanProject(path.join(projectPath, sub.name), sub.name, archived, true);
+            if (subProject)
+                subprojects.push(subProject);
+        }
+    }
+    return {
+        name,
+        status: frontmatter.status || (archived ? "Archived" : "Unknown"),
+        description: frontmatter.description || "",
+        bugs: openBugs,
+        tasks: taskCount,
+        archived,
+        path: projectPath,
+        ...(subprojects.length > 0 ? { subprojects } : {}),
+    };
+}
 async function requireVault() {
     const vaultPath = await getVaultPath();
     if (!vaultPath) {
@@ -152,7 +212,7 @@ async function requireVault() {
     return vaultPath;
 }
 // --- Server ---
-const server = new Server({ name: "obsidian-tracker", version: "3.0.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "obsidian-tracker", version: "3.1.0" }, { capabilities: { tools: {} } });
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
         tools: [
@@ -299,6 +359,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 },
             },
             {
+                name: "closeBug",
+                description: "Close a bug report in a project",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        project: { type: "string", description: "Project name" },
+                        title: { type: "string", description: "Bug title (exact or partial match)" },
+                        resolution: { type: "string", description: "How the bug was resolved" },
+                    },
+                    required: ["project", "title"],
+                },
+            },
+            {
                 name: "addTask",
                 description: "Create a task with auto-increment ID and add to kanban board",
                 inputSchema: {
@@ -412,26 +485,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const projects = [];
                 for (const entry of entries) {
                     if (entry.isDirectory() && entry.name !== "_archive") {
-                        const projectPath = path.join(vaultPath, entry.name);
-                        const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
-                        try {
-                            const { frontmatter } = await parseMarkdown(dashboardPath);
-                            const files = await fs.readdir(projectPath);
-                            const bugCount = files.filter(f => f.startsWith("BUG -")).length;
-                            const taskCount = files.filter(f => /^TASK-\d+/.test(f)).length;
-                            projects.push({
-                                name: entry.name,
-                                status: frontmatter.status || "Unknown",
-                                description: frontmatter.description || "",
-                                bugs: bugCount,
-                                tasks: taskCount,
-                                archived: false,
-                                path: projectPath,
-                            });
-                        }
-                        catch {
-                            // No dashboard, skip
-                        }
+                        const project = await scanProject(path.join(vaultPath, entry.name), entry.name, false);
+                        if (project)
+                            projects.push(project);
                     }
                 }
                 if (includeArchived) {
@@ -440,26 +496,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         const archiveEntries = await fs.readdir(archivePath, { withFileTypes: true });
                         for (const entry of archiveEntries) {
                             if (entry.isDirectory()) {
-                                const projectPath = path.join(archivePath, entry.name);
-                                const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
-                                try {
-                                    const { frontmatter } = await parseMarkdown(dashboardPath);
-                                    const files = await fs.readdir(projectPath);
-                                    const bugCount = files.filter(f => f.startsWith("BUG -")).length;
-                                    const taskCount = files.filter(f => /^TASK-\d+/.test(f)).length;
-                                    projects.push({
-                                        name: entry.name,
-                                        status: frontmatter.status || "Archived",
-                                        description: frontmatter.description || "",
-                                        bugs: bugCount,
-                                        tasks: taskCount,
-                                        archived: true,
-                                        path: projectPath,
-                                    });
-                                }
-                                catch {
-                                    // No dashboard, skip
-                                }
+                                const project = await scanProject(path.join(archivePath, entry.name), entry.name, true);
+                                if (project)
+                                    projects.push(project);
                             }
                         }
                     }
@@ -494,11 +533,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 catch {
                     body = "No dashboard found";
                 }
-                let bugFiles = [];
+                let bugs = [];
                 try {
-                    bugFiles = (await fs.readdir(projectPath))
-                        .filter(f => f.startsWith("BUG -"))
-                        .map(f => f.replace("BUG - ", "").replace(".md", ""));
+                    const allFiles = (await fs.readdir(projectPath)).filter(f => f.startsWith("BUG -") && f.endsWith(".md"));
+                    for (const bf of allFiles) {
+                        const title = bf.replace("BUG - ", "").replace(".md", "");
+                        try {
+                            const bugContent = await fs.readFile(path.join(projectPath, bf), "utf-8");
+                            const isClosed = bugContent.includes("**Status:** Closed");
+                            const priorityMatch = bugContent.match(/\*\*Priority:\*\* (\w+)/);
+                            bugs.push({
+                                title,
+                                status: isClosed ? "Closed" : "Open",
+                                priority: priorityMatch?.[1] ?? "medium",
+                            });
+                        }
+                        catch {
+                            bugs.push({ title, status: "Unknown", priority: "medium" });
+                        }
+                    }
                 }
                 catch { }
                 const sessionsPath = path.join(projectPath, "Sessions");
@@ -524,7 +577,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                                 path: projectPath,
                                 frontmatter,
                                 dashboard: body,
-                                bugs: bugFiles,
+                                bugs,
                                 sessions,
                                 tasks: taskSummary,
                             }, null, 2),
@@ -812,6 +865,50 @@ ${args.nextSteps ?? "TBD"}
                                 success: true,
                                 message: `Project "${projectName}" permanently deleted`,
                                 deletedPath: targetPath,
+                            }, null, 2),
+                        }],
+                };
+            }
+            case "closeBug": {
+                const vaultPath = await requireVault();
+                if (!args)
+                    throw new Error("Missing arguments");
+                const projectName = args.project;
+                const projectPath = getProjectPath(vaultPath, projectName);
+                const projectExists = await validateVaultPath(projectPath);
+                if (!projectExists)
+                    throw new Error(`Project "${projectName}" not found in vault`);
+                const searchTitle = args.title.toLowerCase();
+                const resolution = args.resolution ?? "";
+                const files = await fs.readdir(projectPath);
+                const bugFiles = files.filter(f => f.startsWith("BUG -") && f.endsWith(".md"));
+                // Find bug by exact or partial title match
+                const bugFile = bugFiles.find(f => {
+                    const title = f.replace("BUG - ", "").replace(".md", "").toLowerCase();
+                    return title === searchTitle || title.includes(searchTitle);
+                });
+                if (!bugFile)
+                    throw new Error(`Bug matching "${args.title}" not found in project "${projectName}"`);
+                const bugPath = path.join(projectPath, bugFile);
+                let content = await fs.readFile(bugPath, "utf-8");
+                // Update status from Open to Closed
+                content = content.replace("**Status:** Open", "**Status:** Closed");
+                // Add resolved date after Status line
+                const resolvedDate = new Date().toISOString().split("T")[0];
+                content = content.replace("**Status:** Closed", `**Status:** Closed\n- **Resolved:** ${resolvedDate}`);
+                // Add resolution to Attempted Fixes if provided
+                if (resolution) {
+                    content = content.replace("## Next Steps", `## Resolution\n${resolution}\n\n## Next Steps`);
+                }
+                await fs.writeFile(bugPath, content);
+                return {
+                    content: [{
+                            type: "text",
+                            text: JSON.stringify({
+                                success: true,
+                                path: bugPath,
+                                message: `Bug closed: "${bugFile.replace("BUG - ", "").replace(".md", "")}"`,
+                                resolvedDate,
                             }, null, 2),
                         }],
                 };

@@ -53,15 +53,19 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    mcp__plugin_obsidian_tracker_obsidian__listProjects
    ```
 
-   Выведи нумерованную таблицу:
-   | # | Project | Status | Bugs |
-   |---|---------|--------|------|
-   | 1 | name    | Active | 2    |
-   | 2 | name2   | Active | 0    |
+   Выведи нумерованную таблицу с деревом. Если у проекта есть `subprojects`, покажи их с нумерацией `X.Y`:
 
-   Подсказка: `Введи номер проекта или /projects <name> для деталей`
+   | # | Project | Status | Tasks | Bugs |
+   |---|---------|--------|-------|------|
+   | 1 | name    | Active | 5     | 2    |
+   | 2 | name2   | Active | 3     | 0    |
+   | 3 | parent-project | Active | 0 | 4 |
+   | 3.1 |   sub-project-a | Active | 2 | 1 |
+   | 3.2 |   sub-project-b | Active | 1 | 0 |
 
-   **Если пользователь вводит число** — выбери соответствующий проект и покажи детали (как в пункте 2)
+   Подсказка: `Введи номер проекта (например 3 или 3.1) или /projects <name> для деталей`
+
+   **Если пользователь вводит число** (целое или `X.Y`) — выбери соответствующий проект/подпроект и покажи детали (как в пункте 2). Для подпроекта используй полный путь: `parent/subproject`.
 
 2. **If project-name provided:**
 

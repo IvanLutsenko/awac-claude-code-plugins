@@ -1,6 +1,6 @@
 ---
 description: Create a new project in Obsidian
-allowed-tools: Read
+allowed-tools: Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__createProject
 ---
 
 # Project New Command

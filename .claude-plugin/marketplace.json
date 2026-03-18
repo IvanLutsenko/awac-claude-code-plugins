@@ -21,8 +21,8 @@
     },
     {
       "name": "crashlytics",
-      "version": "4.1.1",
-      "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. Supports Swift, Kotlin, Java, Objective-C.",
+      "version": "4.2.0",
+      "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. 2-level fallback (CLI REST API → Enhanced Manual).",
       "source": "./plugins/crashlytics",
       "author": {
         "name": "Ivan Lutsenko",
@@ -32,8 +32,8 @@
     },
     {
       "name": "obsidian-tracker",
-      "version": "3.0.0",
-      "description": "Project tracking and bug logging with Obsidian integration",
+      "version": "3.1.0",
+      "description": "Project tracking, task management with kanban boards, bug logging, and session management via Obsidian",
       "source": "./plugins/obsidian-tracker",
       "author": {
         "name": "Ivan Lutsenko",

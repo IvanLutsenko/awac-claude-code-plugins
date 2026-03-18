@@ -55,9 +55,9 @@ Inform user: "Config created at `.claude/crashlytics.local.md` (defaults: ios, m
 │classifier│→│ fetcher  │→│forensics │→│ reviewer │→│  output  │
 │   iOS    │ │ (Haiku)  │ │ (Opus)   │ │ (Haiku)  │ │          │
 │ (Haiku)  │ │          │ │          │ │          │ │ Detailed │
-│Component │ │Firebase  │ │Git blame │ │Quality   │ │+ JIRA    │
-│Trigger   │ │Stacks    │ │Code fix  │ │Gate      │ │  Brief   │
-│          │ │Device    │ │Assignee  │ │Checklist │ │          │
+│Component │ │REST API  │ │Git blame │ │Quality   │ │+ JIRA    │
+│Trigger   │ │+ MCP disc│ │Code fix  │ │Gate      │ │  Brief   │
+│          │ │          │ │Assignee  │ │Checklist │ │          │
 └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
 ```
 
@@ -65,40 +65,32 @@ Inform user: "Config created at `.claude/crashlytics.local.md` (defaults: ios, m
 
 ### STEP 0: Firebase Auto-Init (runs automatically!)
 
-**Before starting** check and configure Firebase. Three access levels: MCP → CLI API → Manual.
+**Before starting** check and configure Firebase. Two access levels: CLI REST API → Manual.
 
 **NEVER** use `mcp__plugin_crashlytics_firebase__firebase_login` — MCP auth is broken ("Unable to verify client"). If CLI is not authorized, ask the user to run `firebase login` in terminal.
 
+**NOTE:** Crashlytics data tools (`crashlytics_get_issue`, `crashlytics_list_events`, etc.) do NOT exist in Firebase MCP server. Do not attempt to call them. MCP is used only for project/app discovery.
+
 If `firebase_project_id` and `firebase_app_id_ios` are set in config — skip auto-detection and use those values directly.
 
-#### Level 1: MCP (preferred)
+#### Discovery: MCP or CLI
 
 ```yaml
-1. Load MCP tools:
+1. Try MCP discovery first:
    ToolSearch: "+firebase get_environment"
-
-2. Try:
    mcp__plugin_crashlytics_firebase__firebase_get_environment
 
-3. If works → use MCP for all requests (Steps 1-5)
-   Build console_url: "https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}"
-   IMPORTANT: MCP is unstable — individual calls may return "Internal error".
-   If a specific MCP call fails, retry up to 2 times before falling to Level 2.
-   MCP usually succeeds on retry. Do NOT jump to REST API on first failure.
-4. If get_environment itself fails → go to Level 2
-```
+   If works → extract project_id, then:
+     mcp__plugin_crashlytics_firebase__firebase_list_apps (platform: "ios")
+     Extract app_id.
 
-#### Level 2: CLI API fallback (via Firebase CLI token)
+   If MCP fails → retry once, then use CLI discovery:
 
-If MCP unavailable but Firebase CLI is authorized — get data via REST API:
-
-```yaml
-1. Check CLI:
+2. CLI discovery fallback:
    Bash: which firebase 2>/dev/null && firebase login:list 2>/dev/null
 
-   If CLI not authorized → go to Level 3
+   If CLI not authorized → go to Level 2 (Manual)
 
-2. Get project_id and app_id via CLI:
    Bash: firebase projects:list --json 2>/dev/null | python3 -c "
      import sys,json
      data = json.load(sys.stdin)
@@ -113,9 +105,12 @@ If MCP unavailable but Firebase CLI is authorized — get data via REST API:
 
 3. Build console_url immediately after getting project_id and app_id:
    console_url = "https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}"
-   Save this URL — it's needed for forensics and reviewer.
+```
 
-4. Get crash data via REST API (single script — token never printed to stdout):
+#### Level 1: CLI REST API (primary data fetch)
+
+```yaml
+1. Get crash data via REST API (single script — token never printed to stdout):
 
    NOTE: client_id and client_secret are public OAuth credentials from Firebase CLI
    (embedded in firebase-tools source code, this is an installed app OAuth flow).
@@ -161,7 +156,10 @@ If MCP unavailable but Firebase CLI is authorized — get data via REST API:
                print(f"WARN: Events fetch failed: {e}", file=sys.stderr)
            break
        except urllib.error.HTTPError as e:
+           err_body = e.read().decode() if hasattr(e, 'read') else ''
            print(f"WARN: {base}/issues/{ISSUE_ID} → HTTP {e.code}", file=sys.stderr)
+           if e.code == 403 and 'not been used' in err_body:
+               print("API_NOT_ENABLED")
            continue
        except Exception as e:
            print(f"WARN: {base} → {e}", file=sys.stderr)
@@ -172,40 +170,51 @@ If MCP unavailable but Firebase CLI is authorized — get data via REST API:
        print("All Crashlytics REST API URLs failed. The API may need to be enabled in Google Cloud Console.", file=sys.stderr)
    PYEOF
 
-5. Parse output:
+2. Parse output:
    - Lines starting with `ISSUE_DATA:` contain issue JSON
    - Lines starting with `EVENTS_DATA:` contain events JSON
-   - If output is `REST_FALLBACK_FAILED` → go to Level 3
+   - `API_NOT_ENABLED` → show enable instructions, then go to Level 2
+   - `REST_FALLBACK_FAILED` → go to Level 2
    - Extract: title, type (FATAL/NON_FATAL), status, stack traces, device info, event count
 ```
 
-#### Level 3: Manual fallback (link + manual input)
+#### Level 2: Enhanced Manual Fallback
 
-If neither MCP nor API worked:
+If REST API failed or Firebase not configured:
 
 ```yaml
-1. MUST generate a Firebase Console link:
+1. If API_NOT_ENABLED was detected:
+   Show: "Firebase Crashlytics API is not enabled for project {PROJECT_ID}.
+   Enable it:
+     - GCP Console: https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project={PROJECT_ID}
+     - gcloud: gcloud services enable firebasecrashlytics.googleapis.com --project={PROJECT_ID}
+   After enabling, re-run the command."
+
+2. MUST generate a Firebase Console link (if project_id and app_id known):
    https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}
 
-   If project_id/app_id known from CLI (Level 2, step 2) — substitute them.
-   If not — ask the user to go to Firebase Console manually.
+3. Step-by-step instructions for the user:
+   a. Open the Console URL above (or go to https://console.firebase.google.com/ → Crashlytics)
+   b. Find the issue (by ID or search)
+   c. Go to the "Events" tab
+   d. Copy the full stack trace from the latest event
+   e. Also note: crash title, event count, % affected users, app version, device
 
-2. Ask the user to copy from Firebase Console:
+4. Ask user to paste:
    - Stack trace (required)
    - Crash title
    - Event count, % users, version
 ```
 
 **General rules:**
-- Try levels sequentially: MCP (with retries) → CLI API → Manual
-- If MCP returns "Internal error" — retry up to 2 times before falling to CLI API
-- DO NOT jump to REST API on first MCP failure — MCP is more reliable on retry
+- MCP is for project/app discovery only — crash data tools don't exist
+- CLI REST API is the primary method for fetching crash data
 - Always generate Console URL if project_id and app_id are available
-- If Issue ID exists — always try to get data automatically
+- If Issue ID exists — always try to get data automatically via REST API
 
 ### STEP 1: Get data
 
-**If user provided a Firebase Issue ID** — first try loading data automatically (Step 3). Only ask for stack trace and context if auto-loading failed.
+**If user provided a Firebase Issue ID** — first try loading data automatically (Level 1). Only ask for stack trace and context if auto-loading failed.
 
 **If no Issue ID** — ask to provide:
 - **Stack trace** (required)
@@ -243,43 +252,29 @@ trigger: user_action/background_task/lifecycle_event/async_operation
 
 If a **Firebase Issue ID** was provided, load crash data using this priority:
 
-**CRITICAL: MCP retry-first strategy.** MCP is unstable but usually works on retry.
-If an MCP call returns "Internal error", retry it up to 2 times before switching to the next option.
-Do NOT immediately jump to REST API on first MCP failure — MCP retries are faster and more reliable.
+**Option A: CLI REST API (primary)**
 
-**Option A: MCP (Step 0, Level 1 succeeded)**
+Use the Python script from Step 0, Level 1 (token stays internal, never printed).
+Substitute `{APP_ID}`, `{PROJECT_ID}`, `{ISSUE_ID}` with actual values.
 
-Use MCP directly or via firebase-fetcher agent:
+**Option B: Via firebase-fetcher agent (alternative)**
 
 ```yaml
-# Direct MCP calls (preferred — faster than agent):
-mcp__plugin_crashlytics_firebase__crashlytics_get_issue(appId="{APP_ID}", issueId="{ISSUE_ID}")
-mcp__plugin_crashlytics_firebase__crashlytics_list_events(appId="{APP_ID}", filter={"issueId":"{ISSUE_ID}"}, pageSize=3)
-
-# OR via agent:
 Task(
   subagent_type="firebase-fetcher",
   model="haiku",
   prompt="Get crash details from Firebase:
     Issue ID: {issue_id}
     App ID: {app_id} (iOS)
+    Project ID: {project_id}
+    Platform: ios
   "
 )
 ```
 
-**If MCP returns "Internal error" → retry up to 2 times (pause 2-3 seconds between retries).**
-If still fails after 2 retries → fall to Option B.
+**Option C: Enhanced Manual fallback**
 
-**Option B: CLI REST API (Step 0, Level 2)**
-
-Use the single Python script from Step 0, Level 2, step 4 (token stays internal, never printed).
-Substitute `{APP_ID}`, `{PROJECT_ID}`, `{ISSUE_ID}` with actual values.
-**DO NOT call firebase-fetcher agent** — data obtained directly.
-
-**Option C: Manual fallback** — Console URL + manual input:
-```
-https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/ios:{APP_ID}/issues/{ISSUE_ID}
-```
+If REST API failed — generate Console URL and ask for manual input with step-by-step instructions (see Step 0, Level 2).
 
 ### STEP 4: Call crash-forensics-ios
 
@@ -403,7 +398,7 @@ Step 1: Classification...
 [Calls crash-classifier-ios]
 
 Step 2: Loading from Firebase...
-[Calls firebase-fetcher]
+[REST API fetch]
 
 Step 3: Git blame analysis...
 [Calls crash-forensics-ios]

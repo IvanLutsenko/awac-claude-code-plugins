@@ -1,7 +1,7 @@
 {
   "name": "obsidian-tracker",
   "description": "Project tracking, task management with kanban boards, bug logging, and session management via Obsidian. Auto-tracks sessions via hooks.",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
@@ -14,6 +14,7 @@
     "./commands/projects.md",
     "./commands/project-new.md",
     "./commands/project-bug.md",
+    "./commands/bug-close.md",
     "./commands/session-log.md",
     "./commands/track-start.md",
     "./commands/track-stop.md",

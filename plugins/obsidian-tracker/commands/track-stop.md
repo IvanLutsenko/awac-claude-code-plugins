@@ -1,6 +1,6 @@
 ---
 description: Stop tracking and save session to Obsidian
-allowed-tools: Bash(cat*), Bash(rm .claude/obsidian-tracking.json), Read
+allowed-tools: Bash(cat*), Bash(rm .claude/obsidian-tracking.json), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__addSession
 ---
 
 # Track Stop Command

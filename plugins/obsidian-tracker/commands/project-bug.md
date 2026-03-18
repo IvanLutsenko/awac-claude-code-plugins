@@ -1,7 +1,7 @@
 ---
 description: Create or update a bug report in Obsidian
 argument-hint: "[project-name]"
-allowed-tools: Bash(mkdir*), Bash(cat*), Read
+allowed-tools: Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__addBug
 ---
 
 # Project Bug Command
