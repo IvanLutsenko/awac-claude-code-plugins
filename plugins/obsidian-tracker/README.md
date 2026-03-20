@@ -87,7 +87,9 @@ Located at `.claude/obsidian-tracking.json`:
 | `deleteProject` | Permanently delete a project |
 | `addTask` | Create task with auto-increment ID + kanban board |
 | `updateTask` | Move task between kanban columns |
+| `deleteTask` | Delete task from project and board |
 | `listTasks` | List tasks with board statuses |
+| `updateProject` | Update description, status, or append context to README |
 | `addBug` | Add bug report |
 | `closeBug` | Close a bug report (exact or partial title match) |
 | `addSession` | Add session log |
@@ -128,9 +130,16 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-3.1.2
+3.2.0
 
 ## Changelog
+
+### 3.2.0
+- **Smart project lookup**: `resolveProjectPath` recursively searches subprojects by short name — `addTask(project: "obsidian-tracker")` works without full path `awac-claude-code-plugins/obsidian-tracker`
+- **Subproject creation**: `createProject` now accepts `parent` parameter — `createProject(name: "Sub", parent: "Parent")` creates subproject in correct location
+- **`deleteTask` tool**: Deletes task file and removes from Board.md kanban board
+- **`updateProject` tool**: Update description, status, repository, localPath, or append markdown context to README
+- **Task skill improvement**: `/task` now distinguishes actionable tasks from informational context — context goes to `updateProject`, tasks go to `addTask`
 
 ### 3.1.2
 - Extracted inline tracking heredoc to `scripts/start-tracking.sh` — eliminates Claude Code security prompts for `$()` and brace patterns

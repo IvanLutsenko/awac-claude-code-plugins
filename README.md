@@ -104,10 +104,13 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 /track-stop                 # Save session to Obsidian
 ```
 
-**Status:** ✅ Production Ready | **Version:** 3.1.2
+**Status:** ✅ Production Ready | **Version:** 3.2.0
 
-**What's New in 3.1.2:**
-- Tracking heredoc extracted to script — no more Claude Code security prompts
+**What's New in 3.2.0:**
+- Smart project lookup — subprojects found by short name (no full path needed)
+- `parent` parameter in `createProject` for subprojects
+- New tools: `deleteTask`, `updateProject` (with context appending)
+- Task skill distinguishes actionable tasks from project context
 
 **Features:**
 - Auto-tracking via hooks (PreCompact, SessionStart, PostToolUse)
