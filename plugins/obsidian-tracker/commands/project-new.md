@@ -1,6 +1,6 @@
 ---
 description: Create a new project in Obsidian
-allowed-tools: Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__createProject
+allowed-tools: Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__createProject, mcp__plugin_obsidian-tracker_obsidian__listProjects
 ---
 
 # Project New Command
@@ -22,18 +22,23 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
    - Project name (ОБЯЗАТЕЛЬНО)
    - Description (ОБЯЗАТЕЛЬНО)
 
-2. **Create project via MCP:**
+2. **Detect subproject intent:**
+   Если пользователь упоминает "подпроект", "в проекте X", "sub" — это подпроект.
+   Вызови `listProjects`, найди родительский проект и передай его имя в `parent`.
+
+3. **Create project via MCP:**
    ```
    mcp__plugin_obsidian_tracker_obsidian__createProject
    с параметрами:
      name = project name
      description = description
+     parent = parent project name (если подпроект)
    ```
 
-3. **Output:**
+4. **Output:**
    ```
-   ✅ Project "{name}" created
-   📁 Path: {path}
+   Project "{name}" created
+   Path: {path}
 
    Quick commands:
    - `/projects {name}` - view details

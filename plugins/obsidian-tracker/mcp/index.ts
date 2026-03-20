@@ -165,6 +165,46 @@ function getProjectPath(vaultPath: string, name: string) {
   return path.join(vaultPath, name);
 }
 
+async function resolveProjectPath(vaultPath: string, name: string): Promise<string> {
+  // 1. Exact path (handles "project" and "parent/subproject")
+  const exactPath = path.join(vaultPath, name);
+  if (await validateVaultPath(exactPath)) return exactPath;
+
+  // 2. Recursive search by short name
+  const matches: string[] = [];
+  await findProjectByName(vaultPath, name, matches);
+
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) {
+    const names = matches.map(p => path.relative(vaultPath, p));
+    throw new Error(`Ambiguous project name "${name}". Matches: ${names.join(", ")}`);
+  }
+
+  throw new Error(`Project "${name}" not found`);
+}
+
+async function findProjectByName(dir: string, name: string, matches: string[]): Promise<void> {
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name === "Sessions" || entry.name === "_archive") continue;
+      const entryPath = path.join(dir, entry.name);
+      if (entry.name === name) {
+        // Verify it's a project (has Board.md, Dashboard, or README)
+        const markers = ["Board.md", "!Project Dashboard.md", "README.md"];
+        for (const marker of markers) {
+          try {
+            await fs.stat(path.join(entryPath, marker));
+            matches.push(entryPath);
+            break;
+          } catch {}
+        }
+      }
+      await findProjectByName(entryPath, name, matches);
+    }
+  } catch {}
+}
+
 interface ProjectInfo {
   name: string;
   status: string;
@@ -252,7 +292,7 @@ async function requireVault(): Promise<string> {
 // --- Server ---
 
 const server = new Server(
-  { name: "obsidian-tracker", version: "3.1.0" },
+  { name: "obsidian-tracker", version: "3.2.0" },
   { capabilities: { tools: {} } }
 );
 
@@ -310,8 +350,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             name: { type: "string", description: "Project name" },
             description: { type: "string", description: "Project description" },
+            parent: { type: "string", description: "Parent project name (creates subproject). Resolved by short name." },
             repository: { type: "string", description: "Repository URL" },
-            localPath: { type: "string", description: "Local file path" },
+            localPath: { type: "string", description: "Local code path on filesystem (metadata only)" },
           },
           required: ["name", "description"],
         },
@@ -472,6 +513,34 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["project"],
         },
       },
+      {
+        name: "deleteTask",
+        description: "Delete a task from project and remove from kanban board",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            taskId: { type: "number", description: "Task ID number" },
+          },
+          required: ["project", "taskId"],
+        },
+      },
+      {
+        name: "updateProject",
+        description: "Update project description, status, or add context to README",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            description: { type: "string", description: "New project description" },
+            status: { type: "string", description: "New project status" },
+            repository: { type: "string", description: "Repository URL" },
+            localPath: { type: "string", description: "Local code path" },
+            context: { type: "string", description: "Additional context to append to README (markdown)" },
+          },
+          required: ["project"],
+        },
+      },
     ],
   };
 });
@@ -568,10 +637,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
         const projectName = args.name as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
+        const projectPath = await resolveProjectPath(vaultPath, projectName);
 
         const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
         let frontmatter: Record<string, any> = {};
@@ -641,7 +707,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
         const projectName = args.name as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
+        const parentName = args.parent as string | undefined;
+
+        let projectPath: string;
+        if (parentName) {
+          const parentPath = await resolveProjectPath(vaultPath, parentName);
+          projectPath = path.join(parentPath, projectName);
+        } else {
+          projectPath = getProjectPath(vaultPath, projectName);
+        }
 
         await fs.mkdir(projectPath, { recursive: true });
 
@@ -697,11 +771,7 @@ tags: [project, ${projectTag}]
       case "addBug": {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
-        const projectName = args.project as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
 
         const title = args.title as string;
         const priority = (args.priority as string) ?? "medium";
@@ -746,11 +816,7 @@ ${description}
       case "addSession": {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
-        const projectName = args.project as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
 
         const sessionsPath = path.join(projectPath, "Sessions");
         await fs.mkdir(sessionsPath, { recursive: true });
@@ -857,10 +923,7 @@ ${args.nextSteps ?? "TBD"}
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
         const projectName = args.project as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
+        const projectPath = await resolveProjectPath(vaultPath, projectName);
 
         const archivePath = path.join(vaultPath, "_archive");
         await fs.mkdir(archivePath, { recursive: true });
@@ -872,7 +935,7 @@ ${args.nextSteps ?? "TBD"}
           // Dashboard may not exist, proceed anyway
         }
 
-        const archivedPath = path.join(archivePath, projectName);
+        const archivedPath = path.join(archivePath, path.basename(projectPath));
         await fs.rename(projectPath, archivedPath);
 
         return {
@@ -951,11 +1014,7 @@ ${args.nextSteps ?? "TBD"}
       case "closeBug": {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
-        const projectName = args.project as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found in vault`);
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
 
         const searchTitle = (args.title as string).toLowerCase();
         const resolution = (args.resolution as string) ?? "";
@@ -968,7 +1027,7 @@ ${args.nextSteps ?? "TBD"}
           return title === searchTitle || title.includes(searchTitle);
         });
 
-        if (!bugFile) throw new Error(`Bug matching "${args.title}" not found in project "${projectName}"`);
+        if (!bugFile) throw new Error(`Bug matching "${args.title}" not found in project "${args.project}"`);
 
         const bugPath = path.join(projectPath, bugFile);
         let content = await fs.readFile(bugPath, "utf-8");
@@ -1011,11 +1070,7 @@ ${args.nextSteps ?? "TBD"}
       case "addTask": {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
-        const projectName = args.project as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found`);
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
 
         const title = args.title as string;
         const priority = (args.priority as string) ?? "medium";
@@ -1072,11 +1127,7 @@ ${args.nextSteps ?? "TBD"}
       case "updateTask": {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
-        const projectName = args.project as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found`);
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
 
         const taskId = args.taskId as number;
         const targetStatus = args.status as string;
@@ -1144,11 +1195,7 @@ ${args.nextSteps ?? "TBD"}
       case "listTasks": {
         const vaultPath = await requireVault();
         if (!args) throw new Error("Missing arguments");
-        const projectName = args.project as string;
-        const projectPath = getProjectPath(vaultPath, projectName);
-
-        const projectExists = await validateVaultPath(projectPath);
-        if (!projectExists) throw new Error(`Project "${projectName}" not found`);
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
 
         const statusFilter = args.status as string | undefined;
         const boardPath = path.join(projectPath, "Board.md");
@@ -1182,7 +1229,112 @@ ${args.nextSteps ?? "TBD"}
         return {
           content: [{
             type: "text",
-            text: JSON.stringify({ project: projectName, tasks, summary }, null, 2),
+            text: JSON.stringify({ project: args.project, tasks, summary }, null, 2),
+          }],
+        };
+      }
+
+      case "deleteTask": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+        const taskId = args.taskId as number;
+
+        // Find and delete task file
+        const files = await fs.readdir(projectPath);
+        const taskFile = files.find(f => f.startsWith(`TASK-${taskId} `));
+        if (!taskFile) throw new Error(`Task TASK-${taskId} not found`);
+
+        await fs.rm(path.join(projectPath, taskFile));
+
+        // Remove from board
+        const boardPath = path.join(projectPath, "Board.md");
+        const columns = await parseBoard(boardPath);
+        const taskPattern = new RegExp(`\\[\\[TASK-${taskId}\\s*-`);
+
+        for (const [, items] of columns) {
+          const idx = items.findIndex(line => taskPattern.test(line));
+          if (idx !== -1) {
+            items.splice(idx, 1);
+            break;
+          }
+        }
+
+        await writeBoard(boardPath, columns);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              message: `Task TASK-${taskId} deleted`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "updateProject": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+
+        // Update dashboard frontmatter
+        const dashboardPath = path.join(projectPath, "!Project Dashboard.md");
+        const updates: Record<string, string> = {};
+        if (args.description) updates.description = args.description as string;
+        if (args.status) updates.status = args.status as string;
+        if (args.repository) updates.repository = args.repository as string;
+        if (args.localPath) updates.localPath = args.localPath as string;
+
+        if (Object.keys(updates).length > 0) {
+          try {
+            await updateTaskFrontmatter(dashboardPath, updates);
+          } catch {
+            // No dashboard — update README description instead
+          }
+        }
+
+        // Update README description
+        if (args.description) {
+          const readmePath = path.join(projectPath, "README.md");
+          try {
+            let readme = await fs.readFile(readmePath, "utf-8");
+            // Replace first paragraph after the heading
+            const lines = readme.split("\n");
+            const headingIdx = lines.findIndex(l => l.startsWith("# "));
+            if (headingIdx !== -1 && headingIdx + 2 < lines.length) {
+              lines[headingIdx + 2] = args.description as string;
+              readme = lines.join("\n");
+            }
+            await fs.writeFile(readmePath, readme);
+          } catch {}
+        }
+
+        // Append context to README
+        if (args.context) {
+          const readmePath = path.join(projectPath, "README.md");
+          try {
+            let readme = await fs.readFile(readmePath, "utf-8");
+            readme += `\n${args.context}\n`;
+            await fs.writeFile(readmePath, readme);
+          } catch {
+            // Create README if missing
+            const projectName = path.basename(projectPath);
+            await fs.writeFile(readmePath, `# ${projectName}\n\n${args.context}\n`);
+          }
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              message: `Project "${args.project}" updated`,
+              updated: {
+                ...updates,
+                ...(args.context ? { contextAppended: true } : {}),
+              },
+            }, null, 2),
           }],
         };
       }

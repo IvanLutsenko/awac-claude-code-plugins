@@ -1,7 +1,7 @@
 ---
 description: Create a new task in an Obsidian project with kanban board
 argument-hint: '"title" --project name --priority high --effort 2h'
-allowed-tools: Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__addTask
+allowed-tools: Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__addTask, mcp__plugin_obsidian-tracker_obsidian__updateProject, mcp__plugin_obsidian-tracker_obsidian__deleteTask
 ---
 
 # Task Command
@@ -40,19 +40,29 @@ Creates a task with auto-increment ID and adds to kanban board (Backlog column).
 3. Если title не указан:
    Спроси через AskUserQuestion.
 
-4. Собери extra-поля: все --key value кроме project/priority/effort/assignee.
+4. **Определи тип информации:**
+   - Если пользователь даёт actionable задачу (что-то нужно СДЕЛАТЬ) — это TASK, используй `addTask`.
+   - Если пользователь даёт справочную информацию, контекст, описание, заявку, требования — это КОНТЕКСТ ПРОЕКТА, используй `updateProject` с параметром `context`.
+   - Примеры TASK: "Подготовить презентацию", "Пофиксить баг", "Добавить фичу"
+   - Примеры КОНТЕКСТ: "Вот моя заявка на конференцию: ...", "Требования от заказчика: ...", "Описание проекта: ..."
+   - Если не уверен — спроси пользователя: "Это задача или контекст проекта?"
 
-5. Вызови MCP tool:
-   ```
-   mcp__plugin_obsidian_tracker_obsidian__addTask
-   с параметрами: project, title, priority, effort, assignee, extra
-   ```
+5. Собери extra-поля: все --key value кроме project/priority/effort/assignee.
 
-6. Выведи:
+6. Вызови MCP tool:
+   - Для TASK: `addTask` с параметрами: project, title, priority, effort, assignee, extra
+   - Для КОНТЕКСТ: `updateProject` с параметрами: project, context (форматированный markdown)
+
+7. Выведи:
+   - Для TASK:
    ```
    TASK-{id}: "{title}"
    Board: Backlog | Priority: {priority} | Effort: {effort}
    ```
+   - Для КОНТЕКСТ:
+   ```
+   Context added to project "{project}"
+   ```
 
-7. **Auto-update tracking:**
+8. **Auto-update tracking:**
    Если `.claude/obsidian-tracking.json` существует — прочитай через Read, добавь `"Created TASK-{id}: {title}"` в actions, перезапиши через `Bash(cat*)`.
