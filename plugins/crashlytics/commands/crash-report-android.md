@@ -13,7 +13,6 @@ Analyze crash errors from Firebase Crashlytics using specialized agents.
 If it exists, read and use these settings:
 - `language` — output language (default: English)
 - `default_branch` — branch for git blame (default: master)
-- `default_platform` — should be android for this command
 - `forensics_model` — model for forensics agent (default: opus)
 - `output_format` — both / detailed_only / jira_only (default: both)
 - `firebase_project_id` — pre-configured project ID (skip auto-detection if set)
@@ -40,159 +39,55 @@ Auto-created with defaults. Run `/crash-config` to customize.
 EOF
 ```
 
-Inform user: "Config created at `.claude/crashlytics.local.md` (defaults: android, master, opus). Run `/crash-config` to customize."
-
 ## Multi-Agent Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     /crash-report-android                       │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-   ┌──────────────┬───────────┼───────────┬──────────────┐
-   ▼              ▼           ▼           ▼              ▼
-┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-│classifier│→│ fetcher  │→│forensics │→│ reviewer │→│  output  │
-│ (Haiku)  │ │ (Haiku)  │ │ (Opus)   │ │ (Haiku)  │ │          │
-│          │ │          │ │          │ │          │ │ Detailed │
-│Component │ │REST API  │ │Git blame │ │Quality   │ │+ JIRA    │
-│Trigger   │ │+ MCP disc│ │Code fix  │ │Gate      │ │  Brief   │
-│          │ │          │ │Assignee  │ │Checklist │ │          │
-└──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
+classifier(Haiku) → fetcher(Haiku) → forensics(Opus) → validate-report.py → output
 ```
 
 ## Workflow
 
-### Prerequisites Check (runs first!)
+### Prerequisites Check (cached)
 
-Run ALL checks in a single Bash call. Display results as a checklist to the user.
-
-```yaml
-Bash: ${CLAUDE_PLUGIN_ROOT}/scripts/check-prerequisites.sh
-```
-
-**Parse output and show checklist to user:**
-
-For each line:
-- `OK ...` → show as passing check
-- `MISSING ...` → show as failing check with fix instruction
-
-**Fix instructions by item:**
-
-| Missing | Instruction |
-|---------|-------------|
-| `node` | `brew install node` (macOS) / `sudo apt install nodejs` (Linux) / download from nodejs.org (Windows) |
-| `firebase` | `npm install -g firebase-tools` — **offer to run automatically** if npm is available |
-| `firebase-auth` | Run `firebase login` in terminal (opens browser, requires manual action) |
-| `python3` | `brew install python3` (macOS) / `sudo apt install python3` (Linux) / download from python.org (Windows) |
-
-**Behavior:**
-- If `firebase` is MISSING and `npm` is available → ask: "Install firebase-tools? (`npm install -g firebase-tools`)" and run if confirmed
-- If `firebase-auth` is MISSING → tell user to run `firebase login` in terminal, then re-run the command
-- If only `node` or `python3` missing → show instructions, continue in Manual mode
-- If ALL OK → proceed silently
-- If any MISSING → show the checklist, then continue with whatever is available (degrade gracefully)
-
-### STEP 0: Firebase Auto-Init (runs automatically!)
-
-**Before starting** check and configure Firebase. Two access levels: CLI REST API → Manual.
-
-**NEVER** use `mcp__plugin_crashlytics_firebase__firebase_login` — MCP auth is broken ("Unable to verify client"). If CLI is not authorized, ask the user to run `firebase login` in terminal.
-
-**NOTE:** Crashlytics data tools (`crashlytics_get_issue`, `crashlytics_list_events`, etc.) do NOT exist in Firebase MCP server. Do not attempt to call them. MCP is used only for project/app discovery.
-
-If `firebase_project_id` and `firebase_app_id_android` are set in config — skip auto-detection and use those values directly.
-
-#### Discovery: MCP or CLI
+Skip if `.claude/crashlytics-prereqs-ok` exists. Otherwise run and cache on success.
 
 ```yaml
-1. Try MCP discovery first:
-   ToolSearch: "+firebase get_environment"
-   mcp__plugin_crashlytics_firebase__firebase_get_environment
+Bash: test -f .claude/crashlytics-prereqs-ok && echo "CACHED_OK"
 
-   If works → extract project_id, then:
-     mcp__plugin_crashlytics_firebase__firebase_list_apps (platform: "android")
-     Extract app_id.
-
-   If MCP fails → retry once, then use CLI discovery:
-
-2. CLI discovery fallback:
-   Bash: which firebase 2>/dev/null && firebase login:list 2>/dev/null
-
-   If CLI not authorized → go to Level 2 (Manual)
-
-   Bash: firebase projects:list --json 2>/dev/null | python3 -c "
-     import sys,json
-     data = json.load(sys.stdin)
-     for p in (data.get('results') or data.get('result', [])):
-       print(f\"{p['projectId']} — {p.get('displayName','')}\")"
-
-   Bash: firebase apps:list --project {PROJECT_ID} --json 2>/dev/null | python3 -c "
-     import sys,json
-     for a in json.load(sys.stdin)['result']:
-       if a.get('platform')=='ANDROID':
-         print(f\"{a['appId']} | {a.get('displayName','')}\")"
-
-3. Build console_url immediately after getting project_id and app_id:
-   console_url = "https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/android:{APP_ID}/issues/{ISSUE_ID}"
+If not cached:
+  Bash: ${CLAUDE_PLUGIN_ROOT}/scripts/check-prerequisites.sh
+  Parse: OK → pass, MISSING → show fix instruction
+  If ALL OK → Bash: touch .claude/crashlytics-prereqs-ok
+  If any MISSING → show checklist, degrade gracefully (do NOT cache)
 ```
 
-#### Level 1: CLI REST API (primary data fetch)
+Fix instructions: node → `brew install node`, firebase → `npm install -g firebase-tools`, firebase-auth → `firebase login` in terminal, python3 → `brew install python3`.
+
+### STEP 0: Firebase Data
+
+Delegate to **firebase-fetcher** agent. Do NOT duplicate discovery/fetch logic.
+
+**NEVER** use `mcp__plugin_crashlytics_firebase__firebase_login` — broken.
+**NOTE:** Crashlytics data MCP tools (`crashlytics_get_issue`, etc.) do NOT exist. MCP is for discovery only.
 
 ```yaml
-1. Get crash data via REST API (single script — token never printed to stdout):
-
-   NOTE: client_id and client_secret are public OAuth credentials from Firebase CLI
-   (embedded in firebase-tools source code, this is an installed app OAuth flow).
-   The access token MUST stay inside the script — never print or log it.
-
-   Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-crash-data.py "{APP_ID}" "{ISSUE_ID}" "{PROJECT_ID}"
-
-2. Parse output:
-   - Lines starting with `ISSUE_DATA:` contain issue JSON
-   - Lines starting with `EVENTS_DATA:` contain events JSON
-   - `API_NOT_ENABLED` → show enable instructions, then go to Level 2
-   - `REST_FALLBACK_FAILED` → go to Level 2
-   - Extract: title, type (FATAL/NON_FATAL/ANR), status, stack traces, device info, event count
+Task(
+  subagent_type="firebase-fetcher",
+  model="haiku",
+  prompt="Fetch crash data:
+    Issue ID: {ISSUE_ID}
+    Platform: android
+    Config project_id: {firebase_project_id or ''}
+    Config app_id: {firebase_app_id_android or ''}"
+)
 ```
 
-#### Level 2: Enhanced Manual Fallback
-
-If REST API failed or Firebase not configured:
-
-```yaml
-1. If API_NOT_ENABLED was detected:
-   Show: "Firebase Crashlytics API is not enabled for project {PROJECT_ID}.
-   Enable it:
-     - GCP Console: https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project={PROJECT_ID}
-     - gcloud: gcloud services enable firebasecrashlytics.googleapis.com --project={PROJECT_ID}
-   After enabling, re-run the command."
-
-2. MUST generate a Firebase Console link (if project_id and app_id known):
-   https://console.firebase.google.com/project/{PROJECT_ID}/crashlytics/app/android:{APP_ID}/issues/{ISSUE_ID}
-
-3. Step-by-step instructions for the user:
-   a. Open the Console URL above (or go to https://console.firebase.google.com/ → Crashlytics)
-   b. Find the issue (by ID or search)
-   c. Go to the "Events" tab
-   d. Copy the full stack trace from the latest event
-   e. Also note: crash title, event count, % affected users, app version, device
-
-4. Ask user to paste:
-   - Stack trace (required)
-   - Crash title
-   - Event count, % users, version
-```
-
-**General rules:**
-- MCP is for project/app discovery only — crash data tools don't exist
-- CLI REST API is the primary method for fetching crash data
-- Always generate Console URL if project_id and app_id are available
-- If Issue ID exists — always try to get data automatically via REST API
+Parse result: extract issue data, events, stack traces, console_url.
+If fallback → ask user for stack trace manually with Console URL link.
 
 ### STEP 1: Get data
 
-**If user provided a Firebase Issue ID** — first try loading data automatically (Level 1). Only ask for stack trace and context if auto-loading failed.
+**If user provided a Firebase Issue ID** — first try loading via firebase-fetcher (Step 0). Only ask for stack trace if auto-loading failed.
 
 **If no Issue ID** — ask to provide:
 - **Stack trace** (required)
@@ -205,198 +100,62 @@ Task(
   subagent_type="crash-classifier-android",
   model="haiku",
   prompt="Classify this Android crash:
-
-    Stack trace:
-    {stack_trace}
-
-    Context:
-    - Events: {event_count}
-    - Users: {user_count}%
-    - Version: {app_version}
-    - Device: {device}
-  "
+    Stack trace: {stack_trace}
+    Context: Events={event_count}, Users={user_count}%, Version={app_version}, Device={device}"
 )
 ```
 
-**Expected output:**
-```yaml
-exception_type: NullPointerException
-component: UI/Network/Database/Services/Background
-trigger: user_action/background_task/lifecycle_event/async_operation
-```
+### STEP 3: Call crash-forensics-android
 
-### STEP 3: Get data from Firebase (optional)
-
-If a **Firebase Issue ID** was provided, load crash data using this priority:
-
-**Option A: CLI REST API (primary)**
-
-Use the Python script from Step 0, Level 1 (token stays internal, never printed).
-Substitute `{APP_ID}`, `{PROJECT_ID}`, `{ISSUE_ID}` with actual values.
-
-**Option B: Via firebase-fetcher agent (alternative)**
-
-```yaml
-Task(
-  subagent_type="firebase-fetcher",
-  model="haiku",
-  prompt="Get crash details from Firebase:
-    Issue ID: {issue_id}
-    App ID: {app_id}
-    Project ID: {project_id}
-    Platform: android
-  "
-)
-```
-
-**Option C: Enhanced Manual fallback**
-
-If REST API failed — generate Console URL and ask for manual input with step-by-step instructions (see Step 0, Level 2).
-
-### STEP 4: Call crash-forensics-android
-
-Use `forensics_model` from config (default: opus). If opus is unavailable, fall back to sonnet.
+Use `forensics_model` from config (default: opus).
 
 ```yaml
 Task(
   subagent_type="crash-forensics-android",
-  model="{forensics_model from config, default opus}",
+  model="{forensics_model}",
   prompt="Analyze this Android crash with git blame:
-
     Classification: {classifier_output}
     Firebase data: {firebase_output}
     Stack trace: {stack_trace}
-
     console_url: {console_url}
-    branch: {default_branch from config, default master}
-  "
+    branch: {default_branch from config, default master}"
 )
 ```
 
-The agent will:
-1. Search files in the codebase
-2. Git blame analysis (on the configured branch)
-3. Determine assignee
-4. Propose a fix
-
-### STEP 4.5: Call crash-report-reviewer (Quality Gate)
-
-After receiving the result from forensics, **before outputting to user**:
+### STEP 3.5: Quality Gate
 
 ```yaml
-Task(
-  subagent_type="crash-report-reviewer",
-  model="haiku",
-  prompt="Validate this crash report against mandatory fields:
-
-    {forensics_output}
-
-    console_url: {console_url}
-  "
-)
+Bash: echo "{forensics_output}" | python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate-report.py --console-url "{console_url}"
 ```
 
-**Handling the reviewer result:**
-- If `pass: true` — output the report as-is
-- If `pass: false` — fill in missing fields yourself:
-  - Use data from previous steps (classifier, firebase, forensics)
-  - If data for a field is unavailable — mark as `[DATA UNAVAILABLE]`
-  - **DO NOT re-call forensics** — fill in at the command level
+Parse the YAML result:
+- `pass: true` → output report as-is
+- `pass: false` → fill missing fields from previous steps, do NOT re-call forensics
+- `pass: null` (has `needs_review` items) → evaluate those fields yourself and decide pass/fail
 
-### STEP 5: Output results
+### STEP 4: Output results
 
-The crash-forensics agent returns two formats:
+**Format 1: Detailed Analysis** — basic info, stack trace analysis, git blame, root cause, fix (before/after), assignee, context.
 
-**Format 1: Detailed Analysis**
-- Basic info
-- Stack trace analysis
-- Checked files with git blame
-- Root cause
-- Fix (before/after)
-- Assignee with justification
-- Context and prevention
+**Format 2: JIRA Brief** — name, key stack trace lines, root cause, code fix, component, assignee, reproduction steps.
 
-**Format 2: JIRA Brief**
-- Name and problem
-- Key stack trace lines
-- Root cause (1-2 sentences)
-- Code fix (ready to copy-paste)
-- Component, assignee
-- Reproduction steps
+Output based on `output_format` from config (default: both).
 
 ## Fallback mode (if agents unavailable)
 
-If Task tool cannot call agents, perform analysis directly:
-
-1. **Classification**: Determine type, component, trigger
-2. **File search**: Glob/Grep by classes from stack trace
-3. **Git blame**: `git blame master -- file.kt -L X,Y`
-4. **Assignee**: Select 2-3 candidates with justification
-5. **Fix**: Propose code-level solution
-6. **Output**: Detailed analysis + JIRA Brief
+Perform analysis directly: classify → Glob/Grep files → git blame → assignee → fix → output both formats.
 
 ## Pre-submit checklist
 
-### MUST verify:
 - [ ] Classification completed (component, trigger)
 - [ ] Files found via Glob/Grep or reason explained
-- [ ] git blame executed on configured branch with real commands
+- [ ] git blame executed on configured branch
 - [ ] Assignee determined with source (git blame line X)
 - [ ] Report formats match config (both by default)
-- [ ] Reviewer passed (`pass: true`) or missing fields filled in
+- [ ] Reviewer passed or missing fields filled in
 - [ ] console_url included in JIRA Brief
-
-### DO NOT SUBMIT IF:
-- Code search was not performed
-- No git blame for found files
-- Assignee = "TBD" without analysis
-- Only one report format (when both required)
-- Reviewer returned `pass: false` and fields were NOT filled in
-
-## Usage example
-
-```
-User: /crash-report-android
-
-Claude: Android Crash Analysis - Multi-Agent
-
-Please provide:
-1. Stack trace (required)
-2. Firebase Issue ID (if available)
-3. Crash count and % users
-4. Device and app version
-
----
-
-[User provides data]
-
-Claude:
-Step 1: Classification...
-[Calls crash-classifier]
-
-Step 2: Loading from Firebase...
-[REST API fetch]
-
-Step 3: Git blame analysis...
-[Calls crash-forensics]
-
-Step 4: Quality check...
-[Calls report-reviewer]
-
-Analysis complete.
-
-### Detailed Analysis
-[...(detailed analysis)]
-
-### JIRA Brief
-[...(JIRA format)]
-```
-
-## Important
 
 ```yaml
 Git blame + code search = MANDATORY
 "TBD" = "I analyzed and ownership is unclear", NOT "I didn't check"
-Document exact executed commands
-Every report must have git blame with output
 ```

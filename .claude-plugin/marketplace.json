@@ -21,7 +21,7 @@
     },
     {
       "name": "crashlytics",
-      "version": "4.2.3",
+      "version": "4.3.0",
       "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. 2-level fallback (CLI REST API → Enhanced Manual).",
       "source": "./plugins/crashlytics",
       "author": {
@@ -62,6 +62,17 @@
         "url": "https://github.com/IvanLutsenko"
       },
       "category": "productivity"
+    },
+    {
+      "name": "combined-review",
+      "version": "1.0.0",
+      "description": "Combined code review: multi-agent analysis (code-reviewer, git-historian, silent-failure-hunter, test-analyzer) + CodeRabbit CLI",
+      "source": "./plugins/combined-review",
+      "author": {
+        "name": "Ivan Lutsenko",
+        "url": "https://github.com/IvanLutsenko"
+      },
+      "category": "code-review"
     }
   ]
 }

@@ -1,1 +1,5 @@
 WARP.md
+.DS_Store
+firebase-debug.log
+node_modules/
+*.local.md

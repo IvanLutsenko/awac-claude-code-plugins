@@ -9,16 +9,19 @@ else
   echo "MISSING node"
 fi
 
-# 2. firebase-tools
+# 2. firebase-tools (check binary exists, don't launch Node.js)
 if command -v firebase &>/dev/null; then
-  echo "OK firebase $(firebase --version 2>/dev/null | head -1)"
+  echo "OK firebase"
 else
   echo "MISSING firebase"
 fi
 
-# 3. Firebase auth (token file)
-if [ -f "$HOME/.config/configstore/firebase-tools.json" ]; then
+# 3. Firebase auth (token file with valid refresh_token)
+TOKEN_FILE="$HOME/.config/configstore/firebase-tools.json"
+if [ -f "$TOKEN_FILE" ] && grep -q "refresh_token" "$TOKEN_FILE" 2>/dev/null; then
   echo "OK firebase-auth"
+elif [ -f "$TOKEN_FILE" ]; then
+  echo "MISSING firebase-auth (token file exists but no refresh_token)"
 else
   echo "MISSING firebase-auth"
 fi

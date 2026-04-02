@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.2.3 — Android & iOS
+**Version:** 4.3.0 — Android & iOS
 
 ---
 
@@ -94,7 +94,7 @@ The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.2.2                         │
+│                      crashlytics v4.3.0                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -293,6 +293,14 @@ Instead, the plugin:
 - **Added:** Detailed setup instructions in README with copy-paste commands
 - Plugin degrades gracefully: missing tools → Manual mode instead of cryptic errors
 
+### 4.3.0
+- **Breaking:** Replaced `report-reviewer` Haiku agent with `validate-report.py` deterministic script
+- Quality gate now runs in ~0.05s instead of ~3-5s, zero token cost
+- 11/14 structural checks are definitive (regex/pattern matching)
+- 3 semantic checks (Root cause, Trigger, Why now) use word-count heuristics — flagged as `needs_review` for the calling command to decide
+- `pass: null` state: script can't decide → command LLM evaluates (zero extra cost, already in context)
+- Removed `report-reviewer.md` agent
+
 ### 4.2.0
 - **Breaking:** Removed non-existent MCP Crashlytics data tools (`crashlytics_get_issue`, `crashlytics_list_events`, `crashlytics_batch_get_events`, `crashlytics_get_report`) — these were never implemented in Firebase MCP server
 - **Changed:** 3-level → 2-level fallback: CLI REST API → Enhanced Manual
@@ -317,7 +325,7 @@ Instead, the plugin:
 - Removed duplicate REST code from Step 3
 
 ### 4.0.0
-- Quality gate: `report-reviewer` agent validates all mandatory fields before output
+- Quality gate: `validate-report.py` script validates all mandatory fields before output
 - Interactive `/crash-config` command for plugin configuration
 - Default forensics model changed to Opus (Sonnet as fallback)
 - Severity/priority removed from classifiers — forensics handles context

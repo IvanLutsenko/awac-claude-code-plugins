@@ -67,13 +67,13 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 /crash-config                       # Configure plugin settings
 ```
 
-**Status:** ✅ Production Ready | **Version:** 4.2.3
+**Status:** ✅ Production Ready | **Version:** 4.3.0
 
-**What's New in 4.2.3:**
-- Inline bash/python extracted to external scripts — no more Claude Code security prompts
+**What's New in 4.3.0:**
+- Quality gate replaced: Haiku agent → deterministic Python script (0 tokens, ~0.05s)
 
 **Features:**
-- 4-step multi-agent pipeline: classifier → fetcher → forensics → reviewer
+- 4-step multi-agent pipeline: classifier → fetcher → forensics → validate-report.py
 - Git blame forensics with mandatory assignee identification
 - Code-level fixes (before/after) ready to copy-paste
 - 3-level Firebase fallback: MCP (with retries) → CLI API → Manual
@@ -119,6 +119,37 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 - Project archiving and lifecycle management
 - Bug tracking with priority levels
 - Session logging (manual or automatic)
+
+---
+
+### Combined Review
+
+Multi-agent code review with CodeRabbit CLI integration. 4 specialized agents + optional CodeRabbit for comprehensive review.
+
+📚 **[Full Documentation](plugins/combined-review/README.md)**
+
+**Installation:**
+```bash
+/plugin install combined-review
+```
+
+**Quick Start:**
+```bash
+/review                                    # Uncommitted changes
+/review 123                                # PR by number
+/review feature/X feature/Y               # Branch diff
+/review --base main                        # Current branch vs main
+/review feature/X feature/Y +comments all # All agents
+```
+
+**Status:** ✅ Production Ready | **Version:** 1.0.0
+
+**Features:**
+- 4 default agents: code-reviewer, git-historian, silent-failure-hunter, test-analyzer
+- CodeRabbit CLI integration (auto-install)
+- Supports PR, branch diff, and uncommitted changes
+- Confidence scoring (0-100) with false positive filtering
+- Optional agents: +comments, +types, +simplify
 
 ---
 

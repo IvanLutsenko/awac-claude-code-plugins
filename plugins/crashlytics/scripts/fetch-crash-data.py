@@ -9,6 +9,10 @@ Output format:
   API_NOT_ENABLED     - API needs to be enabled
   REST_FALLBACK_FAILED - all attempts failed
 
+Stderr diagnostics:
+  AUTH_FAILED:<reason> - token refresh failed
+  FETCH_FAILED:<reason> - API request failed
+
 Note: client_id and client_secret are public OAuth credentials from Firebase CLI
 (embedded in firebase-tools source code, this is an installed app OAuth flow).
 The access token stays internal - never printed or logged.
@@ -16,23 +20,47 @@ The access token stays internal - never printed or logged.
 import json
 import os
 import sys
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
+
+TIMEOUT = 15
 
 
 def get_access_token():
     config_path = os.path.expanduser("~/.config/configstore/firebase-tools.json")
-    config = json.load(open(config_path))
+    with open(config_path) as f:
+        config = json.load(f)
+    refresh_token = config.get("tokens", {}).get("refresh_token")
+    if not refresh_token:
+        raise ValueError("no refresh_token in firebase config")
     token_data = urllib.parse.urlencode({
         "client_id": "563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com",
         "client_secret": "j9iVZfS8kkCEFUPaAeJV0sAi",
-        "refresh_token": config["tokens"]["refresh_token"],
+        "refresh_token": refresh_token,
         "grant_type": "refresh_token",
     }).encode()
     resp = urllib.request.urlopen(
-        urllib.request.Request("https://oauth2.googleapis.com/token", data=token_data)
+        urllib.request.Request("https://oauth2.googleapis.com/token", data=token_data),
+        timeout=TIMEOUT,
     )
     return json.loads(resp.read())["access_token"]
+
+
+def urlopen_with_retry(req, retries=1):
+    """urlopen with retry on transient URLError (not HTTP errors)."""
+    for attempt in range(retries + 1):
+        try:
+            return urllib.request.urlopen(req, timeout=TIMEOUT)
+        except urllib.error.HTTPError:
+            raise  # HTTP errors are not transient — propagate immediately
+        except urllib.error.URLError as e:
+            if attempt < retries:
+                print("WARN: transient error, retrying in 2s: {}".format(e.reason), file=sys.stderr)
+                time.sleep(2)
+            else:
+                raise
 
 
 def main():
@@ -50,7 +78,7 @@ def main():
     try:
         token = get_access_token()
     except Exception as e:
-        print("AUTH_FAILED", file=sys.stderr)
+        print("AUTH_FAILED:{}".format(e), file=sys.stderr)
         print("REST_FALLBACK_FAILED")
         sys.exit(0)
 
@@ -68,25 +96,25 @@ def main():
     for base in base_urls:
         try:
             req = urllib.request.Request("{}/issues/{}".format(base, issue_id), headers=headers)
-            issue_data = json.loads(urllib.request.urlopen(req).read())
+            issue_data = json.loads(urlopen_with_retry(req).read())
             print("ISSUE_DATA:" + json.dumps(issue_data, indent=2))
             try:
                 ereq = urllib.request.Request(
                     "{}/issues/{}/events?pageSize=3".format(base, issue_id), headers=headers
                 )
-                events = json.loads(urllib.request.urlopen(ereq).read())
+                events = json.loads(urlopen_with_retry(ereq).read())
                 print("EVENTS_DATA:" + json.dumps(events, indent=2))
             except Exception as e:
-                print("WARN: Events fetch failed: {}".format(e), file=sys.stderr)
+                print("FETCH_FAILED:events:{}".format(e), file=sys.stderr)
             break
         except urllib.error.HTTPError as e:
             err_body = e.read().decode() if hasattr(e, "read") else ""
-            print("WARN: {}/issues/{} -> HTTP {}".format(base, issue_id, e.code), file=sys.stderr)
+            print("FETCH_FAILED:{}/issues/{} HTTP {}".format(base, issue_id, e.code), file=sys.stderr)
             if e.code == 403 and "not been used" in err_body:
                 print("API_NOT_ENABLED")
             continue
         except Exception as e:
-            print("WARN: {} -> {}".format(base, e), file=sys.stderr)
+            print("FETCH_FAILED:{} {}".format(base, e), file=sys.stderr)
             continue
 
     if not issue_data:
