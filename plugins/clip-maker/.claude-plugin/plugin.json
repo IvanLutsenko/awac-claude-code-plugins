@@ -1,0 +1,22 @@
+{
+  "name": "clip-maker",
+  "description": "Automated vertical clip creator for talks and presentations. Whisper transcription + Claude analysis (moments + smart crop) + ffmpeg processing. Full pipeline: video → transcribe → find moments → crop analysis → cut clips → subtitles → social media copy.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ivan Lutsenko",
+    "email": "ivan@lutsenko.com",
+    "url": "https://github.com/IvanLutsenko"
+  },
+  "keywords": ["video", "clips", "reels", "shorts", "tiktok", "whisper", "ffmpeg", "vertical-video", "social-media"],
+  "license": "MIT",
+  "commands": [
+    "./commands/clip-maker.md",
+    "./commands/transcribe.md",
+    "./commands/find-moments.md"
+  ],
+  "agents": [
+    "./agents/moment-finder.md",
+    "./agents/crop-analyzer.md",
+    "./agents/copywriter.md"
+  ]
+}

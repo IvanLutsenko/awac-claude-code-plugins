@@ -199,6 +199,37 @@ macOS notifications for Claude Code in your system language.
 
 ---
 
+### Clip Maker
+
+Automated vertical clip creator for talks and presentations. Whisper + Claude + ffmpeg pipeline.
+
+📚 **[Full Documentation](plugins/clip-maker/README.md)**
+
+**Installation:**
+```bash
+/plugin install clip-maker
+```
+
+**Quick Start:**
+```bash
+/clip-maker ~/Downloads/my-talk.mp4           # Full pipeline
+/clip-maker ~/Downloads/my-talk.mp4 --auto    # Auto mode
+/transcribe ~/Downloads/my-talk.mp4            # Only transcribe
+/find-moments ~/Downloads/transcript.json      # Only find moments
+```
+
+**Status:** 🔨 Beta | **Version:** 1.0.0
+
+**Features:**
+- Whisper transcription (local or API)
+- Opus-powered moment finding from transcript
+- Vision-based smart crop (speaker detection)
+- ffmpeg vertical clip cutting (9:16)
+- Auto-subtitles from transcript
+- Social media copy generation (Shorts/Reels/TikTok)
+
+---
+
 ## Author
 
 Ivan Lutsenko
