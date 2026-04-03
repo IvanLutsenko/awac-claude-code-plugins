@@ -48,6 +48,17 @@ if ! $check_api; then
   fi
 fi
 
+# moviepy + Pillow (for subtitle burning)
+if python3 -c "import moviepy" 2>/dev/null; then
+  echo -e "${GREEN}✓${NC} moviepy found"
+else
+  echo -e "${YELLOW}⟳${NC} Installing moviepy + Pillow..."
+  pip3 install moviepy Pillow 2>/dev/null || {
+    echo -e "${RED}✗${NC} Failed to install moviepy. Install manually: pip install moviepy Pillow"
+    errors=$((errors + 1))
+  }
+fi
+
 # API mode — check OPENAI_API_KEY
 if $check_api; then
   if [[ -n "${OPENAI_API_KEY:-}" ]]; then

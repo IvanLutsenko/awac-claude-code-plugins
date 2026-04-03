@@ -1,31 +1,42 @@
 #!/bin/bash
 # burn-subtitles.sh — burn subtitles into clips using whisper transcript
+# Uses moviepy + Pillow (no libass/freetype ffmpeg dependency)
 # Usage: burn-subtitles.sh <moments_json> <transcript_json> <clips_dir>
 
 set -euo pipefail
 
-MOMENTS_JSON="$1"
-TRANSCRIPT_JSON="$2"
-CLIPS_DIR="$3"
+# Check moviepy
+if ! python3 -c "import moviepy" 2>/dev/null; then
+  echo "Installing moviepy + Pillow..."
+  pip3 install moviepy Pillow 2>/dev/null
+fi
+
+export MOMENTS_JSON="$1"
+export TRANSCRIPT_JSON="$2"
+export CLIPS_DIR="$3"
 
 python3 -c "
-import json, subprocess, os
+from moviepy import VideoFileClip, TextClip, CompositeVideoClip
+import json, os, textwrap
 
-with open('$MOMENTS_JSON') as f:
+moments_path = os.environ['MOMENTS_JSON']
+transcript_path = os.environ['TRANSCRIPT_JSON']
+clips_dir = os.environ['CLIPS_DIR']
+
+with open(moments_path) as f:
     moments = json.load(f)
-with open('$TRANSCRIPT_JSON') as f:
+with open(transcript_path) as f:
     transcript = json.load(f)
 
 for i, moment in enumerate(moments):
     moment_id = i + 1
-    clip_path = os.path.join('$CLIPS_DIR', f'clip_{moment_id:02d}.mp4')
+    clip_path = os.path.join(clips_dir, f'clip_{moment_id:02d}.mp4')
     if not os.path.exists(clip_path):
         continue
 
     clip_start = moment['start']
     clip_end = moment['end']
 
-    # Filter transcript segments for this clip's time range
     clip_segments = [
         s for s in transcript
         if s['end'] > clip_start and s['start'] < clip_end
@@ -35,47 +46,35 @@ for i, moment in enumerate(moments):
         print(f'Clip {moment_id}: no subtitle segments found, skipping')
         continue
 
-    # Generate SRT
-    srt_path = os.path.join('$CLIPS_DIR', f'clip_{moment_id:02d}.srt')
-    with open(srt_path, 'w') as srt:
-        for j, seg in enumerate(clip_segments):
-            # Offset timestamps relative to clip start
-            start_offset = max(0, seg['start'] - clip_start)
-            end_offset = min(clip_end - clip_start, seg['end'] - clip_start)
+    video = VideoFileClip(clip_path)
+    text_clips = []
 
-            start_h = int(start_offset // 3600)
-            start_m = int((start_offset % 3600) // 60)
-            start_s = int(start_offset % 60)
-            start_ms = int((start_offset % 1) * 1000)
+    for seg in clip_segments:
+        start_offset = max(0, seg['start'] - clip_start)
+        end_offset = min(clip_end - clip_start, seg['end'] - clip_start)
+        text = seg['text'].strip()
+        wrapped = chr(10).join(textwrap.wrap(text, width=20))
 
-            end_h = int(end_offset // 3600)
-            end_m = int((end_offset % 3600) // 60)
-            end_s = int(end_offset % 60)
-            end_ms = int((end_offset % 1) * 1000)
+        txt = TextClip(
+            text=wrapped,
+            font_size=42,
+            color='white',
+            stroke_color='black',
+            stroke_width=3,
+            size=(video.w - 40, None),
+            method='caption',
+            text_align='center',
+        )
+        txt = txt.with_start(start_offset).with_end(end_offset)
+        txt = txt.with_position(('center', video.h - txt.h - 80))
+        text_clips.append(txt)
 
-            srt.write(f'{j+1}\n')
-            srt.write(f'{start_h:02d}:{start_m:02d}:{start_s:02d},{start_ms:03d} --> ')
-            srt.write(f'{end_h:02d}:{end_m:02d}:{end_s:02d},{end_ms:03d}\n')
-            srt.write(f'{seg[\"text\"]}\n\n')
+    output_path = os.path.join(clips_dir, f'clip_{moment_id:02d}_sub.mp4')
+    result = CompositeVideoClip([video] + text_clips)
+    result.write_videofile(output_path, codec='libx264', audio_codec='aac', logger=None)
+    video.close()
 
-    # Burn subtitles into clip
-    output_path = os.path.join('$CLIPS_DIR', f'clip_{moment_id:02d}_sub.mp4')
-    style = \"FontSize=14,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,Outline=2,Alignment=2,MarginV=40\"
-
-    cmd = [
-        'ffmpeg', '-y',
-        '-i', clip_path,
-        '-vf', f\"subtitles={srt_path}:force_style='{style}'\",
-        '-c:v', 'libx264', '-crf', '23', '-preset', 'fast',
-        '-c:a', 'copy',
-        output_path
-    ]
-
-    subprocess.run(cmd, capture_output=True, check=True)
-
-    # Replace original with subtitled version
     os.replace(output_path, clip_path)
-    os.remove(srt_path)
     print(f'Clip {moment_id}: subtitles burned ({len(clip_segments)} segments)')
 
 print('All subtitles burned.')

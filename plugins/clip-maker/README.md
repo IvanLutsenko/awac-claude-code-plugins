@@ -25,7 +25,11 @@ Dependencies (auto-installed on first run):
 
 ## Status
 
-**Version:** 1.0.0 | **Status:** Beta
+**Version:** 1.1.0 | **Status:** Beta
+
+**What's New in 1.1.0:**
+- Subtitles via moviepy + Pillow (no libass/freetype dependency)
+- moviepy auto-installed by install-deps.sh
 
 ## Commands
 
