@@ -93,8 +93,8 @@ with open('$TRANSCRIPT_PATH', 'w') as f:
   fi
 fi
 
-# Cleanup audio
-rm -f "$AUDIO_PATH" "${OUTPUT_DIR}/audio.mp3"
+# Cleanup intermediate files
+rm -f "$AUDIO_PATH" "${OUTPUT_DIR}/audio.mp3" "${OUTPUT_DIR}/audio.json"
 
 SEGMENT_COUNT=$(python3 -c "import json; print(len(json.load(open('$TRANSCRIPT_PATH'))))")
 echo "Transcription complete: $SEGMENT_COUNT segments → $TRANSCRIPT_PATH"
