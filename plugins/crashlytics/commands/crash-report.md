@@ -1,7 +1,7 @@
 ---
 description: "Analyze crash from Firebase Crashlytics. Auto-detects platform from config. Usage: /crash-report <issue_id | console_url | crash info>"
 argument-hint: "<issue_id | console_url | crash description>"
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(git log:*), Bash(git blame:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(echo:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob, AskUserQuestion
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(git log:*), Bash(git blame:*), Bash(git diff:*), Bash(git show:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(echo:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob, Grep, Agent, AskUserQuestion
 ---
 
 # Crash Analysis

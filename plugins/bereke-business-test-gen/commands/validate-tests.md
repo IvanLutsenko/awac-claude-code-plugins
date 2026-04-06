@@ -1,7 +1,7 @@
 ---
 description: Валидация всех unit тестов в модуле на соответствие корпоративным стандартам
 argument-hint: "path/to/module"
-allowed-tools: ["Read", "Grep", "Bash"]
+allowed-tools: ["Read", "Glob", "Grep", "Bash", "Agent"]
 ---
 
 ## Задача

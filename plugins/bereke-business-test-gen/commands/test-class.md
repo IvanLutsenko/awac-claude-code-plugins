@@ -1,7 +1,7 @@
 ---
 description: Генерация unit теста для одного класса по корпоративным стандартам
 argument-hint: "path/to/Class.kt"
-allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "TodoWrite"]
+allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Agent", "TodoWrite"]
 ---
 
 ## Задача

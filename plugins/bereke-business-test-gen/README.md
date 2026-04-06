@@ -2,7 +2,7 @@
 
 Automated unit test generation for Kotlin/Android business logic with corporate standards.
 
-**Version 2.7.0** - PR Workflow + Test Refactoring! Smart skip logic + auto mocks.
+**Version 2.7.1** - Added `Agent` and `Bash` to allowed-tools for seamless multi-agent workflows.
 
 **New in 2.7.0**:
 - 🔀 `/test-diff`: Generate tests only for changed files in PR (vs target branch)

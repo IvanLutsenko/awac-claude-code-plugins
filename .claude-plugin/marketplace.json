@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "bereke-business-test-gen",
-      "version": "2.7.0",
+      "version": "2.7.1",
       "description": "Automated unit test generation for Kotlin/Android business logic with corporate standards",
       "source": "./plugins/bereke-business-test-gen",
       "author": {
@@ -21,7 +21,7 @@
     },
     {
       "name": "crashlytics",
-      "version": "4.3.0",
+      "version": "4.3.1",
       "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. 2-level fallback (CLI REST API → Enhanced Manual).",
       "source": "./plugins/crashlytics",
       "author": {

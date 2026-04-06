@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.3.0 — Android & iOS
+**Version:** 4.3.1 — Android & iOS
 
 ---
 
@@ -279,6 +279,9 @@ Instead, the plugin:
 ---
 
 ## Changelog
+
+### 4.3.1
+- Added `Grep`, `Agent`, `Bash(git diff:*)`, `Bash(git show:*)` to `allowed-tools` in all crash-report commands — forensics agents and code search no longer require manual approval
 
 ### 4.2.3
 - **Refactor:** Extracted inline bash/python into `scripts/check-prerequisites.sh` and `scripts/fetch-crash-data.py` — eliminates Claude Code security prompts for `$()` substitution and `f"...{}"` patterns
