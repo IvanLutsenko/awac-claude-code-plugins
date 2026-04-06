@@ -130,9 +130,13 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-3.2.0
+3.3.0
 
 ## Changelog
+
+### 3.3.0
+- **Full MCP permissions in all commands**: every command now includes all 15 non-destructive MCP tools in `allowed-tools` — no manual approval needed for follow-up actions (e.g., `addBug` after `/projects`)
+- Destructive tools (`deleteProject`, `deleteTask`) still require explicit approval
 
 ### 3.2.0
 - **Smart project lookup**: `resolveProjectPath` recursively searches subprojects by short name — `addTask(project: "obsidian-tracker")` works without full path `awac-claude-code-plugins/obsidian-tracker`
