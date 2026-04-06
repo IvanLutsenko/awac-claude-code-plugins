@@ -12,6 +12,18 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(coderabbit:*), Bash(cr:*), Bash(cur
 - Branch: !`git branch --show-current 2>/dev/null || echo "detached HEAD"`
 - Has changes: !`git status --porcelain 2>/dev/null | head -1 | grep -q . && echo "yes" || echo "no"`
 
+## Step 0 — Read config
+
+Check if config exists at `.claude/combined-review.local.md`. If it exists, read the `language` setting from YAML frontmatter.
+
+If config doesn't exist, use default: `language: system`.
+
+**Language resolution:**
+- `system` → detect from CLAUDE.md (look for language hints like "Отвечай", "русский", etc.) or fall back to English
+- `en` / `ru` / `uk` → use directly
+
+Apply the resolved language to the final report output (Step 6). Agents work internally in English for accuracy; only the final report is translated.
+
 ## Arguments
 
 **$ARGUMENTS**
@@ -170,6 +182,8 @@ Collect findings from all agents:
 - Issues on lines not changed in this diff
 
 ## Step 6 — Final report
+
+**Write the report in the language resolved in Step 0.** Section headers and descriptions must be in the target language. Code snippets and file paths stay as-is.
 
 ```markdown
 ## Code Review: [what was reviewed]

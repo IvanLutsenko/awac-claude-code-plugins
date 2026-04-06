@@ -2,7 +2,7 @@
 
 Multi-agent code review with CodeRabbit CLI integration.
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 
 ---
 
@@ -63,6 +63,33 @@ coderabbit auth login
 | Comment Analyzer | `+comments` | Comment accuracy vs code, stale TODOs |
 | Type Design Analyzer | `+types` | Encapsulation, invariants, enforcement |
 | Code Simplifier | `+simplify` | Simplification without losing functionality |
+
+---
+
+## Configuration
+
+Create `.claude/combined-review.local.md` in your project to customize settings:
+
+```bash
+cp $(claude plugin path combined-review)/config-defaults.md .claude/combined-review.local.md
+```
+
+Or manually create with YAML frontmatter:
+
+```yaml
+---
+language: system
+---
+```
+
+**Language options:**
+
+- `system` — auto-detect from CLAUDE.md or system locale (default)
+- `en` — English
+- `ru` — Russian
+- `uk` — Ukrainian
+
+Agents work internally in English for accuracy; only the final report is output in the configured language.
 
 ---
 
@@ -129,6 +156,11 @@ Every finding includes file path and line number:
 ---
 
 ## Changelog
+
+### 1.1.0
+
+- Language configuration: system (auto-detect), en, ru, uk
+- Config file support: `.claude/combined-review.local.md`
 
 ### 1.0.0
 
