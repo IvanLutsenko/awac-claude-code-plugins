@@ -130,9 +130,12 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-3.3.0
+3.3.1
 
 ## Changelog
+
+### 3.3.1
+- **Fix**: добавлен обязательный `hookEventName` в JSON-ответы всех SessionStart хуков — Claude Code v2.1.97+ валидирует схему и без этого поля показывал `hook error` на каждом запуске
 
 ### 3.3.0
 - **Full MCP permissions in all commands**: every command now includes all 15 non-destructive MCP tools in `allowed-tools` — no manual approval needed for follow-up actions (e.g., `addBug` after `/projects`)
