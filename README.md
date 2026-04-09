@@ -67,16 +67,18 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 /crash-config                       # Configure plugin settings
 ```
 
-**Status:** ✅ Production Ready | **Version:** 4.3.0
+**Status:** ✅ Production Ready | **Version:** 4.4.0
 
-**What's New in 4.3.0:**
-- Quality gate replaced: Haiku agent → deterministic Python script (0 tokens, ~0.05s)
+**What's New in 4.4.0:**
+- Fixed REST API (v1beta1 → v1alpha) — crash data loading works again
+- Auto-save discovered Firebase app ID to config
+- MCP crash tools restored as fallback
 
 **Features:**
 - 4-step multi-agent pipeline: classifier → fetcher → forensics → validate-report.py
 - Git blame forensics with mandatory assignee identification
 - Code-level fixes (before/after) ready to copy-paste
-- 3-level Firebase fallback: MCP (with retries) → CLI API → Manual
+- 2-level Firebase fallback: CLI REST API → MCP → Manual
 - Configurable per-project settings
 
 ---

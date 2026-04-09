@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.3.1 — Android & iOS
+**Version:** 4.4.0 — Android & iOS
 
 ---
 
@@ -84,7 +84,7 @@ Config auto-created with defaults on first run if missing.
 | **CLI REST API** | Firebase Issue ID + `firebase login` + Crashlytics API enabled | Auto-load crash data via REST API (primary) |
 | **Enhanced Manual** | Stack trace from logs | Same analysis, guided manual data entry with Console URLs |
 
-MCP is used **only for project/app discovery** (`firebase_get_environment`, `firebase_list_apps`). Crashlytics data tools do not exist in the Firebase MCP server — all crash data is fetched via the CLI REST API.
+MCP is used for **project/app discovery** (`firebase_get_environment`, `firebase_list_apps`) and as **fallback for crash data** (`crashlytics_list_events`, `crashlytics_get_issue`, `crashlytics_batch_get_events`). Primary data fetching is via CLI REST API.
 
 The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
@@ -94,7 +94,7 @@ The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.3.0                         │
+│                      crashlytics v4.4.0                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -255,12 +255,12 @@ Compact format for copy-paste into a ticket, including stack trace, fix (before/
 
 ### How data fetching works
 
-The Firebase MCP server does **not** provide Crashlytics data tools (`crashlytics_get_issue`, `crashlytics_list_events`, etc.). These tools are referenced in MCP resource guides but are not implemented.
-
-Instead, the plugin:
-1. Uses MCP for **project/app discovery** (`firebase_get_environment`, `firebase_list_apps`) — these work
-2. Fetches crash data via **CLI REST API** using the token from `~/.config/configstore/firebase-tools.json`
+The plugin uses a multi-level fallback:
+1. Fetches crash data via **CLI REST API** (`v1alpha`) using the token from `~/.config/configstore/firebase-tools.json`
+2. Falls back to **MCP Crashlytics tools** (`crashlytics_list_events`, `crashlytics_get_issue`, `crashlytics_batch_get_events`)
 3. Falls back to **Enhanced Manual mode** with Console URLs and step-by-step instructions
+
+MCP is also used for **project/app discovery** (`firebase_get_environment`, `firebase_list_apps`).
 
 ---
 
@@ -268,7 +268,7 @@ Instead, the plugin:
 
 | Problem | Solution |
 |---------|----------|
-| REST API returns 403/404 | Crashlytics API not enabled. Enable at: `https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project=YOUR_PROJECT_ID` |
+| REST API returns 403 | Crashlytics API not enabled. Enable at: `https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project=YOUR_PROJECT_ID` |
 | "Unable to verify client" | Do not use MCP login. Authorize via `firebase login` in terminal |
 | MCP Internal error | Normal for discovery — plugin retries once then uses CLI fallback |
 | `REST_FALLBACK_FAILED` | Check `firebase login:list` — may need to re-authenticate |
@@ -279,6 +279,12 @@ Instead, the plugin:
 ---
 
 ## Changelog
+
+### 4.4.0
+- **Fixed:** REST API version `v1beta1` → `v1alpha` (root cause of all 404 errors)
+- **Fixed:** Events endpoint `/issues/{id}/events` → `/events?filter.issue.id={id}` (correct v1alpha format)
+- **Added:** Auto-save discovered `firebase_app_id` to config after successful fetch — eliminates repeated discovery
+- **Fixed:** MCP crash tools (`crashlytics_list_events`, `crashlytics_get_issue`, `crashlytics_batch_get_events`) DO work — restored as fallback
 
 ### 4.3.1
 - Added `Grep`, `Agent`, `Bash(git diff:*)`, `Bash(git show:*)` to `allowed-tools` in all crash-report commands — forensics agents and code search no longer require manual approval
