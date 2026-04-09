@@ -12,6 +12,7 @@ if [ -f "$TRACKING_FILE" ]; then
   PROJECT=$(jq -r '.project // "unknown"' "$TRACKING_FILE" 2>/dev/null)
   jq -n --arg project "$PROJECT" '{
     "hookSpecificOutput": {
+      "hookEventName": "SessionStart",
       "additionalContext": ("Obsidian Tracking already active: " + $project)
     }
   }'
@@ -21,6 +22,7 @@ fi
 # No tracking file — ask Claude to try auto-detect via MCP
 jq -n --arg cwd "$CWD" '{
   "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
     "additionalContext": ("Auto-detect Obsidian project: Try calling mcp__plugin_obsidian_tracker_obsidian__listProjects to find a project matching cwd=" + $cwd + ". If project found, create .claude/obsidian-tracking.json with {\"project\":name, \"goal\":\"\", \"actions\":[], \"startedAt\":ISO timestamp} and briefly notify user. If MCP unavailable or no project matches, do nothing silently.")
   }
 }'

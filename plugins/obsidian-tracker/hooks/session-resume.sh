@@ -17,6 +17,7 @@ GOAL=$(jq -r '.goal // ""' "$TRACKING_FILE" 2>/dev/null)
 
 jq -n --arg project "$PROJECT" --arg goal "$GOAL" '{
   "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
     "additionalContext": ("Obsidian Tracking active: " + $project + (if $goal != "" then " — " + $goal else "" end))
   }
 }'
