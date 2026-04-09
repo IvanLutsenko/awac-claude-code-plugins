@@ -104,5 +104,5 @@ firebase_data:
 
 - **Read-only** — do not modify issue status
 - **NEVER call `firebase_login`** via MCP — broken
-- **MCP is for discovery only** — crash data tools don't exist in Firebase MCP
+- **MCP crash tools work** (`crashlytics_list_events`, `crashlytics_get_issue`) — use as fallback if REST fails
 - **Always include console_url** if project_id and app_id are known

@@ -17,8 +17,10 @@ Note: client_id and client_secret are public OAuth credentials from Firebase CLI
 (embedded in firebase-tools source code, this is an installed app OAuth flow).
 The access token stays internal - never printed or logged.
 """
+import glob
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -85,11 +87,11 @@ def main():
     headers = {"Authorization": "Bearer " + token}
 
     base_urls = [
-        "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{}/apps/{}".format(project_num, app_id),
+        "https://firebasecrashlytics.googleapis.com/v1alpha/projects/{}/apps/{}".format(project_num, app_id),
     ]
     if project_id and project_id != project_num:
         base_urls.append(
-            "https://firebasecrashlytics.googleapis.com/v1beta1/projects/{}/apps/{}".format(project_id, app_id)
+            "https://firebasecrashlytics.googleapis.com/v1alpha/projects/{}/apps/{}".format(project_id, app_id)
         )
 
     issue_data = None
@@ -100,7 +102,7 @@ def main():
             print("ISSUE_DATA:" + json.dumps(issue_data, indent=2))
             try:
                 ereq = urllib.request.Request(
-                    "{}/issues/{}/events?pageSize=3".format(base, issue_id), headers=headers
+                    "{}/events?filter.issue.id={}&page_size=3".format(base, issue_id), headers=headers
                 )
                 events = json.loads(urlopen_with_retry(ereq).read())
                 print("EVENTS_DATA:" + json.dumps(events, indent=2))
@@ -117,8 +119,56 @@ def main():
             print("FETCH_FAILED:{} {}".format(base, e), file=sys.stderr)
             continue
 
-    if not issue_data:
+    if issue_data:
+        save_app_id_to_config(app_id, project_id)
+    else:
         print("REST_FALLBACK_FAILED")
+
+
+def save_app_id_to_config(app_id, project_id):
+    """Save discovered app_id/project_id back to crashlytics.local.md if empty."""
+    config_path = find_config_file()
+    if not config_path:
+        return
+    try:
+        with open(config_path) as f:
+            content = f.read()
+        changed = False
+        platform = "android" if ":android:" in app_id else "ios"
+        field = "firebase_app_id_{}".format(platform)
+        pattern = r'({}:\s*)""\s*$'.format(re.escape(field))
+        replacement = r'\g<1>"{}"\n'.format(app_id)
+        new_content, n = re.subn(pattern, replacement, content, flags=re.MULTILINE)
+        if n:
+            changed = True
+            content = new_content
+        if project_id:
+            pattern = r'(firebase_project_id:\s*)""\s*$'
+            replacement = r'\g<1>"{}"\n'.format(project_id)
+            new_content, n = re.subn(pattern, replacement, content, flags=re.MULTILINE)
+            if n:
+                changed = True
+                content = new_content
+        if changed:
+            with open(config_path, "w") as f:
+                f.write(content)
+            print("CONFIG_UPDATED:{}".format(config_path), file=sys.stderr)
+    except Exception as e:
+        print("CONFIG_SAVE_FAILED:{}".format(e), file=sys.stderr)
+
+
+def find_config_file():
+    """Find crashlytics.local.md in current dir or parent dirs."""
+    cwd = os.getcwd()
+    for _ in range(5):
+        candidate = os.path.join(cwd, ".claude", "crashlytics.local.md")
+        if os.path.isfile(candidate):
+            return candidate
+        parent = os.path.dirname(cwd)
+        if parent == cwd:
+            break
+        cwd = parent
+    return None
 
 
 if __name__ == "__main__":
