@@ -220,7 +220,7 @@ Automated vertical clip creator for talks and presentations. Whisper + Claude + 
 /find-moments ~/Downloads/transcript.json      # Only find moments
 ```
 
-**Status:** 🔨 Beta | **Version:** 1.2.0
+**Status:** 🔨 Beta | **Version:** 1.3.0
 
 **Features:**
 - Whisper transcription (local or API)

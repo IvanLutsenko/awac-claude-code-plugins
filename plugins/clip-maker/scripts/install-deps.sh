@@ -48,6 +48,21 @@ if ! $check_api; then
   fi
 fi
 
+# yt-dlp (for YouTube downloads)
+if command -v yt-dlp &>/dev/null; then
+  echo -e "${GREEN}✓${NC} yt-dlp found"
+else
+  echo -e "${YELLOW}⟳${NC} Installing yt-dlp..."
+  if command -v brew &>/dev/null; then
+    brew install yt-dlp
+  elif command -v pip3 &>/dev/null; then
+    pip3 install yt-dlp
+  else
+    echo -e "${RED}✗${NC} yt-dlp not found. Install: brew install yt-dlp"
+    errors=$((errors + 1))
+  fi
+fi
+
 # Pillow (for subtitle rendering)
 if python3 -c "from PIL import ImageFont" 2>/dev/null; then
   echo -e "${GREEN}✓${NC} Pillow found"

@@ -1,6 +1,6 @@
 ---
 description: "Create vertical clips from a video. Full pipeline: transcribe → find moments → crop → cut → subtitles → copy"
-argument-hint: "<video_path> [--duration 60] [--auto] [--no-subtitles] [--api] [--no-copy] [--language ru] [--prompt \"terms\"]"
+argument-hint: "<video_path_or_url> [--duration 60] [--auto] [--no-subtitles] [--api] [--no-copy] [--language ru] [--prompt \"terms\"]"
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Read, Write, Agent, AskUserQuestion
 ---
 
@@ -11,7 +11,7 @@ Create vertical (9:16) clips from a horizontal video, optimized for Reels/Shorts
 ## Arguments
 
 Parse `$ARGUMENTS` for:
-- `<video_path>` — **required**, path to source video
+- `<video_path_or_url>` — **required**, path to source video OR YouTube/web URL
 - `--duration N` — target clip duration in seconds (default: 60)
 - `--auto` — skip manual moment selection, use all found moments
 - `--no-subtitles` — don't burn subtitles into clips
@@ -32,11 +32,21 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/install-deps.sh [--api if user passed --api]
 
 If it fails, stop and report what's missing.
 
-### Step 2: Setup output directory
+### Step 2: Download if URL
+
+If `<video_path>` looks like a URL (starts with `http://`, `https://`, or `youtube.com`, `youtu.be`):
+
+```bash
+VIDEO_PATH=$(bash ${CLAUDE_PLUGIN_ROOT}/scripts/download-video.sh "<url>" ~/Downloads)
+```
+
+The script outputs the downloaded file path. Use it as `<video_path>` for subsequent steps.
+
+### Step 3: Setup output directory
 
 Create output directory next to the video: `{video_dir}/{video_name}_clips/`
 
-### Step 3: Transcribe
+### Step 4: Transcribe
 
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/transcribe.sh "<video_path>" "<output_dir>" [--api] [--language LANG] [--prompt "terms"]
@@ -44,7 +54,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/transcribe.sh "<video_path>" "<output_dir>" [
 
 This produces `<output_dir>/transcript.json`.
 
-### Step 4: Find interesting moments
+### Step 5: Find interesting moments
 
 Launch the `moment-finder` agent:
 
@@ -60,7 +70,7 @@ Read the transcript, find the best moments, and write moments.json.
 ")
 ```
 
-### Step 5: User selects moments (unless --auto)
+### Step 6: User selects moments (unless --auto)
 
 If `--auto` is NOT set:
 1. Read `moments.json`
@@ -70,13 +80,13 @@ If `--auto` is NOT set:
 
 If `--auto` IS set: proceed with all moments.
 
-### Step 6: Extract frames
+### Step 7: Extract frames
 
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/extract-frames.sh "<video_path>" "<output_dir>/moments.json" "<output_dir>"
 ```
 
-### Step 7: Analyze crop positions
+### Step 8: Analyze crop positions
 
 Launch the `crop-analyzer` agent:
 
@@ -92,19 +102,19 @@ Read each moment's frames, locate the speaker, and write crop_coords.json.
 ")
 ```
 
-### Step 8: Cut clips
+### Step 9: Cut clips
 
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/cut-clip.sh "<video_path>" "<output_dir>/moments.json" "<output_dir>/crop_coords.json" "<output_dir>"
 ```
 
-### Step 9: Burn subtitles (unless --no-subtitles)
+### Step 10: Burn subtitles (unless --no-subtitles)
 
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/burn-subtitles.sh "<output_dir>/moments.json" "<output_dir>/transcript.json" "<output_dir>"
 ```
 
-### Step 10: Generate social media copy (unless --no-copy)
+### Step 11: Generate social media copy (unless --no-copy)
 
 Launch the `copywriter` agent:
 
@@ -119,7 +129,7 @@ Read moments.json and write copy.md with platform-specific descriptions.
 ")
 ```
 
-### Step 11: Generate manifest and report
+### Step 12: Generate manifest and report
 
 Create `<output_dir>/manifest.json` with metadata for all clips:
 ```json

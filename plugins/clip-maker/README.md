@@ -25,7 +25,11 @@ Dependencies (auto-installed on first run):
 
 ## Status
 
-**Version:** 1.2.0 | **Status:** Beta
+**Version:** 1.3.0 | **Status:** Beta
+
+**What's New in 1.3.0:**
+- YouTube URL support via yt-dlp (pass URL instead of file path)
+- Auto-download best quality up to 1080p
 
 **What's New in 1.2.0:**
 - Subtitles via Pillow direct frame rendering (precise positioning, Cyrillic support)
