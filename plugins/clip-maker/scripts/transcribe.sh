@@ -1,6 +1,6 @@
 #!/bin/bash
 # transcribe.sh — transcribe video using whisper (local or API)
-# Usage: transcribe.sh <video_path> <output_dir> [--api] [--language ru]
+# Usage: transcribe.sh <video_path> <output_dir> [--api] [--language ru] [--prompt "terms"]
 
 set -euo pipefail
 
@@ -10,11 +10,13 @@ shift 2
 
 USE_API=false
 LANGUAGE="ru"
+PROMPT=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --api) USE_API=true; shift ;;
     --language) LANGUAGE="$2"; shift 2 ;;
+    --prompt) PROMPT="$2"; shift 2 ;;
     *) shift ;;
   esac
 done
@@ -42,13 +44,19 @@ if $USE_API; then
     UPLOAD_PATH="$AUDIO_PATH"
   fi
 
+  PROMPT_API_ARG=""
+  if [[ -n "$PROMPT" ]]; then
+    PROMPT_API_ARG="-F prompt=$PROMPT"
+  fi
+
   RESPONSE=$(curl -s https://api.openai.com/v1/audio/transcriptions \
     -H "Authorization: Bearer ${OPENAI_API_KEY}" \
     -F file="@${UPLOAD_PATH}" \
     -F model="whisper-1" \
     -F response_format="verbose_json" \
     -F timestamp_granularities[]="segment" \
-    -F language="$LANGUAGE")
+    -F language="$LANGUAGE" \
+    $PROMPT_API_ARG)
 
   # Convert API response to our format: [{start, end, text}, ...]
   echo "$RESPONSE" | python3 -c "
@@ -62,12 +70,18 @@ else
   echo "Transcribing locally with whisper (model: large-v3)..."
 
   # Use whisper CLI
+  PROMPT_ARG=""
+  if [[ -n "$PROMPT" ]]; then
+    PROMPT_ARG="--initial_prompt $PROMPT"
+  fi
+
   if command -v whisper &>/dev/null; then
     whisper "$AUDIO_PATH" \
       --model large-v3 \
       --language "$LANGUAGE" \
       --output_format json \
       --output_dir "$OUTPUT_DIR" \
+      $PROMPT_ARG \
       2>/dev/null
 
     # Whisper CLI outputs audio.json, convert to our format
@@ -85,7 +99,8 @@ with open('$TRANSCRIPT_PATH', 'w') as f:
     python3 -c "
 import whisper, json
 model = whisper.load_model('large-v3')
-result = model.transcribe('$AUDIO_PATH', language='$LANGUAGE')
+prompt = '$PROMPT' if '$PROMPT' else None
+result = model.transcribe('$AUDIO_PATH', language='$LANGUAGE', initial_prompt=prompt)
 segments = [{'start': s['start'], 'end': s['end'], 'text': s['text'].strip()} for s in result['segments']]
 with open('$TRANSCRIPT_PATH', 'w') as f:
     json.dump(segments, f, ensure_ascii=False, indent=2)

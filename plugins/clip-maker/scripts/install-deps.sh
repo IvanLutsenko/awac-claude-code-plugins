@@ -48,13 +48,13 @@ if ! $check_api; then
   fi
 fi
 
-# moviepy + Pillow (for subtitle burning)
-if python3 -c "import moviepy" 2>/dev/null; then
-  echo -e "${GREEN}✓${NC} moviepy found"
+# Pillow (for subtitle rendering)
+if python3 -c "from PIL import ImageFont" 2>/dev/null; then
+  echo -e "${GREEN}✓${NC} Pillow found"
 else
-  echo -e "${YELLOW}⟳${NC} Installing moviepy + Pillow..."
-  pip3 install moviepy Pillow 2>/dev/null || {
-    echo -e "${RED}✗${NC} Failed to install moviepy. Install manually: pip install moviepy Pillow"
+  echo -e "${YELLOW}⟳${NC} Installing Pillow..."
+  pip3 install Pillow 2>/dev/null || {
+    echo -e "${RED}✗${NC} Failed to install Pillow. Install manually: pip install Pillow"
     errors=$((errors + 1))
   }
 fi

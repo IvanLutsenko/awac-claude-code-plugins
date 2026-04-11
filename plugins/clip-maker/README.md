@@ -25,11 +25,16 @@ Dependencies (auto-installed on first run):
 
 ## Status
 
-**Version:** 1.1.0 | **Status:** Beta
+**Version:** 1.2.0 | **Status:** Beta
+
+**What's New in 1.2.0:**
+- Subtitles via Pillow direct frame rendering (precise positioning, Cyrillic support)
+- Baskerville 60px font with word wrap and black outline
+- `--prompt` option for whisper initial_prompt (dramatically improves domain term recognition)
+- Dropped moviepy dependency (only Pillow needed)
 
 **What's New in 1.1.0:**
 - Subtitles via moviepy + Pillow (no libass/freetype dependency)
-- moviepy auto-installed by install-deps.sh
 
 ## Commands
 

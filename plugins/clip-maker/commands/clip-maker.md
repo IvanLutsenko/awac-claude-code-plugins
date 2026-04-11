@@ -1,6 +1,6 @@
 ---
 description: "Create vertical clips from a video. Full pipeline: transcribe → find moments → crop → cut → subtitles → copy"
-argument-hint: "<video_path> [--duration 60] [--auto] [--no-subtitles] [--api] [--no-copy] [--language ru]"
+argument-hint: "<video_path> [--duration 60] [--auto] [--no-subtitles] [--api] [--no-copy] [--language ru] [--prompt \"terms\"]"
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Read, Write, Agent, AskUserQuestion
 ---
 
@@ -18,6 +18,7 @@ Parse `$ARGUMENTS` for:
 - `--api` — use OpenAI Whisper API instead of local whisper
 - `--no-copy` — skip social media copy generation
 - `--language LANG` — transcription language (default: ru)
+- `--prompt "terms"` — domain-specific terms for whisper (improves recognition of jargon, names, abbreviations)
 
 ## Pipeline
 
@@ -38,7 +39,7 @@ Create output directory next to the video: `{video_dir}/{video_name}_clips/`
 ### Step 3: Transcribe
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/transcribe.sh "<video_path>" "<output_dir>" [--api] [--language LANG]
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/transcribe.sh "<video_path>" "<output_dir>" [--api] [--language LANG] [--prompt "terms"]
 ```
 
 This produces `<output_dir>/transcript.json`.
