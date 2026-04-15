@@ -6,9 +6,15 @@
 
 PROJECT="${1:?Usage: start-tracking.sh <project-name> [goal] [actions...]}"
 GOAL="${2:-}"
-shift 2 2>/dev/null
 
-# Build actions array
+# Shift past project and goal (if present)
+if [ $# -ge 2 ]; then
+  shift 2
+else
+  shift $#
+fi
+
+# Build actions array from remaining arguments
 ACTIONS="[]"
 if [ $# -gt 0 ]; then
   ACTIONS="[$(printf '"%s"' "$1")"
