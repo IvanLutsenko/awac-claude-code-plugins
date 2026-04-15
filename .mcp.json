@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "obsidian-tracker": {
+      "command": "/Users/lutse/projects/awac-claude-code-plugins/plugins/obsidian-tracker/mcp/run-server.sh",
+      "env": {
+        "OBSIDIAN_VAULT": "${OBSIDIAN_VAULT:-$HOME/Documents/GitHub/obsidian/MCP/Projects}"
+      }
+    }
+  }
+}
