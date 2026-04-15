@@ -160,9 +160,17 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-4.0.0
+4.0.2
 
 ## Changelog
+
+### 4.0.2
+- **Fix**: shortened all hook `systemMessage` strings to 1-line prompts — verbose multi-paragraph instructions were leaking into user-visible chat
+- Orphan recovery now saves data to `.claude/obsidian-orphan.json` instead of dumping JSON into the systemMessage
+- Removed dead `TRACKING_DATA` variable from `session-clear.sh`
+
+### 4.0.1
+- Version bump (plugin.json only, README was not updated)
 
 ### 4.0.0
 - **Decision Records (ADR)**: `addDecision`, `getDecision`, `closeDecision`, `supersedeDecision`, `listDecisions` MCP tools + `/decision-new`, `/decision-close`, `/decision-supersede`, `/decision-link` commands
