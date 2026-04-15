@@ -40,12 +40,12 @@ setup_vault_project() {
   [ "$result" = "{}" ]
 }
 
-@test "tracking file exists + vault project → returns {} (silent)" {
+@test "tracking file exists + vault project → returns systemMessage" {
   create_tracking_file "test-project" "fix bugs"
   setup_vault_project "test-project"
   result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/session-clear.sh")
   assert_valid_json "$result"
-  [ "$result" = "{}" ]
+  assert_json_has "$result" '.systemMessage'
 }
 
 @test "writes session entry to vault" {

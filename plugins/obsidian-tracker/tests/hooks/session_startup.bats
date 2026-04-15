@@ -6,14 +6,11 @@ load helpers
 setup() { setup_tracking_dir; }
 teardown() { teardown_tracking_dir; }
 
-@test "no tracking file → auto-detect systemMessage" {
+@test "no tracking file → empty JSON (tracking starts on first command)" {
   rm -f "$TRACKING_FILE"
   result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/session-startup.sh")
   assert_valid_json "$result"
-  assert_json_has "$result" '.systemMessage'
-  msg=$(echo "$result" | jq -r '.systemMessage')
-  [[ "$msg" == *"findProjectByLocalPath"* ]]
-  [[ "$msg" == *"$TEST_DIR"* ]]
+  [ "$result" = "{}" ]
 }
 
 @test "recent tracking file (<300s) → active session message" {
@@ -54,9 +51,8 @@ teardown() { teardown_tracking_dir; }
   [ "$has_hso" = "false" ]
 }
 
-@test "auto-detect message includes cwd" {
+@test "no tracking file → no systemMessage" {
   rm -f "$TRACKING_FILE"
   result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/session-startup.sh")
-  msg=$(echo "$result" | jq -r '.systemMessage')
-  [[ "$msg" == *"$TEST_DIR"* ]]
+  [ "$result" = "{}" ]
 }
