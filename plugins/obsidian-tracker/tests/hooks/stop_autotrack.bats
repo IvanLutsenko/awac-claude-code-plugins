@@ -31,7 +31,7 @@ teardown() { teardown_tracking_dir; }
   create_tracking_file
   result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/stop-autotrack.sh")
   msg=$(echo "$result" | jq -r '.systemMessage')
-  [[ "$msg" == *"OBSIDIAN AUTO-TRACK"* ]]
+  [[ "$msg" == *"Auto-track"* ]]
   [[ "$msg" == *"obsidian-tracking.json"* ]]
   [[ "$msg" == *"addBug"* ]]
   [[ "$msg" == *"addDecision"* ]]

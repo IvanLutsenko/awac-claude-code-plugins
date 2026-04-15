@@ -36,7 +36,7 @@ teardown() { teardown_tracking_dir; }
   result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/session-startup.sh")
   assert_valid_json "$result"
   msg=$(echo "$result" | jq -r '.systemMessage')
-  [[ "$msg" == *"ORPHAN RECOVERY"* ]]
+  [[ "$msg" == *"Orphan session"* ]]
   [[ "$msg" == *"stale-project"* ]]
 }
 

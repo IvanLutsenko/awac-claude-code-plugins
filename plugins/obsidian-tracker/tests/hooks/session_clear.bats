@@ -19,17 +19,16 @@ teardown() { teardown_tracking_dir; }
   assert_valid_json "$result"
   assert_json_has "$result" '.systemMessage'
   msg=$(echo "$result" | jq -r '.systemMessage')
-  [[ "$msg" == *"OBSIDIAN SESSION SAVE"* ]]
+  [[ "$msg" == *"Session clear"* ]]
   [[ "$msg" == *"addSession"* ]]
   [[ "$msg" == *"addSessionSummary"* ]]
 }
 
-@test "systemMessage contains tracking data" {
+@test "systemMessage references tracking file" {
   create_tracking_file "data-project" "my-goal"
   result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/session-clear.sh")
   msg=$(echo "$result" | jq -r '.systemMessage')
-  [[ "$msg" == *"data-project"* ]]
-  [[ "$msg" == *"my-goal"* ]]
+  [[ "$msg" == *"obsidian-tracking.json"* ]]
 }
 
 @test "no hookSpecificOutput" {
