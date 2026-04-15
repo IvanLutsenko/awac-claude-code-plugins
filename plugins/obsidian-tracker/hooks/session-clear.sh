@@ -12,8 +12,6 @@ if [ ! -f "$TRACKING_FILE" ]; then
   exit 0
 fi
 
-TRACKING_DATA=$(cat "$TRACKING_FILE" | jq -c . 2>/dev/null || echo '{}')
-
-jq -n --arg data "$TRACKING_DATA" '{
-  "systemMessage": ("OBSIDIAN SESSION SAVE: .claude/obsidian-tracking.json exists. Data: " + $data + ". Please: 1) Try calling addSession MCP tool with project, goal, actions from data, results=Session completed via /clear. 2) Also call addSessionSummary MCP tool with project, completed=list of what was accomplished, decisions=any decisions made, blockers=any blockers, nextSteps=suggested next actions, and any linkedCommits from the tracking data. 3) Delete .claude/obsidian-tracking.json regardless. 4) Briefly notify user of the result. If MCP unavailable, warn user.")
+jq -n '{
+  "systemMessage": "Session clear: read .claude/obsidian-tracking.json, call addSession + addSessionSummary MCP, delete the file. Notify user."
 }'

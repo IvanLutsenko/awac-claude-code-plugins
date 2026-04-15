@@ -26,10 +26,11 @@ if [ -f "$TRACKING_FILE" ]; then
   fi
 
   if [ "$IS_STALE" = true ]; then
-    # Orphaned session — prompt to save and restart
-    TRACKING_DATA=$(jq -c . "$TRACKING_FILE" 2>/dev/null || echo '{}')
-    jq -n --arg data "$TRACKING_DATA" --arg cwd "$CWD" --arg project "$PROJECT" '{
-      "systemMessage": ("OBSIDIAN ORPHAN RECOVERY: Found stale tracking file from previous session. Data: " + $data + ". Please: 1) Call addSession MCP tool with project=" + $project + ", goal and actions from data, results=\"Auto-saved: session recovered from previous terminal close\". 2) Delete .claude/obsidian-tracking.json. 3) Then call findProjectByLocalPath with localPath=" + $cwd + " to auto-detect project for new session. If found, create new .claude/obsidian-tracking.json via Bash: mkdir -p .claude && echo {project,goal,startedAt,actions} > .claude/obsidian-tracking.json. 4) Briefly notify user about recovered session.")
+    # Orphaned session — save data to temp file, short prompt
+    ORPHAN_FILE="${CWD}/.claude/obsidian-orphan.json"
+    cp "$TRACKING_FILE" "$ORPHAN_FILE" 2>/dev/null
+    jq -n --arg project "$PROJECT" --arg cwd "$CWD" '{
+      "systemMessage": ("Orphan session [" + $project + "]: recover from .claude/obsidian-orphan.json — call addSession MCP, delete both files, auto-detect new project via findProjectByLocalPath(" + $cwd + "). Notify user briefly.")
     }'
   else
     # Active session (recent) — just remind
@@ -42,5 +43,5 @@ fi
 
 # Phase B: No tracking file — auto-detect project via findProjectByLocalPath
 jq -n --arg cwd "$CWD" '{
-  "systemMessage": ("Auto-detect Obsidian project: Call findProjectByLocalPath MCP tool with localPath=" + $cwd + ". If found (found=true), pick the non-subproject match (or first match). Create .claude/obsidian-tracking.json via Bash: mkdir -p .claude && echo {\"project\":\"NAME\",\"goal\":\"\",\"startedAt\":\"ISO_TIMESTAMP\",\"actions\":[]} > .claude/obsidian-tracking.json. Briefly notify user. If MCP unavailable or no match, do nothing silently.")
+  "systemMessage": ("Auto-detect project: findProjectByLocalPath(" + $cwd + "). If found, create .claude/obsidian-tracking.json and notify user. If not — silent.")
 }'
