@@ -232,6 +232,14 @@ Automated vertical clip creator for talks and presentations. Whisper + Claude + 
 
 ---
 
+## Setup
+
+After cloning, enable git hooks (runs plugin tests before push):
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## Author
 
 Ivan Lutsenko

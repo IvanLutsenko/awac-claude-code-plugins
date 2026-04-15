@@ -1,0 +1,53 @@
+#!/bin/bash
+# Pre-push hook: run tests for changed plugins
+# Only runs tests for plugins that have actual changes being pushed
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Get the range of commits being pushed
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    # New branch — compare against main
+    range="origin/main...$local_sha"
+  else
+    range="$remote_sha...$local_sha"
+  fi
+
+  changed_files=$(git diff --name-only "$range" 2>/dev/null)
+
+  # obsidian-tracker
+  if echo "$changed_files" | grep -q "^plugins/obsidian-tracker/"; then
+    echo "==> obsidian-tracker changed, running tests..."
+
+    # Plugin structure + hooks (bats)
+    if command -v bats &>/dev/null; then
+      bats "$REPO_ROOT/plugins/obsidian-tracker/tests/plugin_structure.bats" \
+           "$REPO_ROOT/plugins/obsidian-tracker/tests/hooks/"*.bats || {
+        echo "❌ obsidian-tracker bats tests failed. Push aborted."
+        exit 1
+      }
+    else
+      echo "⚠️  bats not installed, skipping hook tests (brew install bats-core)"
+    fi
+
+    # MCP vitest
+    if [ -f "$REPO_ROOT/plugins/obsidian-tracker/mcp/node_modules/.package-lock.json" ]; then
+      (cd "$REPO_ROOT/plugins/obsidian-tracker/mcp" && npx vitest run) || {
+        echo "❌ obsidian-tracker vitest tests failed. Push aborted."
+        exit 1
+      }
+    else
+      echo "⚠️  MCP node_modules missing, skipping vitest (cd mcp && npm install)"
+    fi
+
+    echo "✅ obsidian-tracker tests passed"
+  fi
+
+  # Add more plugins here as they get tests:
+  # if echo "$changed_files" | grep -q "^plugins/clip-maker/"; then
+  #   ...
+  # fi
+
+done
+
+exit 0
