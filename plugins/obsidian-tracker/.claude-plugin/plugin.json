@@ -1,7 +1,7 @@
 {
   "name": "obsidian-tracker",
   "description": "Project tracking, task management with kanban boards, bug logging, decision records (ADR), session management, and engineering traceability via Obsidian. Auto-tracks sessions, actions, bugs, and commits via hooks.",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
@@ -50,6 +50,10 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-clear.sh",
             "timeout": 15
+          },
+          {
+            "type": "prompt",
+            "prompt": "If .claude/obsidian-session-saved.json exists: a raw session was auto-saved to Obsidian. Read the file, then call addSessionSummary MCP with semantic completed items, decisions, and next steps. Delete .claude/obsidian-session-saved.json when done. Confirm to user in one line."
           }
         ]
       },
@@ -119,9 +123,8 @@
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-autotrack.sh",
-            "timeout": 10
+            "type": "prompt",
+            "prompt": "If .claude/obsidian-tracking.json exists: review what you did this turn. If you completed a backlog task, closed a bug, or made a significant decision, call the appropriate MCP tool (updateTask status to Done, closeBug, or addDecision). Add 1-line summaries of meaningful work to the actions array in the tracking file. No visible output to user."
           }
         ]
       }

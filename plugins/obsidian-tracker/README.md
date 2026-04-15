@@ -63,16 +63,16 @@ Session + structured summary saved to Obsidian
 | Hook | Trigger | Type | Action |
 |------|---------|------|--------|
 | PreCompact | Before context compression | prompt | Preserves tracking info in summary |
-| SessionStart:clear | `/clear` | command | Save session + structured summary to Obsidian |
+| SessionStart:clear | `/clear` | command + prompt | Bash saves raw session to vault; prompt enriches with semantic summary |
 | SessionStart:compact\|resume | Context compact, resume | command | Remind about active tracking |
 | SessionStart:startup | Fresh session | command | Orphan recovery + auto-detect project via `findProjectByLocalPath` |
 | PostToolUse:TodoWrite | TodoWrite | prompt | Records completed todos to tracking file |
 | PostToolUse:Edit | Edit | command | Records edited filenames to tracking file |
 | PostToolUse:Write | Write | command | Records created filenames to tracking file |
 | PostToolUse:Bash | Bash (git commit) | command | Captures commit hashes to tracking file |
-| Stop | Agent turn ends | command | Auto-reviews actions, logs bugs/decisions if significant |
+| Stop | Agent turn ends | prompt | Reviews turn; closes tasks, logs bugs/decisions if relevant |
 
-> All command-type hooks are bash scripts in `hooks/` — they never error even if the MCP server is unavailable.
+> Command-type hooks are bash scripts in `hooks/` — they never error even if the MCP server is unavailable. Prompt-type hooks depend on Claude executing the instruction.
 
 ### Orphan recovery
 
@@ -160,9 +160,17 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-4.1.0
+4.2.0
 
 ## Changelog
+
+### 4.2.0
+- **Reliable session save on /clear**: `session-clear.sh` now writes raw session directly to Obsidian vault via bash (no Claude dependency), then prompt hook enriches with semantic summary — guarantees data is saved even if Claude ignores the prompt
+- **Prompt-based Stop hook**: Stop hook changed from `command` + `systemMessage` (unreliable) to `prompt` type — Claude actively processes task/bug/decision updates as part of its response turn
+- **Backlog tasks in resume context**: `getResumeContext` now includes Backlog tasks alongside In Progress and Review — `/where-was-i` shows full picture instead of "Tasks: None"
+- **Smarter suggested action**: distinguishes Continue (In Progress) / Review / Pick from backlog
+- **CI removed**: GitHub Actions workflow deleted — pre-push hook runs the same tests locally
+- **Pre-push test coverage check**: blocks push if changed source files lack corresponding test files
 
 ### 4.1.0
 - **Silent Stop hook**: Stop hook now returns `{}` — zero noise in chat during work sessions

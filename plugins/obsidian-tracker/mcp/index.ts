@@ -1429,12 +1429,12 @@ ${args.nextSteps ?? "TBD"}
           }
         } catch {}
 
-        // 2. Active tasks (In Progress + Review)
+        // 2. All non-Done tasks (Backlog + In Progress + Review)
         const boardPath = path.join(projectPath, "Board.md");
         const columns = await parseBoard(boardPath);
         const taskRegex = /\[\[TASK-(\d+)\s*-\s*(.+?)\]\]/;
         const activeTasks: Array<{ id: number; title: string; status: string }> = [];
-        for (const status of ["In Progress", "Review"]) {
+        for (const status of ["In Progress", "Review", "Backlog"]) {
           for (const line of columns.get(status) || []) {
             const match = line.match(taskRegex);
             if (match) activeTasks.push({ id: parseInt(match[1]), title: match[2], status });
@@ -1488,7 +1488,14 @@ ${args.nextSteps ?? "TBD"}
           suggestedAction = `Resolve blocker: ${summaryBlockers[0]}`;
         } else if (activeTasks.length > 0) {
           const inProgress = activeTasks.find(t => t.status === "In Progress");
-          suggestedAction = inProgress ? `Continue: ${inProgress.title}` : `Review: ${activeTasks[0].title}`;
+          const inReview = activeTasks.find(t => t.status === "Review");
+          if (inProgress) {
+            suggestedAction = `Continue: ${inProgress.title}`;
+          } else if (inReview) {
+            suggestedAction = `Review: ${inReview.title}`;
+          } else {
+            suggestedAction = `Pick from backlog (${activeTasks.length} tasks)`;
+          }
         } else if (summaryNextSteps.length > 0) {
           suggestedAction = `Next: ${summaryNextSteps[0]}`;
         }

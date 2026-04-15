@@ -32,8 +32,8 @@
     },
     {
       "name": "obsidian-tracker",
-      "version": "3.3.1",
-      "description": "Project tracking, task management with kanban boards, bug logging, and session management via Obsidian",
+      "version": "4.2.0",
+      "description": "Project tracking, task management with kanban boards, bug logging, decision records (ADR), session management, and engineering traceability via Obsidian",
       "source": "./plugins/obsidian-tracker",
       "author": {
         "name": "Ivan Lutsenko",

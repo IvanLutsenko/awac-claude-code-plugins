@@ -85,7 +85,7 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 
 ### Obsidian Tracker
 
-Project tracking, task management with kanban boards, bug logging, and session management via Obsidian. **Auto-tracks sessions via hooks.**
+Project tracking, task management with kanban boards, bug logging, decision records (ADR), and session management via Obsidian. **Auto-tracks sessions, actions, bugs, and commits via hooks.**
 
 📚 **[Full Documentation](plugins/obsidian-tracker/README.md)**
 
