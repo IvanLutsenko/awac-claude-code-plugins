@@ -31,6 +31,14 @@ teardown() { teardown_tracking_dir; }
   [[ "$msg" == *"obsidian-tracking.json"* ]]
 }
 
+@test "systemMessage includes semantic review instructions" {
+  create_tracking_file
+  result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/session-clear.sh")
+  msg=$(echo "$result" | jq -r '.systemMessage')
+  [[ "$msg" == *"addBug"* ]]
+  [[ "$msg" == *"addDecision"* ]]
+}
+
 @test "no hookSpecificOutput" {
   create_tracking_file
   result=$(hook_input "$TEST_DIR" | "$HOOKS_DIR/session-clear.sh")

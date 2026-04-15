@@ -28,6 +28,10 @@ cat .claude/obsidian-tracking.json 2>/dev/null || echo "NO_TRACKING"
 - started
 - actions
 
+## Step 2.5: Semantic review
+
+Просмотри свои действия за сессию. Добавь осмысленные 1-строчные саммари в массив actions (пропускай тривиальные — чтение файлов, ls). Если обнаружил баг — вызови addBug MCP. Если принял значимое техническое решение — вызови addDecision MCP. Запиши обновлённый tracking.json.
+
 ## Step 3: Collect final info
 
 Спроси через AskUserQuestion:

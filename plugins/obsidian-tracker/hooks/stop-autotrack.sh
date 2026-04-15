@@ -12,8 +12,6 @@ if [ ! -f "$TRACKING_FILE" ]; then
   exit 0
 fi
 
-PROJECT=$(jq -r '.project // "unknown"' "$TRACKING_FILE" 2>/dev/null)
-
-jq -n --arg project "$PROJECT" '{
-  "systemMessage": ("Auto-track [" + $project + "]: update .claude/obsidian-tracking.json actions with meaningful changes. Call addBug/closeBug/addDecision MCP if relevant. Silent.")
-}'
+# Semantic review moved to /track-stop and SessionStart:clear.
+# Stop hook is now silent — mechanical tracking handled by PostToolUse hooks.
+echo '{}'

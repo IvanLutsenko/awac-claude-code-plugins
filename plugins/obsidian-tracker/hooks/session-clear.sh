@@ -13,5 +13,5 @@ if [ ! -f "$TRACKING_FILE" ]; then
 fi
 
 jq -n '{
-  "systemMessage": "Session clear: read .claude/obsidian-tracking.json, call addSession + addSessionSummary MCP, delete the file. Notify user."
+  "systemMessage": "Session clear: read .claude/obsidian-tracking.json. Before saving, review your actions this session — add meaningful 1-line summaries to the actions array, call addBug/addDecision MCP if relevant. Then call addSession + addSessionSummary MCP, delete the file. Notify user briefly."
 }'

@@ -160,9 +160,15 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-4.0.2
+4.1.0
 
 ## Changelog
+
+### 4.1.0
+- **Silent Stop hook**: Stop hook now returns `{}` — zero noise in chat during work sessions
+- Semantic review (action summaries, bug detection, decision recording) moved to `/track-stop` command and `SessionStart:clear` hook
+- PostToolUse hooks continue to silently track file edits and commits as before
+- Flow: `/track-start` → silent work → `/track-stop` or `/clear` adds semantics + saves
 
 ### 4.0.2
 - **Fix**: shortened all hook `systemMessage` strings to 1-line prompts — verbose multi-paragraph instructions were leaking into user-visible chat
