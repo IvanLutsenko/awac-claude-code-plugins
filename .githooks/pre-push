@@ -1,53 +1,108 @@
 #!/bin/bash
 # Pre-push hook: run tests for changed plugins
 # Only runs tests for plugins that have actual changes being pushed
+# Works both from terminal (stdin from git) and Claude Code Bash tool (no stdin)
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 
-# Get the range of commits being pushed
+# Determine the range of commits being pushed
+range=""
+
+# Try stdin first (normal git push provides ref info)
 while read local_ref local_sha remote_ref remote_sha; do
   if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
-    # New branch — compare against main
     range="origin/main...$local_sha"
   else
     range="$remote_sha...$local_sha"
   fi
+done
 
-  changed_files=$(git diff --name-only "$range" 2>/dev/null)
-
-  # obsidian-tracker
-  if echo "$changed_files" | grep -q "^plugins/obsidian-tracker/"; then
-    echo "==> obsidian-tracker changed, running tests..."
-
-    # Plugin structure + hooks (bats)
-    if command -v bats &>/dev/null; then
-      bats "$REPO_ROOT/plugins/obsidian-tracker/tests/plugin_structure.bats" \
-           "$REPO_ROOT/plugins/obsidian-tracker/tests/hooks/"*.bats || {
-        echo "❌ obsidian-tracker bats tests failed. Push aborted."
-        exit 1
-      }
-    else
-      echo "⚠️  bats not installed, skipping hook tests (brew install bats-core)"
+# Fallback: no stdin (Claude Code Bash tool) — use tracking branch
+if [ -z "$range" ]; then
+  upstream=$(git rev-parse --abbrev-ref @{upstream} 2>/dev/null)
+  if [ -n "$upstream" ]; then
+    remote_sha=$(git rev-parse "$upstream" 2>/dev/null)
+    local_sha=$(git rev-parse HEAD)
+    if [ "$remote_sha" != "$local_sha" ]; then
+      range="$remote_sha...$local_sha"
     fi
+  fi
+fi
 
-    # MCP vitest
-    if [ -f "$REPO_ROOT/plugins/obsidian-tracker/mcp/node_modules/.package-lock.json" ]; then
-      (cd "$REPO_ROOT/plugins/obsidian-tracker/mcp" && npx vitest run) || {
-        echo "❌ obsidian-tracker vitest tests failed. Push aborted."
-        exit 1
-      }
-    else
-      echo "⚠️  MCP node_modules missing, skipping vitest (cd mcp && npm install)"
-    fi
+if [ -z "$range" ]; then
+  exit 0
+fi
 
-    echo "✅ obsidian-tracker tests passed"
+changed_files=$(git diff --name-only "$range" 2>/dev/null)
+
+# obsidian-tracker
+if echo "$changed_files" | grep -q "^plugins/obsidian-tracker/"; then
+  echo "==> obsidian-tracker changed, running tests..."
+
+  # Plugin structure + hooks (bats)
+  if command -v bats &>/dev/null; then
+    bats "$REPO_ROOT/plugins/obsidian-tracker/tests/plugin_structure.bats" \
+         "$REPO_ROOT/plugins/obsidian-tracker/tests/hooks/"*.bats || {
+      echo "❌ obsidian-tracker bats tests failed. Push aborted."
+      exit 1
+    }
+  else
+    echo "⚠️  bats not installed, skipping hook tests (brew install bats-core)"
   fi
 
-  # Add more plugins here as they get tests:
-  # if echo "$changed_files" | grep -q "^plugins/clip-maker/"; then
-  #   ...
-  # fi
+  # MCP vitest
+  if [ -f "$REPO_ROOT/plugins/obsidian-tracker/mcp/node_modules/.package-lock.json" ]; then
+    (cd "$REPO_ROOT/plugins/obsidian-tracker/mcp" && npx vitest run) || {
+      echo "❌ obsidian-tracker vitest tests failed. Push aborted."
+      exit 1
+    }
+  else
+    echo "⚠️  MCP node_modules missing, skipping vitest (cd mcp && npm install)"
+  fi
 
-done
+  echo "✅ obsidian-tracker tests passed"
+
+  # Test coverage check: block if changed source files lack corresponding tests
+  missing_tests=()
+
+  # hooks/*.sh → tests/hooks/*_name.bats
+  for f in $(echo "$changed_files" | grep "^plugins/obsidian-tracker/hooks/.*\.sh$"); do
+    base=$(basename "$f" .sh | tr '-' '_')
+    if [ ! -f "$REPO_ROOT/plugins/obsidian-tracker/tests/hooks/${base}.bats" ]; then
+      missing_tests+=("$f → tests/hooks/${base}.bats")
+    fi
+  done
+
+  # scripts/*.sh → tests/hooks/*_name.bats
+  for f in $(echo "$changed_files" | grep "^plugins/obsidian-tracker/scripts/.*\.sh$"); do
+    base=$(basename "$f" .sh | tr '-' '_')
+    if [ ! -f "$REPO_ROOT/plugins/obsidian-tracker/tests/hooks/${base}.bats" ]; then
+      missing_tests+=("$f → tests/hooks/${base}.bats")
+    fi
+  done
+
+  # mcp/*.ts (excluding tests/config) → mcp/*.test.ts
+  for f in $(echo "$changed_files" | grep "^plugins/obsidian-tracker/mcp/[^/]*\.ts$" | grep -v '\.test\.ts$' | grep -v '\.d\.ts$' | grep -v 'tsconfig'); do
+    base=$(basename "$f" .ts)
+    if [ ! -f "$REPO_ROOT/plugins/obsidian-tracker/mcp/${base}.test.ts" ]; then
+      missing_tests+=("$f → mcp/${base}.test.ts")
+    fi
+  done
+
+  if [ ${#missing_tests[@]} -gt 0 ]; then
+    echo ""
+    echo "❌ Missing test coverage for changed files:"
+    for m in "${missing_tests[@]}"; do
+      echo "   $m"
+    done
+    echo "   Push aborted. Add tests or use --no-verify to skip."
+    exit 1
+  fi
+fi
+
+# Add more plugins here as they get tests:
+# if echo "$changed_files" | grep -q "^plugins/clip-maker/"; then
+#   ...
+# fi
 
 exit 0
