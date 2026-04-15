@@ -1,14 +1,14 @@
 {
   "name": "obsidian-tracker",
-  "description": "Project tracking, task management with kanban boards, bug logging, and session management via Obsidian. Auto-tracks sessions via hooks.",
-  "version": "3.3.1",
+  "description": "Project tracking, task management with kanban boards, bug logging, decision records (ADR), session management, and engineering traceability via Obsidian. Auto-tracks sessions, actions, bugs, and commits via hooks.",
+  "version": "4.0.0",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",
     "email": "ivan@lutsenko.com",
     "url": "https://github.com/IvanLutsenko"
   },
-  "keywords": ["obsidian", "projects", "tracking", "tasks", "kanban", "bugs", "documentation", "hooks", "auto-sync"],
+  "keywords": ["obsidian", "projects", "tracking", "tasks", "kanban", "bugs", "decisions", "adr", "traceability", "hooks", "auto-sync"],
   "license": "MIT",
   "commands": [
     "./commands/projects.md",
@@ -24,7 +24,12 @@
     "./commands/today.md",
     "./commands/pulse.md",
     "./commands/import.md",
-    "./commands/project-archive.md"
+    "./commands/project-archive.md",
+    "./commands/where-was-i.md",
+    "./commands/decision-new.md",
+    "./commands/decision-close.md",
+    "./commands/decision-supersede.md",
+    "./commands/decision-link.md"
   ],
   "hooks": {
     "PreCompact": [
@@ -76,6 +81,47 @@
           {
             "type": "prompt",
             "prompt": "If .claude/obsidian-tracking.json exists: Read the tool input, find todos with status='completed', add them as '✅ {content}' to the actions array in the tracking file. Work silently, don't notify user."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/track-action.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/track-action.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/track-commit.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-autotrack.sh",
+            "timeout": 10
           }
         ]
       }

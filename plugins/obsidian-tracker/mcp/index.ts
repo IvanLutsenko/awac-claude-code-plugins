@@ -140,6 +140,20 @@ async function getNextTaskId(projectPath: string): Promise<number> {
   }
 }
 
+async function getNextDecisionId(projectPath: string): Promise<number> {
+  const decisionsPath = path.join(projectPath, "Decisions");
+  try {
+    const files = await fs.readdir(decisionsPath);
+    const ids = files
+      .map(f => f.match(/^DEC-(\d+)/))
+      .filter((m): m is RegExpMatchArray => m !== null)
+      .map(m => parseInt(m[1], 10));
+    return ids.length > 0 ? Math.max(...ids) + 1 : 1;
+  } catch {
+    return 1;
+  }
+}
+
 async function updateTaskFrontmatter(taskPath: string, updates: Record<string, string>): Promise<void> {
   let content = await fs.readFile(taskPath, "utf-8");
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
@@ -213,6 +227,7 @@ interface ProjectInfo {
   tasks: number;
   archived: boolean;
   path: string;
+  localPath?: string;
   subprojects?: ProjectInfo[];
 }
 
@@ -273,6 +288,7 @@ async function scanProject(projectPath: string, name: string, archived: boolean,
     tasks: taskCount,
     archived,
     path: projectPath,
+    ...(frontmatter.localPath ? { localPath: frontmatter.localPath } : {}),
     ...(subprojects.length > 0 ? { subprojects } : {}),
   };
 }
@@ -523,6 +539,134 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             taskId: { type: "number", description: "Task ID number" },
           },
           required: ["project", "taskId"],
+        },
+      },
+      {
+        name: "findProjectByLocalPath",
+        description: "Find project(s) matching a local filesystem path (e.g., code repository directory)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            localPath: { type: "string", description: "Local filesystem path to match against project localPath frontmatter" },
+          },
+          required: ["localPath"],
+        },
+      },
+      {
+        name: "addSessionSummary",
+        description: "Create a structured, machine-friendly session summary",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            completed: { type: "array", items: { type: "string" }, description: "List of completed items" },
+            decisions: { type: "array", items: { type: "string" }, description: "Decisions made" },
+            blockers: { type: "array", items: { type: "string" }, description: "Blockers encountered" },
+            nextSteps: { type: "array", items: { type: "string" }, description: "Next steps" },
+            duration: { type: "string", description: "Session duration (e.g., '45m', '2h')" },
+            linkedTasks: { type: "array", items: { type: "string" }, description: "Linked task IDs" },
+            linkedBugs: { type: "array", items: { type: "string" }, description: "Linked bug titles" },
+            linkedDecisions: { type: "array", items: { type: "string" }, description: "Linked decision IDs" },
+            linkedCommits: { type: "array", items: { type: "string" }, description: "Linked commit hashes" },
+          },
+          required: ["project", "completed"],
+        },
+      },
+      {
+        name: "getResumeContext",
+        description: "Aggregate latest session summary, active tasks, open bugs, and decisions for a project",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+          },
+          required: ["project"],
+        },
+      },
+      {
+        name: "addDecision",
+        description: "Create a lightweight ADR (Architecture Decision Record) with auto-increment ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            title: { type: "string", description: "Decision title" },
+            context: { type: "string", description: "Context / problem statement" },
+            decision: { type: "string", description: "The decision itself" },
+            consequences: { type: "string", description: "Consequences of the decision" },
+            linkedTasks: { type: "array", items: { type: "string" }, description: "Linked task IDs" },
+            linkedBugs: { type: "array", items: { type: "string" }, description: "Linked bug titles" },
+          },
+          required: ["project", "title", "context", "decision", "consequences"],
+        },
+      },
+      {
+        name: "getDecision",
+        description: "Get details of a specific decision by ID",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            id: { type: "number", description: "Decision ID number" },
+          },
+          required: ["project", "id"],
+        },
+      },
+      {
+        name: "closeDecision",
+        description: "Close a decision (mark as no longer active)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            id: { type: "number", description: "Decision ID number" },
+            reason: { type: "string", description: "Reason for closing" },
+          },
+          required: ["project", "id"],
+        },
+      },
+      {
+        name: "supersedeDecision",
+        description: "Supersede a decision with a new one (closes old, creates new with backlink)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            id: { type: "number", description: "ID of the decision to supersede" },
+            newTitle: { type: "string", description: "Title for the new decision" },
+            newContext: { type: "string", description: "Context for the new decision" },
+            newDecision: { type: "string", description: "The new decision" },
+            newConsequences: { type: "string", description: "Consequences of the new decision" },
+          },
+          required: ["project", "id", "newTitle", "newContext", "newDecision", "newConsequences"],
+        },
+      },
+      {
+        name: "listDecisions",
+        description: "List decisions for a project, optionally filtered by status",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            status: { type: "string", enum: ["Active", "Superseded", "Closed"], description: "Filter by status" },
+          },
+          required: ["project"],
+        },
+      },
+      {
+        name: "linkEntity",
+        description: "Add commit/PR/decision/session links to any entity (task, bug, or decision)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            project: { type: "string", description: "Project name" },
+            entity: { type: "string", description: "Entity identifier (e.g., 'TASK-5', 'BUG - Title', 'DEC-001')" },
+            commits: { type: "array", items: { type: "string" }, description: "Commit hashes to link" },
+            prs: { type: "array", items: { type: "string" }, description: "PR references (e.g., '#482', 'owner/repo#483')" },
+            decisions: { type: "array", items: { type: "string" }, description: "Decision IDs to link" },
+            sessions: { type: "array", items: { type: "string" }, description: "Session IDs to link" },
+          },
+          required: ["project", "entity"],
         },
       },
       {
@@ -1334,6 +1478,549 @@ ${args.nextSteps ?? "TBD"}
                 ...updates,
                 ...(args.context ? { contextAppended: true } : {}),
               },
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "addSessionSummary": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+
+        const sessionsPath = path.join(projectPath, "Sessions");
+        await fs.mkdir(sessionsPath, { recursive: true });
+
+        const now = new Date();
+        const date = now.toISOString().split("T")[0];
+        const time = now.toISOString().split("T")[1].slice(0, 5);
+        const sessionId = `${date}T${time.replace(":", "-")}-00`;
+        const summaryPath = path.join(sessionsPath, `Summary-${sessionId}.md`);
+
+        const completed = args.completed as string[] || [];
+        const decisions = args.decisions as string[] || [];
+        const blockers = args.blockers as string[] || [];
+        const nextSteps = args.nextSteps as string[] || [];
+        const duration = (args.duration as string) || "unknown";
+        const linkedTasks = args.linkedTasks as string[] || [];
+        const linkedBugs = args.linkedBugs as string[] || [];
+        const linkedDecisions = args.linkedDecisions as string[] || [];
+        const linkedCommits = args.linkedCommits as string[] || [];
+
+        const frontmatter = [
+          "---",
+          "type: session-summary",
+          `date: "${date}"`,
+          `time: "${time}"`,
+          `project: ${args.project}`,
+          `session-id: "${sessionId}"`,
+          `duration: ${duration}`,
+          `linked-tasks: [${linkedTasks.map(t => `"${t}"`).join(", ")}]`,
+          `linked-bugs: [${linkedBugs.map(b => `"${b}"`).join(", ")}]`,
+          `linked-decisions: [${linkedDecisions.map(d => `"${d}"`).join(", ")}]`,
+          `linked-commits: [${linkedCommits.map(c => `"${c}"`).join(", ")}]`,
+          "---",
+        ].join("\n");
+
+        const body = [
+          "",
+          "# Session Summary",
+          "",
+          "## Completed",
+          ...(completed.length > 0 ? completed.map(c => `- ${c}`) : ["- None"]),
+          "",
+          "## Decisions",
+          ...(decisions.length > 0 ? decisions.map(d => `- ${d}`) : ["- None"]),
+          "",
+          "## Blockers",
+          ...(blockers.length > 0 ? blockers.map(b => `- ${b}`) : ["- None"]),
+          "",
+          "## Next Steps",
+          ...(nextSteps.length > 0 ? nextSteps.map(n => `- ${n}`) : ["- TBD"]),
+          "",
+        ].join("\n");
+
+        await fs.writeFile(summaryPath, frontmatter + body);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              path: summaryPath,
+              sessionId,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "getResumeContext": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+
+        // 1. Latest session summary
+        const sessionsPath = path.join(projectPath, "Sessions");
+        let latestSummary: Record<string, any> | null = null;
+        try {
+          const sessionFiles = await fs.readdir(sessionsPath);
+          const summaryFiles = sessionFiles.filter(f => f.startsWith("Summary-")).sort().reverse();
+          if (summaryFiles.length > 0) {
+            const parsed = await parseMarkdown(path.join(sessionsPath, summaryFiles[0]));
+            const content = await fs.readFile(path.join(sessionsPath, summaryFiles[0]), "utf-8");
+
+            const extractSection = (section: string): string[] => {
+              const regex = new RegExp(`## ${section}\\n([\\s\\S]*?)(?=\\n## |$)`);
+              const match = content.match(regex);
+              if (!match) return [];
+              return match[1].trim().split("\n").filter(l => l.startsWith("- ")).map(l => l.slice(2));
+            };
+
+            latestSummary = {
+              date: parsed.frontmatter.date || summaryFiles[0].replace("Summary-", "").replace(".md", ""),
+              completed: extractSection("Completed"),
+              decisions: extractSection("Decisions"),
+              blockers: extractSection("Blockers"),
+              nextSteps: extractSection("Next Steps"),
+            };
+          }
+        } catch {}
+
+        // 2. Active tasks (In Progress + Review)
+        const boardPath = path.join(projectPath, "Board.md");
+        const columns = await parseBoard(boardPath);
+        const taskRegex = /\[\[TASK-(\d+)\s*-\s*(.+?)\]\]/;
+        const activeTasks: Array<{ id: number; title: string; status: string }> = [];
+        for (const status of ["In Progress", "Review"]) {
+          for (const line of columns.get(status) || []) {
+            const match = line.match(taskRegex);
+            if (match) activeTasks.push({ id: parseInt(match[1]), title: match[2], status });
+          }
+        }
+
+        // 3. Open bugs (sorted by priority)
+        const files = await fs.readdir(projectPath);
+        const bugFiles = files.filter(f => f.startsWith("BUG -") && f.endsWith(".md"));
+        const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+        const openBugs: Array<{ title: string; priority: string }> = [];
+        for (const bf of bugFiles) {
+          try {
+            const bugContent = await fs.readFile(path.join(projectPath, bf), "utf-8");
+            if (!bugContent.includes("**Status:** Closed")) {
+              const priorityMatch = bugContent.match(/\*\*Priority:\*\*\s*(\w+)/);
+              openBugs.push({
+                title: bf.replace("BUG - ", "").replace(".md", ""),
+                priority: priorityMatch ? priorityMatch[1] : "medium",
+              });
+            }
+          } catch {}
+        }
+        openBugs.sort((a, b) => (priorityOrder[a.priority] ?? 3) - (priorityOrder[b.priority] ?? 3));
+
+        // 4. Active decisions (last 5)
+        const activeDecisions: Array<{ id: string; title: string; date: string }> = [];
+        const decisionsPath = path.join(projectPath, "Decisions");
+        try {
+          const decFiles = await fs.readdir(decisionsPath);
+          for (const df of decFiles.filter(f => f.startsWith("DEC-") && f.endsWith(".md")).sort().reverse().slice(0, 5)) {
+            try {
+              const parsed = await parseMarkdown(path.join(decisionsPath, df));
+              if (parsed.frontmatter.status === "Active") {
+                const idMatch = df.match(/^(DEC-\d+)/);
+                activeDecisions.push({
+                  id: idMatch ? idMatch[1] : df,
+                  title: df.replace(/^DEC-\d+\s*-\s*/, "").replace(".md", ""),
+                  date: parsed.frontmatter.date || "",
+                });
+              }
+            } catch {}
+          }
+        } catch {}
+
+        // 5. Suggested action
+        let suggestedAction = "Review backlog";
+        const summaryBlockers = latestSummary?.blockers?.filter((b: string) => b !== "None") || [];
+        const summaryNextSteps = latestSummary?.nextSteps?.filter((n: string) => n !== "TBD") || [];
+        if (summaryBlockers.length > 0) {
+          suggestedAction = `Resolve blocker: ${summaryBlockers[0]}`;
+        } else if (activeTasks.length > 0) {
+          const inProgress = activeTasks.find(t => t.status === "In Progress");
+          suggestedAction = inProgress ? `Continue: ${inProgress.title}` : `Review: ${activeTasks[0].title}`;
+        } else if (summaryNextSteps.length > 0) {
+          suggestedAction = `Next: ${summaryNextSteps[0]}`;
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              project: args.project,
+              latestSummary,
+              activeTasks,
+              openBugs,
+              activeDecisions,
+              suggestedAction,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "addDecision": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+
+        const decisionsPath = path.join(projectPath, "Decisions");
+        await fs.mkdir(decisionsPath, { recursive: true });
+
+        const id = await getNextDecisionId(projectPath);
+        const idStr = String(id).padStart(3, "0");
+        const date = new Date().toISOString().split("T")[0];
+        const title = args.title as string;
+        const linkedTasks = args.linkedTasks as string[] || [];
+        const linkedBugs = args.linkedBugs as string[] || [];
+
+        const content = `---
+type: decision
+id: DEC-${idStr}
+status: Active
+date: "${date}"
+project: ${args.project}
+linked-tasks: [${linkedTasks.map(t => `"${t}"`).join(", ")}]
+linked-bugs: [${linkedBugs.map(b => `"${b}"`).join(", ")}]
+superseded-by:
+supersedes:
+tags: [decision]
+---
+
+# DEC-${idStr}: ${title}
+
+## Context
+${args.context}
+
+## Decision
+${args.decision}
+
+## Consequences
+${args.consequences}
+`;
+
+        const filePath = path.join(decisionsPath, `DEC-${idStr} - ${title}.md`);
+        await fs.writeFile(filePath, content);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              id: `DEC-${idStr}`,
+              path: filePath,
+              message: `Decision DEC-${idStr} created: "${title}"`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "getDecision": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+        const decisionsPath = path.join(projectPath, "Decisions");
+        const idStr = String(args.id as number).padStart(3, "0");
+
+        const decFiles = await fs.readdir(decisionsPath);
+        const decFile = decFiles.find(f => f.startsWith(`DEC-${idStr}`));
+        if (!decFile) throw new Error(`Decision DEC-${idStr} not found`);
+
+        const filePath = path.join(decisionsPath, decFile);
+        const fileContent = await fs.readFile(filePath, "utf-8");
+        const parsed = await parseMarkdown(filePath);
+
+        const extractSection = (section: string): string => {
+          const regex = new RegExp(`## ${section}\\n([\\s\\S]*?)(?=\\n## |$)`);
+          const match = fileContent.match(regex);
+          return match ? match[1].trim() : "";
+        };
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              id: `DEC-${idStr}`,
+              title: decFile.replace(/^DEC-\d+\s*-\s*/, "").replace(".md", ""),
+              status: parsed.frontmatter.status || "Unknown",
+              date: parsed.frontmatter.date || "",
+              context: extractSection("Context"),
+              decision: extractSection("Decision"),
+              consequences: extractSection("Consequences"),
+              links: {
+                tasks: parsed.frontmatter["linked-tasks"] || "",
+                bugs: parsed.frontmatter["linked-bugs"] || "",
+                supersededBy: parsed.frontmatter["superseded-by"] || "",
+                supersedes: parsed.frontmatter["supersedes"] || "",
+              },
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "closeDecision": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+        const decisionsPath = path.join(projectPath, "Decisions");
+        const idStr = String(args.id as number).padStart(3, "0");
+
+        const decFiles = await fs.readdir(decisionsPath);
+        const decFile = decFiles.find(f => f.startsWith(`DEC-${idStr}`));
+        if (!decFile) throw new Error(`Decision DEC-${idStr} not found`);
+
+        const filePath = path.join(decisionsPath, decFile);
+        let content = await fs.readFile(filePath, "utf-8");
+        content = content.replace(/^status: Active$/m, "status: Closed");
+        if (args.reason) {
+          content = content.replace(/## Consequences/, `## Close Reason\n${args.reason}\n\n## Consequences`);
+        }
+        await fs.writeFile(filePath, content);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              message: `Decision DEC-${idStr} closed`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "supersedeDecision": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+        const decisionsPath = path.join(projectPath, "Decisions");
+        const oldIdStr = String(args.id as number).padStart(3, "0");
+
+        const decFiles = await fs.readdir(decisionsPath);
+        const oldDecFile = decFiles.find(f => f.startsWith(`DEC-${oldIdStr}`));
+        if (!oldDecFile) throw new Error(`Decision DEC-${oldIdStr} not found`);
+
+        // Create new decision
+        const newId = await getNextDecisionId(projectPath);
+        const newIdStr = String(newId).padStart(3, "0");
+        const date = new Date().toISOString().split("T")[0];
+
+        const newContent = `---
+type: decision
+id: DEC-${newIdStr}
+status: Active
+date: "${date}"
+project: ${args.project}
+linked-tasks: []
+linked-bugs: []
+superseded-by:
+supersedes: DEC-${oldIdStr}
+tags: [decision]
+---
+
+# DEC-${newIdStr}: ${args.newTitle}
+
+## Context
+${args.newContext}
+
+## Decision
+${args.newDecision}
+
+## Consequences
+${args.newConsequences}
+`;
+
+        const newFilePath = path.join(decisionsPath, `DEC-${newIdStr} - ${args.newTitle as string}.md`);
+        await fs.writeFile(newFilePath, newContent);
+
+        // Update old decision
+        const oldFilePath = path.join(decisionsPath, oldDecFile);
+        let oldContent = await fs.readFile(oldFilePath, "utf-8");
+        oldContent = oldContent.replace(/^status: Active$/m, "status: Superseded");
+        oldContent = oldContent.replace(/^superseded-by:\s*$/m, `superseded-by: DEC-${newIdStr}`);
+        await fs.writeFile(oldFilePath, oldContent);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              oldId: `DEC-${oldIdStr}`,
+              newId: `DEC-${newIdStr}`,
+              newPath: newFilePath,
+              message: `DEC-${oldIdStr} superseded by DEC-${newIdStr}`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "listDecisions": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+        const decisionsPath = path.join(projectPath, "Decisions");
+        const filterStatus = args.status as string | undefined;
+
+        const decisions: Array<{ id: string; title: string; status: string; date: string }> = [];
+        try {
+          const decFiles = (await fs.readdir(decisionsPath)).filter(f => f.startsWith("DEC-") && f.endsWith(".md")).sort();
+          for (const df of decFiles) {
+            try {
+              const parsed = await parseMarkdown(path.join(decisionsPath, df));
+              const status = parsed.frontmatter.status || "Unknown";
+              if (filterStatus && status !== filterStatus) continue;
+              const idMatch = df.match(/^(DEC-\d+)/);
+              decisions.push({
+                id: idMatch ? idMatch[1] : df,
+                title: df.replace(/^DEC-\d+\s*-\s*/, "").replace(".md", ""),
+                status,
+                date: parsed.frontmatter.date || "",
+              });
+            } catch {}
+          }
+        } catch {}
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ project: args.project, decisions }, null, 2),
+          }],
+        };
+      }
+
+      case "linkEntity": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const projectPath = await resolveProjectPath(vaultPath, args.project as string);
+        const entity = args.entity as string;
+
+        // Find entity file
+        let filePath: string;
+        if (entity.startsWith("TASK-")) {
+          const files = await fs.readdir(projectPath);
+          const taskFile = files.find(f => f.startsWith(entity));
+          if (!taskFile) throw new Error(`Entity ${entity} not found`);
+          filePath = path.join(projectPath, taskFile);
+        } else if (entity.startsWith("BUG -") || entity.startsWith("BUG -")) {
+          filePath = path.join(projectPath, `${entity}.md`);
+        } else if (entity.startsWith("DEC-")) {
+          const decisionsPath = path.join(projectPath, "Decisions");
+          const files = await fs.readdir(decisionsPath);
+          const decFile = files.find(f => f.startsWith(entity));
+          if (!decFile) throw new Error(`Entity ${entity} not found`);
+          filePath = path.join(decisionsPath, decFile);
+        } else {
+          throw new Error(`Unknown entity format: ${entity}. Use TASK-N, BUG - Title, or DEC-NNN`);
+        }
+
+        let content = await fs.readFile(filePath, "utf-8");
+        const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+
+        if (fmMatch) {
+          let fm = fmMatch[1];
+          const linkFields: Record<string, string[] | undefined> = {
+            commits: args.commits as string[] | undefined,
+            prs: args.prs as string[] | undefined,
+            "linked-decisions": args.decisions as string[] | undefined,
+            "linked-sessions": args.sessions as string[] | undefined,
+          };
+
+          for (const [key, values] of Object.entries(linkFields)) {
+            if (!values || values.length === 0) continue;
+            const regex = new RegExp(`^${key}:\\s*\\[(.*)\\]\\s*$`, "m");
+            const match = fm.match(regex);
+            if (match) {
+              // Merge with existing values
+              const existing = match[1] ? match[1].split(",").map(s => s.trim().replace(/"/g, "")).filter(Boolean) : [];
+              const merged = [...new Set([...existing, ...values])];
+              fm = fm.replace(regex, `${key}: [${merged.map(v => `"${v}"`).join(", ")}]`);
+            } else {
+              // Add new field
+              fm += `\n${key}: [${values.map(v => `"${v}"`).join(", ")}]`;
+            }
+          }
+
+          content = `---\n${fm}\n---` + content.slice(fmMatch[0].length);
+          await fs.writeFile(filePath, content);
+        } else {
+          // No frontmatter — prepend it
+          const linkLines: string[] = ["---"];
+          if (args.commits) linkLines.push(`commits: [${(args.commits as string[]).map(v => `"${v}"`).join(", ")}]`);
+          if (args.prs) linkLines.push(`prs: [${(args.prs as string[]).map(v => `"${v}"`).join(", ")}]`);
+          if (args.decisions) linkLines.push(`linked-decisions: [${(args.decisions as string[]).map(v => `"${v}"`).join(", ")}]`);
+          if (args.sessions) linkLines.push(`linked-sessions: [${(args.sessions as string[]).map(v => `"${v}"`).join(", ")}]`);
+          linkLines.push("---\n");
+          content = linkLines.join("\n") + content;
+          await fs.writeFile(filePath, content);
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              success: true,
+              entity,
+              message: `Links updated for ${entity}`,
+            }, null, 2),
+          }],
+        };
+      }
+
+      case "findProjectByLocalPath": {
+        const vaultPath = await requireVault();
+        if (!args) throw new Error("Missing arguments");
+        const targetPath = path.resolve((args.localPath as string).replace(/\/+$/, ""));
+
+        interface LocalPathMatch {
+          name: string;
+          vaultPath: string;
+          localPath: string;
+          isSubproject: boolean;
+          parent?: string;
+        }
+
+        const matches: LocalPathMatch[] = [];
+
+        async function scanForLocalPath(dir: string, parentName?: string): Promise<void> {
+          const entries = await fs.readdir(dir, { withFileTypes: true });
+          for (const entry of entries) {
+            if (!entry.isDirectory() || entry.name === "Sessions" || entry.name === "_archive") continue;
+            const entryPath = path.join(dir, entry.name);
+            const dashboardPath = path.join(entryPath, "!Project Dashboard.md");
+            try {
+              const parsed = await parseMarkdown(dashboardPath);
+              const lp = parsed.frontmatter.localPath;
+              if (lp && path.resolve(lp.replace(/\/+$/, "")) === targetPath) {
+                matches.push({
+                  name: entry.name,
+                  vaultPath: entryPath,
+                  localPath: lp,
+                  isSubproject: !!parentName,
+                  ...(parentName ? { parent: parentName } : {}),
+                });
+              }
+              // Recurse into subdirectories for subprojects
+              await scanForLocalPath(entryPath, entry.name);
+            } catch {
+              // No dashboard, try subdirectories anyway
+              await scanForLocalPath(entryPath, parentName);
+            }
+          }
+        }
+
+        await scanForLocalPath(vaultPath);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              found: matches.length > 0,
+              matches,
             }, null, 2),
           }],
         };

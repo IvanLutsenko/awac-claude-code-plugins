@@ -1,6 +1,6 @@
 # Obsidian Tracker
 
-Project tracking, task management with kanban boards, bug logging, and session management via Obsidian. **Auto-tracks sessions via hooks.**
+Project tracking, task management with kanban boards, bug logging, decision records (ADR), session management, and engineering traceability via Obsidian. **Auto-tracks sessions, actions, bugs, and commits via hooks.**
 
 ## Features
 
@@ -8,8 +8,12 @@ Project tracking, task management with kanban boards, bug logging, and session m
 - **Subproject Tree**: Hierarchical project view with `X.Y` numbering for nested subprojects
 - **Task Management**: Kanban board with Backlog/In Progress/Review/Done columns
 - **Bug Lifecycle**: Create, track, and close bug reports with priority levels
-- **Session Logging**: Record Claude Code sessions (manual or automatic)
-- **Auto-Tracking**: Automatic session logging via hooks
+- **Decision Records (ADR)**: Lightweight Architecture Decision Records with lifecycle (Active → Closed/Superseded)
+- **Entity Linking**: Link commits, PRs, tasks, bugs, and decisions to each other for traceability
+- **Session Logging**: Record Claude Code sessions with structured summaries
+- **Auto-Tracking**: Automatic session, file edit, and commit tracking via hooks
+- **Orphan Recovery**: Detects stale tracking files from crashed/closed sessions and auto-saves them
+- **Resume Context**: `/where-was-i` aggregates last session, active tasks, open bugs, and decisions
 - **Project Lifecycle**: Active → Archived → Deleted
 - **Search**: Find projects by tags or content
 
@@ -32,21 +36,26 @@ Project tracking, task management with kanban boards, bug logging, and session m
 | `/track-start [project]` | Start auto-tracking |
 | `/track-stop` | Stop tracking + save to Obsidian |
 | `/track-status` | Show current tracking status |
+| `/where-was-i` | Resume context: last session, active tasks, open bugs, decisions |
+| `/decision-new` | Create a lightweight ADR |
+| `/decision-close [id]` | Close an active decision |
+| `/decision-supersede [id]` | Supersede a decision with a new one |
+| `/decision-link [id]` | Link commits, PRs, tasks, or bugs to a decision |
 
-## Auto-Tracking (NEW in v2.0)
+## Auto-Tracking
 
 ### How it works
 
 ```
 /track-start my-project
     ↓
-Work normally, use TodoWrite
+Work normally — edit files, commit, use TodoWrite
     ↓
-Actions automatically recorded
+Actions, file edits, and commits automatically recorded
     ↓
 /clear or /track-stop
     ↓
-Session saved to Obsidian
+Session + structured summary saved to Obsidian
 ```
 
 ### Hooks
@@ -54,12 +63,20 @@ Session saved to Obsidian
 | Hook | Trigger | Type | Action |
 |------|---------|------|--------|
 | PreCompact | Before context compression | prompt | Preserves tracking info in summary |
-| SessionStart:clear | `/clear` | command | Save session to Obsidian + cleanup |
+| SessionStart:clear | `/clear` | command | Save session + structured summary to Obsidian |
 | SessionStart:compact\|resume | Context compact, resume | command | Remind about active tracking |
-| SessionStart:startup | Fresh session | command | Auto-detect project, start tracking |
+| SessionStart:startup | Fresh session | command | Orphan recovery + auto-detect project via `findProjectByLocalPath` |
 | PostToolUse:TodoWrite | TodoWrite | prompt | Records completed todos to tracking file |
+| PostToolUse:Edit | Edit | command | Records edited filenames to tracking file |
+| PostToolUse:Write | Write | command | Records created filenames to tracking file |
+| PostToolUse:Bash | Bash (git commit) | command | Captures commit hashes to tracking file |
+| Stop | Agent turn ends | command | Auto-reviews actions, logs bugs/decisions if significant |
 
-> SessionStart hooks use `command` type (bash scripts in `hooks/`) for resilience — they never error even if the MCP server is unavailable.
+> All command-type hooks are bash scripts in `hooks/` — they never error even if the MCP server is unavailable.
+
+### Orphan recovery
+
+If a session was interrupted (terminal closed, crash), the startup hook detects stale tracking files (>5 min old) and auto-saves them to Obsidian before starting a new session.
 
 ### Tracking file
 
@@ -68,8 +85,9 @@ Located at `.claude/obsidian-tracking.json`:
 {
   "project": "my-project",
   "goal": "Fix bugs",
-  "started": "2024-01-29T10:00:00Z",
-  "actions": ["✅ Fix search", "✅ Update docs"]
+  "startedAt": "2024-01-29T10:00:00Z",
+  "actions": ["✅ Fix search", "✏️ README.md", "💾 commit a1b2c3d"],
+  "linkedCommits": ["a1b2c3d"]
 }
 ```
 
@@ -93,6 +111,15 @@ Located at `.claude/obsidian-tracking.json`:
 | `addBug` | Add bug report |
 | `closeBug` | Close a bug report (exact or partial title match) |
 | `addSession` | Add session log |
+| `addSessionSummary` | Create structured session summary with linked entities |
+| `getResumeContext` | Aggregate last session, active tasks, open bugs, decisions |
+| `findProjectByLocalPath` | Find project by local filesystem path |
+| `addDecision` | Create lightweight ADR with auto-increment ID |
+| `getDecision` | Get decision details by ID |
+| `closeDecision` | Close a decision |
+| `supersedeDecision` | Supersede a decision with a new one (closes old, creates new) |
+| `listDecisions` | List decisions, optionally filtered by status |
+| `linkEntity` | Link commits/PRs/decisions/sessions to any entity |
 | `search` | Search by tag (e.g., `tag:bug`) |
 
 ## Setup
@@ -119,20 +146,35 @@ Located at `.claude/obsidian-tracking.json`:
 │   ├── Board.md                  # Kanban board (Backlog/In Progress/Review/Done)
 │   ├── TASK-{id} - {title}.md   # Task files
 │   ├── BUG - {title}.md         # Bug reports (Status: Open/Closed)
+│   ├── Decisions/
+│   │   └── DEC-{id} - {title}.md  # Decision records (ADR)
 │   ├── {subproject}/             # Subproject (detected by Dashboard or README.md)
 │   │   ├── !Project Dashboard.md
 │   │   └── BUG - {title}.md
 │   └── Sessions/
-│       └── Session - YYYY-MM-DD.md  # Session logs
+│       ├── Session - YYYY-MM-DD.md    # Session logs
+│       └── Summary-{id}.md           # Structured session summaries
 └── _archive/
     └── {archived-project}/       # Archived projects (same structure)
 ```
 
 ## Version
 
-3.3.1
+4.0.0
 
 ## Changelog
+
+### 4.0.0
+- **Decision Records (ADR)**: `addDecision`, `getDecision`, `closeDecision`, `supersedeDecision`, `listDecisions` MCP tools + `/decision-new`, `/decision-close`, `/decision-supersede`, `/decision-link` commands
+- **Entity Linking**: `linkEntity` MCP tool links commits, PRs, decisions, and sessions to tasks, bugs, or decisions
+- **Structured Session Summaries**: `addSessionSummary` creates machine-friendly summaries with linked entities; `/clear` now saves both session log and structured summary
+- **Resume Context**: `getResumeContext` MCP tool + `/where-was-i` command — aggregates last session, active tasks, open bugs, and decisions
+- **Project Lookup by Path**: `findProjectByLocalPath` MCP tool — matches projects by `localPath` frontmatter
+- **Auto-track file edits**: PostToolUse:Edit/Write hooks capture edited filenames to tracking file (command-type, zero LLM overhead)
+- **Auto-track commits**: PostToolUse:Bash hook captures git commit hashes to tracking file
+- **Stop hook**: auto-reviews turn actions, logs bugs and decisions if significant
+- **Orphan recovery**: SessionStart:startup detects stale tracking files (>5 min) from crashed/closed sessions and auto-saves them before starting a new session
+- **Session-clear enhanced**: now calls `addSessionSummary` alongside `addSession` for structured data
 
 ### 3.3.1
 - **Fix**: добавлен обязательный `hookEventName` в JSON-ответы всех SessionStart хуков — Claude Code v2.1.97+ валидирует схему и без этого поля показывал `hook error` на каждом запуске
