@@ -10,6 +10,8 @@ allowed-tools:
   - Read
   - "Bash(cat*)"
   - "Bash(date*)"
+  - "Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*)"
+  - "Bash(mkdir*)"
 ---
 
 # /where-was-i — Resume Context
@@ -59,3 +61,9 @@ Bugs:
 
 5. **If no data exists** (no summaries, no tasks, no bugs):
    - Say "No previous session data found for {project}. This looks like a fresh start."
+
+6. **Auto-start tracking:**
+   If `.claude/obsidian-tracking.json` does not exist, start tracking for the resolved project:
+   ```bash
+   ${CLAUDE_PLUGIN_ROOT}/scripts/start-tracking.sh "{project}"
+   ```

@@ -91,7 +91,10 @@ TBD
 ---
 ENTRY
 
-# --- Move tracking file for prompt hook enrichment ---
+# --- Move tracking file for enrichment ---
 mv "$TRACKING_FILE" "${CWD}/.claude/obsidian-session-saved.json"
 
-echo '{}'
+# Best-effort: ask Claude to add semantic summary. Raw session is already saved above.
+jq -n '{
+  "systemMessage": "Raw session saved to Obsidian. If .claude/obsidian-session-saved.json exists, call addSessionSummary MCP with completed items and next steps, then delete the file. Brief confirmation."
+}'

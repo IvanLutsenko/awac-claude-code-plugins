@@ -1,20 +1,19 @@
 #!/bin/bash
-# SessionStart:startup — orphan recovery + auto-detect project
-# Command-type hook: never errors even if MCP is unavailable
+# SessionStart:startup — orphan recovery only
+# Tracking now starts on first project interaction (commands), not on startup.
 
 INPUT=$(cat)
 CWD=$(echo "$INPUT" | jq -r '.cwd // "."')
 
 TRACKING_FILE="${CWD}/.claude/obsidian-tracking.json"
 
-# Phase A: Check for orphaned session from previous terminal close
+# Orphaned session from previous terminal close
 if [ -f "$TRACKING_FILE" ]; then
   STARTED_AT=$(jq -r '.startedAt // ""' "$TRACKING_FILE" 2>/dev/null)
   PROJECT=$(jq -r '.project // "unknown"' "$TRACKING_FILE" 2>/dev/null)
 
   IS_STALE=false
   if [ -n "$STARTED_AT" ]; then
-    # Calculate age in seconds
     if command -v gdate &>/dev/null; then
       STARTED_EPOCH=$(gdate -d "$STARTED_AT" +%s 2>/dev/null || echo 0)
     else
@@ -26,22 +25,20 @@ if [ -f "$TRACKING_FILE" ]; then
   fi
 
   if [ "$IS_STALE" = true ]; then
-    # Orphaned session — save data to temp file, short prompt
-    ORPHAN_FILE="${CWD}/.claude/obsidian-orphan.json"
-    cp "$TRACKING_FILE" "$ORPHAN_FILE" 2>/dev/null
-    jq -n --arg project "$PROJECT" --arg cwd "$CWD" '{
-      "systemMessage": ("Orphan session [" + $project + "]: recover from .claude/obsidian-orphan.json — call addSession MCP, delete both files, auto-detect new project via findProjectByLocalPath(" + $cwd + "). Notify user briefly.")
+    # Orphaned session — save to vault, then clean up
+    SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+    echo "{\"cwd\":\"$CWD\"}" | "$SCRIPT_DIR/session-clear.sh" >/dev/null 2>&1
+    jq -n --arg project "$PROJECT" '{
+      "systemMessage": ("Orphan session [" + $project + "] saved to vault.")
     }'
   else
-    # Active session (recent) — just remind
+    # Active session (recent) — confirm
     jq -n --arg project "$PROJECT" '{
-      "systemMessage": ("Obsidian Tracking already active: " + $project)
+      "systemMessage": ("Tracking active: " + $project)
     }'
   fi
   exit 0
 fi
 
-# Phase B: No tracking file — auto-detect project via findProjectByLocalPath
-jq -n --arg cwd "$CWD" '{
-  "systemMessage": ("Auto-detect project: findProjectByLocalPath(" + $cwd + "). If found, create .claude/obsidian-tracking.json and notify user. If not — silent.")
-}'
+# No tracking file — do nothing. Tracking starts on first /where-was-i, /projects, /task, etc.
+echo '{}'

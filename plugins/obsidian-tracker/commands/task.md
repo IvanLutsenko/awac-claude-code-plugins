@@ -1,7 +1,7 @@
 ---
 description: Create a new task in an Obsidian project with kanban board
 argument-hint: '"title" --project name --priority high --effort 2h'
-allowed-tools: Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__getProject, mcp__plugin_obsidian-tracker_obsidian__listTasks, mcp__plugin_obsidian-tracker_obsidian__addTask, mcp__plugin_obsidian-tracker_obsidian__updateTask, mcp__plugin_obsidian-tracker_obsidian__addBug, mcp__plugin_obsidian-tracker_obsidian__closeBug, mcp__plugin_obsidian-tracker_obsidian__addSession, mcp__plugin_obsidian-tracker_obsidian__createProject, mcp__plugin_obsidian-tracker_obsidian__updateProject, mcp__plugin_obsidian-tracker_obsidian__archiveProject, mcp__plugin_obsidian-tracker_obsidian__restoreProject, mcp__plugin_obsidian-tracker_obsidian__search, mcp__plugin_obsidian-tracker_obsidian__deleteTask
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(mkdir*), Bash(cat*), Read, mcp__plugin_obsidian-tracker_obsidian__getConfig, mcp__plugin_obsidian-tracker_obsidian__initVault, mcp__plugin_obsidian-tracker_obsidian__listProjects, mcp__plugin_obsidian-tracker_obsidian__getProject, mcp__plugin_obsidian-tracker_obsidian__listTasks, mcp__plugin_obsidian-tracker_obsidian__addTask, mcp__plugin_obsidian-tracker_obsidian__updateTask, mcp__plugin_obsidian-tracker_obsidian__addBug, mcp__plugin_obsidian-tracker_obsidian__closeBug, mcp__plugin_obsidian-tracker_obsidian__addSession, mcp__plugin_obsidian-tracker_obsidian__createProject, mcp__plugin_obsidian-tracker_obsidian__updateProject, mcp__plugin_obsidian-tracker_obsidian__archiveProject, mcp__plugin_obsidian-tracker_obsidian__restoreProject, mcp__plugin_obsidian-tracker_obsidian__search, mcp__plugin_obsidian-tracker_obsidian__deleteTask
 ---
 
 # Task Command
@@ -64,5 +64,9 @@ Creates a task with auto-increment ID and adds to kanban board (Backlog column).
    Context added to project "{project}"
    ```
 
-8. **Auto-update tracking:**
-   Если `.claude/obsidian-tracking.json` существует — прочитай через Read, добавь `"Created TASK-{id}: {title}"` в actions, перезапиши через `Bash(cat*)`.
+8. **Auto-start tracking:**
+   Если `.claude/obsidian-tracking.json` НЕ существует — запусти трекинг:
+   ```bash
+   ${CLAUDE_PLUGIN_ROOT}/scripts/start-tracking.sh "{project}"
+   ```
+   Если файл уже существует — прочитай через Read, добавь `"Created TASK-{id}: {title}"` в actions, перезапиши через `Bash(cat*)`.
