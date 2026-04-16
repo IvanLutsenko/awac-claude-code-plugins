@@ -160,7 +160,7 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-4.2.0
+4.2.1
 
 ## Changelog
 
