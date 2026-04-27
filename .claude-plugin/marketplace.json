@@ -84,6 +84,17 @@
         "url": "https://github.com/IvanLutsenko"
       },
       "category": "media"
+    },
+    {
+      "name": "drawbridge",
+      "version": "0.1.0",
+      "description": "Bridge between a short brief and image-gen web UIs (Gemini/ChatGPT/Grok/Midjourney). Crafts target-tuned prompt, copies to clipboard, opens the UI — no API keys.",
+      "source": "./plugins/drawbridge",
+      "author": {
+        "name": "Ivan Lutsenko",
+        "url": "https://github.com/IvanLutsenko"
+      },
+      "category": "media"
     }
   ]
 }
