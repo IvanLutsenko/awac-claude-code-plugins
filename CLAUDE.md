@@ -8,6 +8,7 @@
 - **locale-notifications** (v2.0.0) — macOS notifications in system language
 - **combined-review** (v1.1.0) — Multi-agent code review + CodeRabbit CLI
 - **clip-maker** (v1.3.0) — Automated vertical clip creator (whisper + Claude + ffmpeg)
+- **drawbridge** (v0.1.0) — Bridge briefs to image-gen web UIs (Gemini/ChatGPT/Grok/Midjourney), per-target prompt tuning
 
 ## Plugin Structure
 

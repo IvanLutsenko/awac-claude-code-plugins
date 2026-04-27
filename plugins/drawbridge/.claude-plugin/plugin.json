@@ -1,0 +1,21 @@
+{
+  "name": "drawbridge",
+  "description": "Bridge between a short brief and image-gen web UIs (Gemini, ChatGPT, Grok, Midjourney). Crafts a target-specific prompt, copies it to clipboard, opens the target — no API keys, no payments.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ivan Lutsenko",
+    "email": "ivan@lutsenko.com",
+    "url": "https://github.com/IvanLutsenko"
+  },
+  "keywords": ["image-generation", "prompt", "gemini", "chatgpt", "grok", "midjourney", "imagen", "dall-e"],
+  "license": "MIT",
+  "commands": [
+    "./commands/draw.md",
+    "./commands/redraw.md",
+    "./commands/draw-prompt.md",
+    "./commands/draw-config.md"
+  ],
+  "skills": [
+    "./skills/prompt-crafting/SKILL.md"
+  ]
+}

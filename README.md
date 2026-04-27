@@ -201,6 +201,38 @@ macOS notifications for Claude Code in your system language.
 
 ---
 
+### Drawbridge
+
+Bridge between a short brief and image-gen web UIs (Gemini Imagen 3, ChatGPT DALL-E 3, Grok Aurora, Midjourney). Crafts a target-tuned prompt, copies it to clipboard, opens the target — no API keys, no payments.
+
+📚 **[Full Documentation](plugins/drawbridge/README.md)**
+
+**Installation:**
+```bash
+/plugin install drawbridge
+```
+
+**Quick Start:**
+```bash
+/draw закат на байкале с медведем у воды        # default target from config
+/draw -t midjourney cyberpunk samurai            # one-shot target override
+/redraw -t chatgpt                               # variation of last brief, different target
+/draw-prompt <brief>                             # prompt only, no browser open
+/draw-config show                                # view defaults
+/draw-config set default_target chatgpt          # change default
+```
+
+**Status:** 🔨 Beta | **Version:** 0.1.0
+
+**Features:**
+- Per-target prompt fine-tuning (Imagen prose / DALL-E structure / Aurora density / MJ tag syntax)
+- Auto-translate brief to English (configurable)
+- Settings via `~/.claude/drawbridge.local.md` with project-local override
+- History of last 200 prompts for `/redraw`
+- macOS only in 0.1.0
+
+---
+
 ### Clip Maker
 
 Automated vertical clip creator for talks and presentations. Whisper + Claude + ffmpeg pipeline.
