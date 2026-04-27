@@ -122,6 +122,71 @@ Located at `.claude/obsidian-tracking.json`:
 | `linkEntity` | Link commits/PRs/decisions/sessions to any entity |
 | `search` | Search by tag (e.g., `tag:bug`) |
 
+## Permissions
+
+The plugin auto-allows non-destructive MCP tools via a `PermissionRequest` hook (`hooks/auto-allow-mcp.sh`) — no manual approval needed for the operations below. Destructive tools always fall through to the default permission flow and require explicit user approval.
+
+### Auto-allowed (read-only)
+
+| Tool | Description |
+|------|-------------|
+| `findProjectByLocalPath` | Find project by local filesystem path |
+| `getConfig` | Get current configuration |
+| `getDecision` | Get decision details by ID |
+| `getProject` | Get project details |
+| `getResumeContext` | Aggregate last session, tasks, bugs, decisions |
+| `initVault` | Initialize with vault path |
+| `listDecisions` | List decisions, optionally filtered by status |
+| `listProjects` | List all projects |
+| `listTasks` | List tasks with board statuses |
+| `search` | Search by tag |
+
+### Auto-allowed (mutating)
+
+| Tool | Description |
+|------|-------------|
+| `addBug` | Add bug report |
+| `addDecision` | Create lightweight ADR |
+| `addSession` | Add session log |
+| `addSessionSummary` | Create structured session summary |
+| `addTask` | Create task with auto-increment ID + kanban board |
+| `archiveProject` | Archive a project (move to `_archive/`) |
+| `closeBug` | Close a bug report |
+| `closeDecision` | Close a decision |
+| `createProject` | Create new project |
+| `linkEntity` | Link commits/PRs/decisions/sessions to entities |
+| `supersedeDecision` | Supersede a decision with a new one |
+| `updateProject` | Update description, status, or append README context |
+| `updateTask` | Move task between kanban columns |
+
+### Always asks (destructive)
+
+| Tool | Description |
+|------|-------------|
+| `deleteProject` | Permanently delete a project |
+| `deleteTask` | Delete task from project and board |
+| `restoreProject` | Restore an archived project |
+
+### Overriding the policy
+
+The hook only **adds** an `allow` decision — it does not override `deny`/`ask` rules from your settings. To force a prompt for any auto-allowed tool, add it to `ask` (or `deny` to block) in `~/.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "ask": [
+      "mcp__obsidian-tracker__addTask",
+      "mcp__obsidian-tracker__createProject"
+    ],
+    "deny": [
+      "mcp__obsidian-tracker__archiveProject"
+    ]
+  }
+}
+```
+
+To disable auto-allow entirely, disable the plugin or remove the `PermissionRequest` hook block from your local plugin copy.
+
 ## Setup
 
 1. Install plugin:
@@ -160,9 +225,12 @@ Located at `.claude/obsidian-tracking.json`:
 
 ## Version
 
-4.2.1
+4.3.0
 
 ## Changelog
+
+### 4.3.0
+- **Auto-allow MCP tools via PermissionRequest hook**: `hooks/auto-allow-mcp.sh` returns `permissionDecision: allow` for 23 read-only and mutating MCP tools — no manual approval per tool call. Destructive tools (`deleteProject`, `deleteTask`, `restoreProject`) still require explicit approval. Override per-user via `ask`/`deny` rules in `~/.claude/settings.json` (see README → Permissions).
 
 ### 4.2.0
 - **Reliable session save on /clear**: `session-clear.sh` now writes raw session directly to Obsidian vault via bash (no Claude dependency), then prompt hook enriches with semantic summary — guarantees data is saved even if Claude ignores the prompt
