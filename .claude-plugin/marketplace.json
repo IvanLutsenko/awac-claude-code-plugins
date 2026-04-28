@@ -21,8 +21,8 @@
     },
     {
       "name": "crashlytics",
-      "version": "4.4.1",
-      "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. 2-level fallback (CLI REST API → MCP → Manual).",
+      "version": "4.4.2",
+      "description": "Multi-platform crash analysis for Android & iOS with git blame forensics and code-level fixes. MCP-primary fetch with REST API fallback.",
       "source": "./plugins/crashlytics",
       "author": {
         "name": "Ivan Lutsenko",

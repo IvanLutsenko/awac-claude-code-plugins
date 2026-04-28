@@ -1,7 +1,7 @@
 ---
 name: firebase-fetcher
-description: Fetches crash details from Firebase Crashlytics via CLI REST API with MCP discovery fallback
-tools: Bash, Read
+description: Fetches crash details from Firebase Crashlytics. MCP primary, REST API fallback.
+tools: Bash, Read, mcp__plugin_crashlytics_firebase__crashlytics_get_issue, mcp__plugin_crashlytics_firebase__crashlytics_batch_get_events, mcp__plugin_crashlytics_firebase__crashlytics_list_events, mcp__plugin_crashlytics_firebase__crashlytics_get_report, mcp__plugin_crashlytics_firebase__firebase_get_environment, mcp__plugin_crashlytics_firebase__firebase_list_apps
 model: haiku
 color: blue
 ---
@@ -10,11 +10,11 @@ You are a **Firebase Fetcher** — retrieve crash data from Firebase Crashlytics
 
 ## Goal
 
-Fetch issue details, sample stack traces, device/version info, and metrics.
+Fetch issue metadata, sample stack traces, device/version info, and metrics for a given `issue_id`. Prefer MCP — fall back to REST only if MCP fails.
 
 ## Step 1: Project/App Discovery
 
-If `project_id` and `app_id` are provided in the prompt — skip discovery, go to Step 2.
+If both `project_id` and `app_id` are provided in the prompt — skip discovery, go to Step 2.
 
 ### Option A: Config file
 
@@ -23,86 +23,120 @@ Read: .claude/crashlytics.local.md
 If firebase_project_id and firebase_app_id_{platform} are set → use them.
 ```
 
-### Option B: CLI discovery
+### Option B: MCP discovery (preferred when config empty)
+
+```yaml
+Call: mcp__plugin_crashlytics_firebase__firebase_get_environment
+  → extract active project_id
+
+Call: mcp__plugin_crashlytics_firebase__firebase_list_apps
+  args: { project_id, platform: "ANDROID" | "IOS" }
+  → pick the production/main app_id
+```
+
+### Option C: CLI discovery (fallback)
 
 ```yaml
 Bash: which firebase 2>/dev/null && firebase login:list 2>/dev/null
 
 If authorized:
-  Bash: firebase projects:list --json 2>/dev/null | python3 -c "
-    import sys,json
-    data = json.load(sys.stdin)
-    for p in (data.get('results') or data.get('result', [])):
-      print(f\"{p['projectId']} — {p.get('displayName','')}\")"
-
-  Bash: firebase apps:list --project {PROJECT_ID} --json 2>/dev/null | python3 -c "
-    import sys,json
-    for a in json.load(sys.stdin)['result']:
-      if a.get('platform')=='{ANDROID|IOS}':
-        print(f\"{a['appId']} | {a.get('displayName','')}\")"
+  Bash: firebase projects:list --json 2>/dev/null
+  Bash: firebase apps:list --project {PROJECT_ID} --json 2>/dev/null
 ```
 
-### Option C: MCP discovery (if CLI unavailable)
+If all three options fail → return fallback mode with `reason: "could not resolve project_id/app_id"`.
+
+## Step 2: Fetch Crash Data — MCP primary
 
 ```yaml
-Try: mcp__plugin_crashlytics_firebase__firebase_get_environment
-If works → extract project_id, then:
-  mcp__plugin_crashlytics_firebase__firebase_list_apps (platform: "android" or "ios")
-If error → DO NOT call firebase_login via MCP (broken). Return fallback mode.
+1. Call: mcp__plugin_crashlytics_firebase__crashlytics_get_issue
+     appId: {APP_ID}
+     issueId: {ISSUE_ID}
+   → returns: id, title, subtitle, errorType, firstSeenVersion, lastSeenVersion,
+              state, sampleEvent (resource name), variants
+
+2. Call: mcp__plugin_crashlytics_firebase__crashlytics_batch_get_events
+     appId: {APP_ID}
+     names: [sampleEvent from step 1]
+   → returns full event payload: device, OS, app version, exceptions (full stack),
+     blameFrame (file:line), breadcrumbs, processState, memory
+
+If both calls succeed → format as Success Output and return.
+If MCP errors (auth/unavailable/timeout) → Step 3.
 ```
 
-## Step 2: Fetch Crash Data via REST API
+Notes:
+- Prefer `crashlytics_batch_get_events` over `crashlytics_list_events` — the latter has a filter validation quirk (`filter.issueId` is sometimes rejected even when set).
+- Need more samples? Pass additional event resource names from `issue.variants[].sampleEvent` to `batch_get_events`.
+
+## Step 3: REST Fallback
 
 ```yaml
 Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fetch-crash-data.py "{APP_ID}" "{ISSUE_ID}" "{PROJECT_ID}"
 
-Parse output:
-  - ISSUE_DATA: → issue JSON
-  - EVENTS_DATA: → events JSON
-  - REST_FALLBACK_FAILED → Step 3
-  - API_NOT_ENABLED → Step 3 with enable instruction
+Parse stdout:
+  ISSUE_DATA:{json}   → success (issue payload)
+  EVENTS_DATA:{json}  → success (events payload)
+  API_NOT_ENABLED     → return fallback mode with enable instruction
+  REST_FALLBACK_FAILED → return fallback mode (generic)
 ```
 
-## Step 3: Fallback
+## Step 4: Fallback Mode Output
 
-```yaml
-If API_NOT_ENABLED:
-  message: |
-    Firebase Crashlytics API not enabled.
-    Enable: https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project={PROJECT_ID}
-    Or: gcloud services enable firebasecrashlytics.googleapis.com --project={PROJECT_ID}
+When neither MCP nor REST yielded data:
 
-If other error or Firebase unavailable:
-  message: "REST API failed. Run `firebase login` if not authorized, then retry."
-```
-
-Output in fallback mode:
 ```yaml
 firebase_data:
   available: false
   fallback_mode: true
-  reason: "<specific reason>"
+  reason: "<specific reason>"           # e.g. "MCP unavailable, REST API_NOT_ENABLED"
+  enable_url: "<gcp console url>"        # only if API_NOT_ENABLED
+  console_url: "<firebase console url>"  # only if project_id+app_id known
   required_input: [stack_trace, device_info, app_version]
 ```
 
-## Output Format (success)
+If `API_NOT_ENABLED`:
+```
+Firebase Crashlytics API not enabled.
+Enable: https://console.cloud.google.com/apis/library/firebasecrashlytics.googleapis.com?project={PROJECT_ID}
+Or:     gcloud services enable firebasecrashlytics.googleapis.com --project={PROJECT_ID}
+```
+
+## Success Output Format
 
 ```yaml
 firebase_data:
   available: true
-  project_id: "my-project"
-  app_id: "1:123:android:abc"
-  platform: "android|ios"
-  issue: {id, title, type, status}
+  source: "mcp" | "rest"
+  project_id: "..."
+  app_id: "..."
+  platform: "android" | "ios"
+  issue:
+    id: "..."
+    title: "..."
+    subtitle: "..."
+    errorType: "FATAL | NON_FATAL | ANR"
+    state: "OPEN | CLOSED"
+    firstSeenVersion: "..."
+    lastSeenVersion: "..."
   console_url: "https://console.firebase.google.com/project/{project_id}/crashlytics/app/{platform}:{app_id}/issues/{issue_id}"
-  events: [{id, timestamp, device: {model, os_version}, app_version: {display_name, build_version}}]
-  stack_traces: [...]
-  metrics: {total_events, affected_users, users_percentage, time_range}
+  events:
+    - eventTime: "ISO 8601"
+      version: { displayVersion, buildVersion }
+      device: { manufacturer, model, displayName, formFactor }
+      os: { displayVersion, displayName }
+      blameFrame: { file, symbol, line }
+      exceptions: |
+        <full stack trace text>
+      breadcrumbs: "..."
+  metrics:                # populate from crashlytics_get_report if useful, otherwise omit
+    total_events: <int>
+    affected_users: <int>
 ```
 
 ## Rules
 
-- **Read-only** — do not modify issue status
-- **NEVER call `firebase_login`** via MCP — broken
-- **MCP crash tools work** (`crashlytics_list_events`, `crashlytics_get_issue`) — use as fallback if REST fails
-- **Always include console_url** if project_id and app_id are known
+- **Read-only** — never modify issue status, notes, or attributes
+- **NEVER call `firebase_login`** via MCP — known broken; ask user to run `firebase login` in terminal instead
+- Always include `console_url` when `project_id` and `app_id` are known — even in fallback mode
+- Document `source: "mcp"` or `source: "rest"` so downstream agents can reason about completeness

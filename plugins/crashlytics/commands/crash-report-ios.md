@@ -65,10 +65,24 @@ Fix instructions: node → `brew install node`, firebase → `npm install -g fir
 
 ### STEP 0: Firebase Data
 
-Delegate to **firebase-fetcher** agent. Do NOT duplicate discovery/fetch logic.
-
 **NEVER** use `mcp__plugin_crashlytics_firebase__firebase_login` — broken.
-**NOTE:** MCP crash tools (`crashlytics_list_events`, `crashlytics_get_issue`, `crashlytics_batch_get_events`) DO work and can be used as fallback if REST API fails.
+
+#### Path A: direct MCP fast-path (preferred)
+
+If `firebase_project_id` and `firebase_app_id_ios` are set in config AND `mcp__plugin_crashlytics_firebase__*` tools are available:
+
+```yaml
+1. Call: mcp__plugin_crashlytics_firebase__crashlytics_get_issue
+     appId: {firebase_app_id_ios}
+     issueId: {ISSUE_ID}
+2. Call: mcp__plugin_crashlytics_firebase__crashlytics_batch_get_events
+     appId: {firebase_app_id_ios}
+     names: [sampleEvent from step 1]
+```
+
+Skip Path B if both calls succeed.
+
+#### Path B: firebase-fetcher agent (discovery / fallback)
 
 ```yaml
 Task(
@@ -124,13 +138,20 @@ Task(
 
 ### STEP 3.5: Quality Gate
 
+Pass the full forensics output through a tmp file — `echo "..."` mangles markdown with backticks/`$`/code fences.
+
 ```yaml
-Bash: echo "{forensics_output}" | python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate-report.py --console-url "{console_url}"
+1. Write tool: /tmp/crashlytics-forensics-{ISSUE_ID}.md
+   contents: <full forensics_output verbatim, no truncation>
+
+2. Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate-report.py \
+           --console-url "{console_url}" \
+           < /tmp/crashlytics-forensics-{ISSUE_ID}.md
 ```
 
 Parse the YAML result:
 - `pass: true` → output report as-is
-- `pass: false` → fill missing fields from previous steps, do NOT re-call forensics
+- `pass: false` → fill missing fields from previous steps using the existing forensics output. Do NOT re-call forensics. Do NOT re-validate against an abbreviated summary — that triggers a false 1/14.
 - `pass: null` (has `needs_review` items) → evaluate those fields yourself and decide pass/fail
 
 ### STEP 4: Output results

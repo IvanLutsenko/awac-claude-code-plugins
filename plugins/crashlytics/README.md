@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.4.1 — Android & iOS
+**Version:** 4.4.2 — Android & iOS
 
 ---
 
@@ -94,7 +94,7 @@ The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.4.1                         │
+│                      crashlytics v4.4.2                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -279,6 +279,12 @@ MCP is also used for **project/app discovery** (`firebase_get_environment`, `fir
 ---
 
 ## Changelog
+
+### 4.4.2
+- **Fixed:** `firebase-fetcher` agent had no MCP tools in its `tools:` list and could not execute the "MCP discovery" path documented in its prompt — added `mcp__plugin_crashlytics_firebase__*` tools explicitly
+- **Changed:** MCP is now the primary fetch path (`crashlytics_get_issue` + `crashlytics_batch_get_events`); REST `v1alpha` becomes a true fallback. `/crash-report` and platform-specific commands gained a "Path A: direct MCP fast-path" that skips the agent hop when project_id/app_id are in config
+- **Fixed:** Quality gate now writes the forensics report to `/tmp/crashlytics-forensics-{ISSUE_ID}.md` and pipes via stdin redirect — `echo "..."` was mangling backticks/`$`/code fences in long reports and producing false 1/14 validation results
+- **Doc:** added explicit warning to never re-validate against an abbreviated summary on `pass: false`
 
 ### 4.4.1
 - **Fixed:** `validate-report.py` — синхронизирован список `VALID_COMPONENTS` с фактическими компонентами, корректное чтение `console_url`

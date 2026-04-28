@@ -73,7 +73,29 @@ Fix instructions: node → `brew install node`, firebase → `npm install -g fir
 
 ## Step 2: Fetch Firebase Data
 
-Delegate to **firebase-fetcher** agent. Do NOT duplicate discovery/fetch logic here.
+Two paths — pick the cheaper one available.
+
+### Path A: direct MCP fast-path (preferred)
+
+If `firebase_project_id` and `firebase_app_id_{PLATFORM}` are set in config AND `mcp__plugin_crashlytics_firebase__*` tools are available in this session:
+
+```yaml
+1. Call: mcp__plugin_crashlytics_firebase__crashlytics_get_issue
+     appId: {firebase_app_id_{PLATFORM}}
+     issueId: {ISSUE_ID}
+   → captures issue metadata + sampleEvent resource name
+
+2. Call: mcp__plugin_crashlytics_firebase__crashlytics_batch_get_events
+     appId: {firebase_app_id_{PLATFORM}}
+     names: [sampleEvent from step 1]
+   → captures full event payload (stack, device, OS, version, blameFrame)
+```
+
+Skip Path B if both calls succeed.
+
+### Path B: firebase-fetcher agent (fallback / discovery needed)
+
+Use when project_id/app_id are unknown or MCP errors out:
 
 ```yaml
 Task(
@@ -118,13 +140,20 @@ Task(
 
 ## Step 4: Quality Gate
 
+Forensics output is multi-page markdown with backticks, `$`, code fences and quotes — passing it through `echo "..."` mangles it. **Always go through a tmp file** so the validator gets the raw bytes.
+
 ```yaml
-Bash: echo "{forensics_output}" | python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate-report.py --console-url "{console_url}"
+1. Write tool: /tmp/crashlytics-forensics-{ISSUE_ID}.md
+   contents: <full forensics_output verbatim, no truncation>
+
+2. Bash: python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate-report.py \
+           --console-url "{console_url}" \
+           < /tmp/crashlytics-forensics-{ISSUE_ID}.md
 ```
 
 Parse the YAML result:
 - `pass: true` → output report as-is
-- `pass: false` → fill missing fields from previous steps, do NOT re-call forensics
+- `pass: false` → fill missing fields from previous steps using the existing forensics output. Do NOT re-call forensics. Do NOT re-validate against an abbreviated summary — that triggers a false 1/14.
 - `pass: null` (has `needs_review` items) → evaluate those fields yourself and decide pass/fail
 
 ## Step 5: Output
