@@ -1,6 +1,7 @@
 ---
 name: silent-failure-hunter
 description: "Audits error handling in code changes. Finds silent failures, empty catch blocks, broad exception catching, unjustified fallbacks, and missing error feedback. Zero tolerance for swallowed errors.\n\nExamples:\n<example>\nContext: Reviewing code with try-catch blocks\nuser: \"Check the error handling in my changes\"\nassistant: \"I'll launch the silent-failure-hunter to audit error handling.\"\n<commentary>\nUse silent-failure-hunter for error handling audit.\n</commentary>\n</example>"
+tools: Read, Grep, Glob, Bash(grep:*), Bash(rg:*), Bash(find:*), Bash(git show:*)
 model: sonnet
 color: yellow
 ---

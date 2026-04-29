@@ -1,6 +1,7 @@
 ---
 name: test-analyzer
 description: "Analyzes test coverage quality for code changes. Focuses on behavioral coverage, identifies critical gaps in error paths and edge cases. Reports only gaps with criticality >= 7/10.\n\nExamples:\n<example>\nContext: Reviewing code changes with business logic\nuser: \"Are there enough tests for these changes?\"\nassistant: \"I'll launch the test-analyzer to check coverage quality.\"\n<commentary>\nUse test-analyzer for test coverage analysis.\n</commentary>\n</example>"
+tools: Read, Grep, Glob, Bash(find:*), Bash(grep:*), Bash(git show:*)
 model: sonnet
 color: cyan
 ---

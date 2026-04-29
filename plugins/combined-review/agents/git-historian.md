@@ -1,6 +1,7 @@
 ---
 name: git-historian
 description: "Analyzes git blame and history for changed files. Detects reverted fixes, frequently broken code, parallel work conflicts, and lost changes. Use when reviewing code changes that touch critical or frequently modified files.\n\nExamples:\n<example>\nContext: Reviewing changes to a file with complex history\nuser: \"Check if these changes conflict with recent work\"\nassistant: \"I'll launch the git-historian agent to analyze the history.\"\n<commentary>\nUse git-historian for history-aware analysis of changes.\n</commentary>\n</example>"
+tools: Read, Grep, Bash(git log:*), Bash(git blame:*), Bash(git diff:*), Bash(git show:*), Bash(git rev-parse:*), Bash(git merge-base:*)
 model: sonnet
 color: blue
 ---

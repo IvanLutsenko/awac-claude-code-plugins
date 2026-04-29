@@ -1,6 +1,7 @@
 ---
 name: code-reviewer
 description: "Reviews code changes for CLAUDE.md compliance, bugs, logic errors, and code quality. Reads full files (not just diff) for context. Use when reviewing any code changes — PR, branch diff, or uncommitted work.\n\nExamples:\n<example>\nContext: User wants a code review of their changes\nuser: \"Review my code changes\"\nassistant: \"I'll launch the code-reviewer agent to analyze your changes.\"\n<commentary>\nUse code-reviewer for general code quality and bug detection.\n</commentary>\n</example>"
+tools: Read, Grep, Glob, Bash(git log:*), Bash(git blame:*), Bash(git diff:*), Bash(git show:*), Bash(grep:*), Bash(rg:*), Bash(find:*), Bash(wc:*), Bash(head:*), Bash(tail:*), Bash(cat:*)
 model: sonnet
 color: green
 ---
