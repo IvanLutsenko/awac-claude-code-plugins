@@ -6,6 +6,12 @@ Structural checks (11/14) are definitive. Semantic checks (3/14: Root cause,
 Trigger, Why now) use word-count heuristics — flagged as NEEDS_REVIEW when
 content is too short or contains placeholder markers.
 
+Section header policy: forensics-agents always emit English headers (Basic info,
+Stack trace, Root cause, Proposed fix, Assignee, ...) — body content is in the
+configured language. SECTION_ALIASES below is a safety-net for cases when the
+LLM translates a header anyway. Add new languages by extending the dict — no
+logic change required.
+
 Usage:
     python3 validate-report.py < report.txt
     python3 validate-report.py --console-url "https://..." < report.txt
@@ -25,34 +31,186 @@ VALID_COMPONENTS = {'ui', 'network', 'database', 'services', 'background', 'busi
 
 CRITICAL_FIELDS = {'Assignee', 'Fix before', 'Fix after', 'Executed commands', 'JIRA Brief'}
 
+# ---------------------------------------------------------------------------
+# Multi-language section aliases (en + ru + es + de + fr + pt + it)
+#
+# Section headers are normatively English (see Language Policy in
+# forensics-android.md / forensics-ios.md). This dict is a safety-net for
+# reports where LLM translated a header. Substring match, lowercase.
+# Add a new language: append its translations to each list. No code change.
+# ---------------------------------------------------------------------------
+
+SECTION_ALIASES = {
+    'basic': [
+        'basic info', 'basic information', 'basic',
+        'базовая информация', 'базовая',
+        'información básica', 'básico',
+        'grundinformationen',
+        'informations de base',
+        'informações básicas',
+        'informazioni di base',
+    ],
+    'stack_trace': [
+        'stack trace', 'stack-trace',
+        'анализ stack trace', 'анализ стека', 'стек',
+        'análisis de stack', 'pila',
+        'stack-analyse', 'stapel',
+        'analyse de pile',
+        'rastreio de pilha',
+        'analisi stack',
+    ],
+    'checked_files': [
+        'checked file', 'analyzed file', 'files checked',
+        'проверенные файлы', 'проанализированные файлы',
+        'archivos revisados', 'archivos analizados',
+        'überprüfte dateien', 'analysierte dateien',
+        'fichiers vérifiés', 'fichiers analysés',
+        'arquivos verificados',
+        'file controllati',
+    ],
+    'executed_commands': [
+        'executed command', 'commands executed', 'git command',
+        'выполненные команды', 'выполненные git команды',
+        'comandos ejecutados',
+        'ausgeführte befehle',
+        'commandes exécutées',
+        'comandos executados',
+        'comandi eseguiti',
+    ],
+    'root_cause': [
+        'root cause',
+        'корневая причина', 'причина',
+        'causa raíz',
+        'grundursache',
+        'cause racine',
+        'causa raiz',
+        'causa principale',
+    ],
+    'proposed_fix': [
+        'proposed fix', 'solution',
+        'предлагаемый fix', 'предлагаемое решение',
+        'corrección propuesta', 'solución',
+        'lösungsvorschlag', 'behebung',
+        'correctif proposé', 'solution proposée',
+        'correção proposta',
+        'correzione proposta',
+    ],
+    'assignee': [
+        'assignee',
+        'ответственный', 'исполнитель',
+        'asignado', 'responsable',
+        'verantwortlich', 'zuständig',
+        'assigné',
+        'responsável',
+        'assegnatario',
+    ],
+    'context_prev': [
+        'context', 'prevention', 'context & prevention',
+        'контекст', 'контекст и предотвращение', 'предотвращение',
+        'contexto', 'prevención',
+        'kontext', 'prävention',
+        'contexte', 'prévention',
+        'prevenção',
+        'contesto', 'prevenzione',
+    ],
+    'trigger': [
+        'trigger',
+        'триггер',
+        'desencadenante', 'disparador',
+        'auslöser',
+        'déclencheur',
+        'gatilho',
+        'innesco',
+    ],
+    'why_now': [
+        'why now',
+        'почему сейчас',
+        'por qué ahora',
+        'warum jetzt',
+        'pourquoi maintenant',
+        'por que agora',
+        'perché ora',
+    ],
+    'prevention': [
+        'prevention',
+        'предотвращение', 'профилактика',
+        'prevención',
+        'prävention',
+        'prévention',
+        'prevenção',
+        'prevenzione',
+    ],
+}
+
+JIRA_FIELD_ALIASES = {
+    'Crash':        ['crash', 'краш', 'ошибка', 'fallo', 'absturz', 'plantage', 'queda', 'arresto'],
+    'Component':    ['component', 'компонент', 'componente', 'komponente', 'composant'],
+    'Assignee':     ['assignee', 'ответственный', 'исполнитель', 'asignado', 'responsable',
+                     'verantwortlich', 'assigné', 'responsável', 'assegnatario'],
+    'Problem':      ['problem', 'проблема', 'problema', 'problème'],
+    'Stack trace':  ['stack trace', 'stack-trace', 'стек', 'pila', 'stapel', 'pile',
+                     'rastreio de pilha', 'stack'],
+    'Fix':          ['fix', 'исправление', 'решение', 'corrección', 'solución',
+                     'behebung', 'lösung', 'correctif', 'solution',
+                     'correção', 'correzione'],
+    'Reproduction': ['reproduction', 'воспроизведение', 'шаги воспроизведения',
+                     'reproducción', 'reproduktion', 'reprodução', 'riproduzione'],
+    'Firebase':     ['firebase'],
+}
+
+BEFORE_TOKENS = ['before', 'до', 'antes', 'vorher', 'avant', 'prima']
+AFTER_TOKENS  = ['after',  'после', 'después', 'nachher', 'après', 'depois', 'dopo']
+
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+_HEADER_RE = re.compile(r'^(#{2,3})\s+(.+)$')
+# bold-only header: line is entirely **Text** or **Text:**  (no other content)
+_BOLD_HEADER_RE = re.compile(r'^\*\*([^*]+?)\*\*\s*:?\s*$')
+
+
 def split_sections(text):
-    """Split markdown text into {lowercase_header: content} by ## / ### headers."""
+    """Split markdown text into {lowercase_header: content} by ## / ### headers
+    AND bold-only header lines (`**Basic info:**` / `**Базовая информация:**`).
+
+    Forensics agents use `**Bold:**` lines as subheaders inside a `### Crash:`
+    parent section — those need to be addressable too.
+    """
     sections = {}
     current = None
     lines = []
+
+    def flush(name, body_lines):
+        if name is None:
+            return
+        # last-write-wins is fine for our checks; but skip empty bodies
+        sections[name] = '\n'.join(body_lines)
+
     for line in text.split('\n'):
-        m = re.match(r'^(#{2,3})\s+(.+)$', line)
+        m = _HEADER_RE.match(line)
         if m:
-            if current is not None:
-                sections[current] = '\n'.join(lines)
+            flush(current, lines)
             current = m.group(2).strip().lower()
             lines = []
-        else:
-            lines.append(line)
-    if current is not None:
-        sections[current] = '\n'.join(lines)
+            continue
+        bm = _BOLD_HEADER_RE.match(line.strip())
+        if bm:
+            flush(current, lines)
+            current = bm.group(1).strip().lower()
+            lines = []
+            continue
+        lines.append(line)
+    flush(current, lines)
     return sections
 
 
-def find(sections, *keywords):
-    """Return content of first section whose header contains any keyword."""
-    for key, content in sections.items():
-        if any(kw in key for kw in keywords):
+def find_section(sections, key):
+    """Return content of first section whose header matches any alias for `key`."""
+    aliases = SECTION_ALIASES[key]
+    for header, content in sections.items():
+        if any(alias in header for alias in aliases):
             return content
     return None
 
@@ -76,23 +234,26 @@ def is_placeholder_only(text):
     return bool(PLACEHOLDER_RE.search(stripped)) and len(stripped.split()) <= 5
 
 
-def extract_subfield(text, field_name):
-    """Extract content after **field_name:** until next **Field or section end."""
-    pattern = r'(?:\*\*)?{}(?:\*\*)?[:\s]*(.+?)(?=\n\s*\*\*[A-Z]|\n\s*#{{2,}}|\Z)'.format(
-        re.escape(field_name)
-    )
-    m = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-    return m.group(1).strip() if m else None
+def extract_subfield_any(text, aliases):
+    """Find subfield labelled by any of `aliases`. Returns content until next bold-label or section break."""
+    for alias in aliases:
+        pattern = r'(?:\*\*)?{}(?:\*\*)?[:\s]*(.+?)(?=\n\s*\*\*[A-Za-zА-Яа-я]|\n\s*#{{2,}}|\Z)'.format(
+            re.escape(alias)
+        )
+        m = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+        if m:
+            return m.group(1).strip()
+    return None
 
 
-def get_semantic_field(sections, field_name):
-    """Get text for Trigger/Why now/Prevention — from dedicated or parent section."""
-    s = find(sections, field_name.lower())
+def get_semantic_field(sections, alias_key):
+    """Get text for Trigger/Why now/Prevention — from dedicated section or parent context section."""
+    s = find_section(sections, alias_key)
     if s and s.strip():
         return s.strip()
-    s = find(sections, 'context', 'prevention')
+    s = find_section(sections, 'context_prev')
     if s:
-        return extract_subfield(s, field_name)
+        return extract_subfield_any(s, SECTION_ALIASES[alias_key])
     return None
 
 
@@ -101,24 +262,28 @@ def get_semantic_field(sections, field_name):
 # ---------------------------------------------------------------------------
 
 def chk_exception(sections):
-    s = find(sections, 'basic')
+    s = find_section(sections, 'basic')
     if not s:
         return 'MISSING'
-    m = re.search(r'(?:exception|error|crash\s*type)[:\s]+(\S.+)', s, re.IGNORECASE)
+    m = re.search(r'(?:exception|error|crash\s*type|исключение|ошибка|тип\s*краша)[:\s]+(\S.+)',
+                  s, re.IGNORECASE)
     return 'OK' if m and not is_placeholder_only(m.group(1)) else 'MISSING'
 
 
 def chk_version(sections):
-    s = find(sections, 'basic')
+    s = find_section(sections, 'basic')
     if not s:
         return 'MISSING'
-    if re.search(r'\bversion\b', s, re.IGNORECASE) or 'DATA UNAVAILABLE' in s.upper():
+    # Match en/de/fr/it/pt 'vers...' and ru 'верс...' prefixes (handles plural/case forms)
+    if re.search(r'(?i)\b(?:vers|верс)', s):
+        return 'OK'
+    if 'DATA UNAVAILABLE' in s.upper():
         return 'OK'
     return 'MISSING'
 
 
 def chk_component(sections):
-    s = find(sections, 'basic')
+    s = find_section(sections, 'basic')
     if not s:
         return 'MISSING'
     words = set(re.findall(r'\b\w+\b', s.lower()))
@@ -126,18 +291,27 @@ def chk_component(sections):
 
 
 def chk_stack_trace(sections):
-    s = find(sections, 'stack trace')
+    s = find_section(sections, 'stack_trace')
     if not s:
         return 'MISSING'
-    hits = re.findall(r'[:(]\d+[):]', s)
-    return 'OK' if len(hits) >= 3 else 'MISSING'
+    line_num_hits = len(re.findall(r'[:(]\d+[):]', s))
+    if line_num_hits >= 3:
+        return 'OK'
+    # Fallback: stack-frame "at <symbol>" lines (Java/Kotlin/iOS) — accept >=4 even
+    # without explicit line numbers (system frames often omit them).
+    frame_hits = len(re.findall(r'(?im)^\s*at\s+\S', s))
+    if frame_hits >= 4:
+        return 'OK'
+    if line_num_hits >= 2 and frame_hits >= 2:
+        return 'OK'
+    return 'MISSING'
 
 
 def chk_checked_files(sections):
-    s = find(sections, 'checked file', 'analyzed file', 'files checked')
+    s = find_section(sections, 'checked_files')
     if not s or not s.strip():
         return 'MISSING'
-    if re.search(r'(?:author|commit|blame)', s, re.IGNORECASE):
+    if re.search(r'(?:author|commit|blame|автор|коммит)', s, re.IGNORECASE):
         return 'OK'
     if re.search(r'`[^`]+\.\w+`', s):
         return 'OK'
@@ -145,15 +319,15 @@ def chk_checked_files(sections):
 
 
 def chk_executed_commands(sections):
-    s = find(sections, 'executed command', 'commands executed', 'git command')
+    s = find_section(sections, 'executed_commands')
     if not s:
         return 'MISSING'
-    return 'OK' if re.search(r'git\s+(?:blame|log)', s) else 'MISSING'
+    return 'OK' if re.search(r'git\s+(?:blame|log|fetch|ls-tree)', s) else 'MISSING'
 
 
 def chk_root_cause(sections):
     """Semantic check: >=2 sentences of technical explanation, >=15 words."""
-    s = find(sections, 'root cause')
+    s = find_section(sections, 'root_cause')
     if not s or not s.strip():
         return 'MISSING'
     if is_placeholder_only(s):
@@ -165,39 +339,54 @@ def chk_root_cause(sections):
     return 'NEEDS_REVIEW'
 
 
+def _has_token_with_codeblock(section_body, tokens):
+    lower = section_body.lower()
+    pos = -1
+    for tok in tokens:
+        idx = lower.find(tok)
+        if idx != -1 and (pos == -1 or idx < pos):
+            pos = idx
+    if pos == -1:
+        return False
+    return '```' in section_body[pos:]
+
+
+def _has_subsection_with_codeblock(sections, tokens):
+    """Bold-only split may peel `**Before:**`/`**After:**` into their own sections.
+    Check if any section header equals (or starts with) one of the tokens AND its
+    body contains a code fence."""
+    for header, body in sections.items():
+        head = header.strip(': ').strip()
+        if head in tokens and '```' in body:
+            return True
+    return False
+
+
 def chk_fix_before(sections):
-    s = find(sections, 'proposed fix', 'solution')
+    if _has_subsection_with_codeblock(sections, BEFORE_TOKENS):
+        return 'OK'
+    s = find_section(sections, 'proposed_fix')
     if not s:
         return 'MISSING'
-    lower = s.lower()
-    pos = lower.find('before')
-    if pos == -1:
-        pos = lower.find('до')
-    if pos == -1:
-        return 'MISSING'
-    return 'OK' if '```' in s[pos:] else 'MISSING'
+    return 'OK' if _has_token_with_codeblock(s, BEFORE_TOKENS) else 'MISSING'
 
 
 def chk_fix_after(sections):
-    s = find(sections, 'proposed fix', 'solution')
+    if _has_subsection_with_codeblock(sections, AFTER_TOKENS):
+        return 'OK'
+    s = find_section(sections, 'proposed_fix')
     if not s:
         return 'MISSING'
-    lower = s.lower()
-    pos = lower.find('after')
-    if pos == -1:
-        pos = lower.find('после')
-    if pos == -1:
-        return 'MISSING'
-    return 'OK' if '```' in s[pos:] else 'MISSING'
+    return 'OK' if _has_token_with_codeblock(s, AFTER_TOKENS) else 'MISSING'
 
 
 def chk_assignee(sections):
-    s = find(sections, 'assignee')
+    s = find_section(sections, 'assignee')
     if not s or not s.strip():
         return 'MISSING'
     if is_placeholder_only(s):
         return 'MISSING'
-    if re.search(r'git\s*blame', s, re.IGNORECASE):
+    if re.search(r'git\s*blame|git\s*log', s, re.IGNORECASE):
         return 'OK'
     # TBD with justification (long text explaining why) is acceptable
     if PLACEHOLDER_RE.search(s) and word_count(s) >= 10:
@@ -209,7 +398,7 @@ def chk_assignee(sections):
 
 def chk_trigger(sections):
     """Semantic check: specific action/event."""
-    text = get_semantic_field(sections, 'Trigger')
+    text = get_semantic_field(sections, 'trigger')
     if not text:
         return 'MISSING'
     if is_placeholder_only(text):
@@ -221,7 +410,7 @@ def chk_trigger(sections):
 
 def chk_why_now(sections):
     """Semantic check: explanation of what changed."""
-    text = get_semantic_field(sections, 'Why now')
+    text = get_semantic_field(sections, 'why_now')
     if not text:
         return 'MISSING'
     if is_placeholder_only(text):
@@ -232,7 +421,7 @@ def chk_why_now(sections):
 
 
 def chk_prevention(sections):
-    text = get_semantic_field(sections, 'Prevention')
+    text = get_semantic_field(sections, 'prevention')
     if not text:
         return 'MISSING'
     if is_placeholder_only(text):
@@ -242,16 +431,21 @@ def chk_prevention(sections):
 
 def chk_jira_brief(text, console_url=None):
     """Check JIRA Brief section. Returns (status, missing_sub_fields)."""
-    m = re.search(r'#{2,3}\s*JIRA\s*Brief(.*?)(?=\n#{2,3}\s[^#]|\Z)', text, re.IGNORECASE | re.DOTALL)
+    m = re.search(r'#{2,3}\s*JIRA\s*Brief(.*?)(?=\n#{2,3}\s[^#]|\Z)',
+                  text, re.IGNORECASE | re.DOTALL)
     if not m:
         return 'MISSING', []
     jira = m.group(1)
-    required = ['Crash', 'Component', 'Assignee', 'Problem',
-                 'Stack trace', 'Fix', 'Reproduction', 'Firebase']
-    missing = [
-        f for f in required
-        if not re.search(r'(?:\*\*)?{}(?:\*\*)?[:\s]'.format(re.escape(f)), jira, re.IGNORECASE)
-    ]
+    missing = []
+    for canonical, aliases in JIRA_FIELD_ALIASES.items():
+        found = False
+        for alias in aliases:
+            if re.search(r'(?:\*\*)?{}(?:\*\*)?[:\s]'.format(re.escape(alias)),
+                         jira, re.IGNORECASE):
+                found = True
+                break
+        if not found:
+            missing.append(canonical)
     if console_url and console_url not in jira:
         missing.append('Firebase URL (expected: {})'.format(console_url))
     return ('OK', []) if not missing else ('PARTIAL', missing)

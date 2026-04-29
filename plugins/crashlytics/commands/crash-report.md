@@ -1,7 +1,7 @@
 ---
 description: "Analyze crash from Firebase Crashlytics. Auto-detects platform from config. Usage: /crash-report <issue_id | console_url | crash info>"
 argument-hint: "<issue_id | console_url | crash description>"
-allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(git log:*), Bash(git blame:*), Bash(git diff:*), Bash(git show:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(echo:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Task, Read, Glob, Grep, Agent, AskUserQuestion
+allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/*), Bash(git log:*), Bash(git blame:*), Bash(git diff:*), Bash(git show:*), Bash(git fetch:*), Bash(git ls-tree:*), Bash(git ls-files:*), Bash(git rev-parse:*), Bash(git merge-base:*), Bash(git branch:*), Bash(git remote:*), Bash(which firebase:*), Bash(firebase *:*), Bash(python3:*), Bash(echo:*), Bash(curl:*), Bash(mkdir:*), Bash(cat:*), Bash(test:*), Bash(touch:*), Task, Read, Glob, Grep, Agent, AskUserQuestion, mcp__plugin_crashlytics_firebase__crashlytics_get_issue, mcp__plugin_crashlytics_firebase__crashlytics_batch_get_events, mcp__plugin_crashlytics_firebase__crashlytics_list_events, mcp__plugin_crashlytics_firebase__crashlytics_get_report, mcp__plugin_crashlytics_firebase__crashlytics_list_notes, mcp__plugin_crashlytics_firebase__firebase_get_environment, mcp__plugin_crashlytics_firebase__firebase_list_apps, mcp__plugin_crashlytics_firebase__firebase_get_project, mcp__plugin_crashlytics_firebase__firebase_list_projects, mcp__plugin_crashlytics_firebase__firebase_get_sdk_config
 ---
 
 # Crash Analysis
@@ -21,7 +21,7 @@ Unified crash analysis command. Reads `default_platform` from config and calls t
    Bash: mkdir -p .claude && cat <<'EOF' > .claude/crashlytics.local.md
    ---
    language: en
-   default_branch: master
+   default_branch: master   # local branch name; plugin uses origin/<this> for git blame
    default_platform: android
    forensics_model: opus
    output_format: both
@@ -36,12 +36,12 @@ Unified crash analysis command. Reads `default_platform` from config and calls t
    EOF
 
    Set PLATFORM = android
-   Inform user: "Config created at `.claude/crashlytics.local.md` (defaults: android, master, opus). Run `/crash-config` to customize."
+   Inform user: "Config created at `.claude/crashlytics.local.md` (defaults: android, origin/master, opus). Run `/crash-config` to customize."
 ```
 
 Config values used throughout:
 - `PLATFORM` → which agents to call + console URL format
-- `default_branch` → git blame branch
+- `default_branch` → local branch name; analysis runs on `origin/<default_branch>`
 - `forensics_model` → model for forensics agent (default: opus)
 - `output_format` → both / detailed_only / jira_only
 - `firebase_project_id`, `firebase_app_id_{PLATFORM}` → skip auto-detect if set
@@ -134,7 +134,7 @@ Task(
     Firebase data: {firebase_output}
     Stack trace: {stack_trace}
     console_url: {console_url}
-    branch: {default_branch from config, default master}"
+    branch_ref: origin/{default_branch from config, default master}"
 )
 ```
 
@@ -152,9 +152,12 @@ Forensics output is multi-page markdown with backticks, `$`, code fences and quo
 ```
 
 Parse the YAML result:
-- `pass: true` → output report as-is
-- `pass: false` → fill missing fields from previous steps using the existing forensics output. Do NOT re-call forensics. Do NOT re-validate against an abbreviated summary — that triggers a false 1/14.
-- `pass: null` (has `needs_review` items) → evaluate those fields yourself and decide pass/fail
+- `pass: true` → output report as-is.
+- `pass: false`:
+    - Если все элементы `missing[]` относятся к одной секции (basic / stack / jira) — fill in those fields using the existing forensics output.
+    - Если score >= 8/14 и language config != en — высоко вероятен false-positive validator'а на переведённых заголовках. Проверить вручную каждое поле из `missing[]` по факту наличия в полном отчёте; если все на месте, считать pass: true и вывести.
+    - Иначе — fill missing fields from previous steps. Do NOT re-call forensics. Do NOT re-validate against an abbreviated summary — это даёт false 1/14.
+- `pass: null` (has `needs_review` items) → evaluate those fields yourself and decide pass/fail.
 
 ## Step 5: Output
 

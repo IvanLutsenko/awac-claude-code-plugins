@@ -50,13 +50,14 @@ Automated unit test generation for Kotlin/Android business logic with corporate 
 
 ### Crashlytics
 
-Multi-platform crash analysis for Android & iOS with git blame forensics, code-level fixes, and quality gate reviewer.
+Multi-platform crash analysis for Android & iOS with git blame forensics, code-level fixes, and a deterministic quality gate.
 
 📚 **[Full Documentation](plugins/crashlytics/README.md)**
 
 **Installation:**
 ```bash
 /plugin install crashlytics
+/crashlytics:install-permissions   # one-time: add read-only git/MCP to allowlist
 ```
 
 **Quick Start:**
@@ -65,20 +66,23 @@ Multi-platform crash analysis for Android & iOS with git blame forensics, code-l
 /crash-report-android               # Explicit Android
 /crash-report-ios                    # Explicit iOS
 /crash-config                       # Configure plugin settings
+/crashlytics:install-permissions    # Add read-only allowlist to settings.json
 ```
 
-**Status:** ✅ Production Ready | **Version:** 4.4.0
+**Status:** ✅ Production Ready | **Version:** 4.4.3
 
-**What's New in 4.4.0:**
-- Fixed REST API (v1beta1 → v1alpha) — crash data loading works again
-- Auto-save discovered Firebase app ID to config
-- MCP crash tools restored as fallback
+**What's New in 4.4.3:**
+- Language-aware validator: `SECTION_ALIASES` для en/ru/es/de/fr/pt/it (фикс false 6/14 на не-английских отчётах). Forensics-агенты пишут headers всегда на английском, body — на target language.
+- `BRANCH_REF` (= `origin/<default_branch>`) вместо хардкода `master` + обязательный `git fetch origin --quiet` перед blame/log/show. STEP 4.0 sanity-check «is the fix already merged in BRANCH_REF».
+- `/crashlytics:install-permissions` — мерджит read-only allowlist в settings.json (user или project уровень на выбор).
+- 7 smoke-tests фикстур (en/ru/es/de/fr/pt/it) в `scripts/tests/`.
 
 **Features:**
 - 4-step multi-agent pipeline: classifier → fetcher → forensics → validate-report.py
-- Git blame forensics with mandatory assignee identification
+- Git blame forensics with mandatory assignee identification, on `origin/<default_branch>`
 - Code-level fixes (before/after) ready to copy-paste
-- 2-level Firebase fallback: CLI REST API → MCP → Manual
+- MCP-primary fetch (`crashlytics_get_issue` + `crashlytics_batch_get_events`), REST `v1alpha` fallback, Manual mode for offline use
+- Multi-language reports (English headers + body in any language)
 - Configurable per-project settings
 
 ---

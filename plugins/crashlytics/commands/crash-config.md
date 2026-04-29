@@ -16,7 +16,7 @@ Interactive setup for the Crashlytics plugin. Reads the current config (if exist
 2. If exists → parse YAML frontmatter, use current values as defaults
 3. If not exists → use these defaults:
    language: en
-   default_branch: master
+   default_branch: master   # local branch name; plugin uses origin/<this> for git blame
    default_platform: android
    forensics_model: opus
    output_format: both
@@ -140,10 +140,10 @@ Write file: .claude/crashlytics.local.md
 Content (YAML frontmatter + markdown body):
 
 ---
-language: {selected_language}      # en | ru | es | de
-default_branch: {selected_branch}  # master | main | develop
+language: {selected_language}      # en | ru | es | de | fr | pt | it | ...
+default_branch: {selected_branch}  # local branch name; analysis uses origin/<this>
 default_platform: {selected_platform}  # android | ios
-forensics_model: {selected_model}  # opus | sonnet
+forensics_model: {selected_model}  # opus | sonnet | haiku
 output_format: {selected_format}   # both | detailed_only | jira_only
 firebase_project_id: "{detected_or_empty}"
 firebase_app_id_android: "{detected_or_empty}"

@@ -2,7 +2,7 @@
 
 Crash log analysis with root cause identification, code-level fixes, and developer assignment via git blame.
 
-**Version:** 4.4.2 — Android & iOS
+**Version:** 4.4.3 — Android & iOS
 
 ---
 
@@ -47,6 +47,16 @@ gcloud services enable firebasecrashlytics.googleapis.com --project=YOUR_PROJECT
 
 > **Without Firebase setup** the plugin still works — but in Manual mode (you paste the stack trace yourself).
 
+### One-time permission allowlist (recommended)
+
+After install, run once to add the plugin's read-only git/MCP calls to your settings.json — eliminates permission prompts during `/crash-report`:
+
+```bash
+/crashlytics:install-permissions
+```
+
+The command is interactive: pick user-level (`~/.claude/settings.json`) or project-level scope, see the exact diff, confirm. Adds only read-only operations (git status/log/blame/diff/show/fetch/ls-tree, validate-report.py, MCP `crashlytics_get_*`/`firebase_get_*`/`firebase_list_*`). Never adds write/auth/destructive rules.
+
 ---
 
 ## Quick Start
@@ -81,12 +91,12 @@ Config auto-created with defaults on first run if missing.
 
 | Mode | Requirements | What you get |
 |------|-------------|--------------|
-| **CLI REST API** | Firebase Issue ID + `firebase login` + Crashlytics API enabled | Auto-load crash data via REST API (primary) |
+| **MCP fast-path** | Firebase Issue ID + `firebase login` + project_id/app_id in config | Direct `crashlytics_get_issue` + `crashlytics_batch_get_events` calls — no agent hop |
+| **MCP via firebase-fetcher** | Firebase Issue ID + `firebase login` (no config) | Discovery via `firebase_get_environment`/`firebase_list_apps`, then crash data via MCP |
+| **REST fallback** | Same as MCP but MCP errors out | `python3 fetch-crash-data.py` against the v1alpha REST API (Crashlytics API must be enabled) |
 | **Enhanced Manual** | Stack trace from logs | Same analysis, guided manual data entry with Console URLs |
 
-MCP is used for **project/app discovery** (`firebase_get_environment`, `firebase_list_apps`) and as **fallback for crash data** (`crashlytics_list_events`, `crashlytics_get_issue`, `crashlytics_batch_get_events`). Primary data fetching is via CLI REST API.
-
-The plugin falls back between modes: CLI REST API → Enhanced Manual.
+The plugin tries paths in order: MCP fast-path → MCP via fetcher → REST fallback → Enhanced Manual.
 
 ---
 
@@ -94,7 +104,7 @@ The plugin falls back between modes: CLI REST API → Enhanced Manual.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      crashlytics v4.4.2                         │
+│                      crashlytics v4.4.3                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
               ┌───────────────┴───────────────┐
@@ -279,6 +289,18 @@ MCP is also used for **project/app discovery** (`firebase_get_environment`, `fir
 ---
 
 ## Changelog
+
+### 4.4.3
+- **Changed:** forensics-agents теперь пишут section headers всегда на английском, body content — на target language. Validator больше не зависит от языка отчёта (Language Policy block в обоих forensics-android.md / forensics-ios.md).
+- **Fixed:** validator выдавал false 6/14 на отчётах не на английском — добавлен `SECTION_ALIASES` dict с переводами для en, ru, es, de, fr, pt, it. Aliases — safety-net для случаев, когда LLM всё-таки переведёт заголовок. Расширяется одной строкой в dict.
+- **Fixed:** `split_sections` теперь распознаёт bold-only header lines (`**Basic info:**`, `**Базовая информация:**`) — это позволяет валидировать subsections внутри `### Crash:` parent блока.
+- **Fixed:** forensics-android/ios хардкодили `master` в командах git blame — false-negative когда локальный master отставал от origin/master. Теперь все git операции через `BRANCH_REF` (= `origin/<default_branch>`), обязательный `git fetch origin --quiet` перед blame/log/show.
+- **Added:** STEP 4.0 sanity-check «is the fix already merged?» — `git log BRANCH_REF --grep="<TICKET-ID>"` + `git ls-tree BRANCH_REF -- <new-path>`. Если fix уже в BRANCH_REF, отчёт указывает это вместо ложного «fix не написан».
+- **Added:** smoke tests для validator на 7 языках (en/ru/es/de/fr/pt/it) в `scripts/tests/`. `bash scripts/tests/run-tests.sh` — должно быть `All 7 fixtures passed.`
+- **Added:** `/crashlytics:install-permissions` — интерактивная команда, которая мерджит read-only git/MCP вызовы плагина в `~/.claude/settings.json` или `.claude/settings.local.json` (на выбор), чтобы `/crash-report` не прерывался на approval'ах.
+- **Changed:** `allowed-tools:` в `crash-report.md`/`-android.md`/`-ios.md` расширен на `git fetch/ls-tree/ls-files/rev-parse/merge-base/branch/remote`, `test`, `touch`, и read-only MCP `crashlytics_*`/`firebase_get_*`/`firebase_list_*` — auto-allow на время выполнения команды.
+- **Changed:** Skill instruction для `pass: false` теперь 3-way: per-section fill / language-false-positive recheck / generic fill.
+- **Changed:** `/crash-config` подсказывает, что `default_branch` — local branch name; плагин использует `origin/<this>` для git blame.
 
 ### 4.4.2
 - **Fixed:** `firebase-fetcher` agent had no MCP tools in its `tools:` list and could not execute the "MCP discovery" path documented in its prompt — added `mcp__plugin_crashlytics_firebase__*` tools explicitly
