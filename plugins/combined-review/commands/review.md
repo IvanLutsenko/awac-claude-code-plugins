@@ -1,7 +1,7 @@
 ---
 description: "Combined code review: multi-agent analysis + CodeRabbit. Supports PR, branch diff, uncommitted changes."
 argument-hint: "[PR#] | [branch1 branch2] | [--base branch] | [+comments] [+types] [+simplify] [all]"
-allowed-tools: Bash(gh:*), Bash(git:*), Bash(coderabbit:*), Bash(cr:*), Bash(curl:*), Bash(which:*), Agent, Read, Glob, Grep
+allowed-tools: Bash(gh:*), Bash(git:*), Bash(coderabbit:*), Bash(cr:*), Bash(curl:*), Bash(which:*), Bash(wc:*), Bash(head:*), Bash(tail:*), Bash(cat:*), Bash(find:*), Bash(grep:*), Bash(rg:*), Bash(mktemp:*), Agent, Read, Glob, Grep
 ---
 
 # Combined Code Review
