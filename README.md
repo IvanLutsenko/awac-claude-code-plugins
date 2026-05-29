@@ -237,6 +237,39 @@ Bridge between a short brief and image-gen web UIs (Gemini Imagen 3, ChatGPT DAL
 
 ---
 
+### Plugin Cross Port
+
+Bridge between Claude Code and Codex plugin formats. One-shot conversion and continuous dual-target maintenance.
+
+**[Full Documentation](plugins/plugin-cross-port/README.md)**
+
+**Installation:**
+```bash
+/plugin install plugin-cross-port
+```
+
+**Quick Start:**
+```bash
+# Interactive (via skill)
+Convert plugins/obsidian-tracker to Codex
+
+# Deterministic script
+python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root .
+python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root . --dry-run
+```
+
+**Status:** 🔨 Beta | **Version:** 0.1.0
+
+**Features:**
+- CC manifest -> Codex manifest (removes hooks, adds interface block)
+- `commands/*.md` -> `skills/generated-from-commands/` (automated)
+- Idempotent: re-run without duplicates
+- Decision file `.plugin-cross-port.yaml` tracks what was converted
+- `--dry-run`, `--force`, `--strict` flags
+- Codex marketplace entry management
+
+---
+
 ### Clip Maker
 
 Automated vertical clip creator for talks and presentations. Whisper + Claude + ffmpeg pipeline.

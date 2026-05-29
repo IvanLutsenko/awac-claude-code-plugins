@@ -95,6 +95,17 @@
         "url": "https://github.com/IvanLutsenko"
       },
       "category": "media"
+    },
+    {
+      "name": "plugin-cross-port",
+      "version": "0.1.0",
+      "description": "Convert plugins between Claude Code and Codex formats. One-shot conversion and continuous dual-target maintenance.",
+      "source": "./plugins/plugin-cross-port",
+      "author": {
+        "name": "Ivan Lutsenko",
+        "url": "https://github.com/IvanLutsenko"
+      },
+      "category": "development"
     }
   ]
 }

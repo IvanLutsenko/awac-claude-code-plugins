@@ -1,0 +1,16 @@
+{
+  "name": "plugin-cross-port",
+  "version": "0.1.0",
+  "description": "Convert plugins between Claude Code and Codex formats. One-shot conversion and continuous dual-target maintenance.",
+  "author": {
+    "name": "Ivan Lutsenko"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Plugin Cross Port",
+    "shortDescription": "Convert Claude Code plugins to Codex plugins",
+    "developerName": "Ivan Lutsenko",
+    "category": "Development",
+    "capabilities": ["Read", "Write"]
+  }
+}
