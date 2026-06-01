@@ -1,106 +1,108 @@
 #!/bin/bash
-# Pre-commit hook: bidirectional sync based on source_of_truth in .plugin-cross-port.yaml.
+# Pre-commit hook: bidirectional sync based on WHICH files changed.
 #
-# source_of_truth: claude-code  →  convert_cc_to_codex.py   (CC-side changes trigger Codex sync)
-# source_of_truth: codex        →  convert_codex_to_cc.py   (Codex-side changes trigger CC sync)
-# no .plugin-cross-port.yaml    →  infer from which manifest exists
+# Direction is determined by staged changes, not configuration:
+#   commands/ or .claude-plugin/ changed  →  CC→Codex
+#   .codex-plugin/ changed                →  Codex→CC
+#   both sides changed                    →  warn + use source_of_truth as tiebreaker
+#   only skills/ or other shared files    →  no conversion needed
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 CC_TO_CODEX="$REPO_ROOT/plugins/plugin-cross-port/scripts/convert_cc_to_codex.py"
 CODEX_TO_CC="$REPO_ROOT/plugins/plugin-cross-port/scripts/convert_codex_to_cc.py"
 
-# Skip silently if plugin-cross-port is not installed
 if [ ! -f "$CC_TO_CODEX" ] || [ ! -f "$CODEX_TO_CC" ]; then
   exit 0
 fi
 
-# Find all plugins that have staged changes
 CHANGED_PLUGINS=$(git diff --cached --name-only | grep '^plugins/' | cut -d/ -f1,2 | sort -u)
-
 if [ -z "$CHANGED_PLUGINS" ]; then
   exit 0
 fi
 
+get_source_of_truth() {
+  local plugin="$1"
+  local decision_file="$REPO_ROOT/$plugin/.plugin-cross-port.yaml"
+  local sot=""
+
+  if [ -f "$decision_file" ]; then
+    sot=$(grep '^source_of_truth:' "$decision_file" | awk '{print $2}' | tr -d "'\"")
+  fi
+
+  if [ -z "$sot" ]; then
+    local has_cc="$REPO_ROOT/$plugin/.claude-plugin/plugin.json"
+    local has_codex="$REPO_ROOT/$plugin/.codex-plugin/plugin.json"
+    if [ -f "$has_cc" ] && [ ! -f "$has_codex" ]; then
+      sot="claude-code"
+    elif [ -f "$has_codex" ] && [ ! -f "$has_cc" ]; then
+      sot="codex"
+    else
+      sot="claude-code"
+    fi
+  fi
+
+  echo "$sot"
+}
+
+run_cc_to_codex() {
+  local plugin="$1"
+  echo "plugin-cross-port: CC→Codex syncing $plugin"
+  python3 "$CC_TO_CODEX" "$plugin" --repo-root "$REPO_ROOT" --force
+  local status=$?
+  if [ $status -ne 0 ]; then
+    echo "❌ plugin-cross-port: CC→Codex failed for $plugin. Commit aborted."
+    exit 1
+  fi
+  git add "$REPO_ROOT/$plugin/.codex-plugin/" 2>/dev/null || true
+  git add "$REPO_ROOT/$plugin/skills/generated-from-commands/" 2>/dev/null || true
+  git add "$REPO_ROOT/$plugin/.plugin-cross-port.yaml" 2>/dev/null || true
+  git add "$REPO_ROOT/.agents/plugins/marketplace.json" 2>/dev/null || true
+}
+
+run_codex_to_cc() {
+  local plugin="$1"
+  echo "plugin-cross-port: Codex→CC syncing $plugin"
+  python3 "$CODEX_TO_CC" "$plugin" --repo-root "$REPO_ROOT" --force
+  local status=$?
+  if [ $status -ne 0 ]; then
+    echo "❌ plugin-cross-port: Codex→CC failed for $plugin. Commit aborted."
+    exit 1
+  fi
+  git add "$REPO_ROOT/$plugin/.claude-plugin/" 2>/dev/null || true
+  git add "$REPO_ROOT/$plugin/commands/generated-from-codex-"*.md 2>/dev/null || true
+  git add "$REPO_ROOT/$plugin/.plugin-cross-port.yaml" 2>/dev/null || true
+}
+
 SYNCED=0
 
 for PLUGIN in $CHANGED_PLUGINS; do
-  PLUGIN_ABS="$REPO_ROOT/$PLUGIN"
-  DECISION_FILE="$PLUGIN_ABS/.plugin-cross-port.yaml"
-  HAS_CC="$PLUGIN_ABS/.claude-plugin/plugin.json"
-  HAS_CODEX="$PLUGIN_ABS/.codex-plugin/plugin.json"
+  STAGED=$(git diff --cached --name-only | grep "^$PLUGIN/")
 
-  # Determine source_of_truth
-  SOURCE_OF_TRUTH=""
-  if [ -f "$DECISION_FILE" ]; then
-    SOURCE_OF_TRUTH=$(grep '^source_of_truth:' "$DECISION_FILE" | awk '{print $2}' | tr -d "'\"")
-  fi
+  # CC-exclusive: commands/ and .claude-plugin/ (exclude generated-from-codex)
+  CC_CHANGED=$(echo "$STAGED" \
+    | grep -E "^$PLUGIN/(commands/[^/]+\.md|\.claude-plugin/)" \
+    | grep -v "generated-from-codex")
 
-  # Infer if not set
-  if [ -z "$SOURCE_OF_TRUTH" ]; then
-    if [ -f "$HAS_CC" ] && [ ! -f "$HAS_CODEX" ]; then
-      SOURCE_OF_TRUTH="claude-code"
-    elif [ -f "$HAS_CODEX" ] && [ ! -f "$HAS_CC" ]; then
-      SOURCE_OF_TRUTH="codex"
-    elif [ -f "$HAS_CC" ]; then
-      SOURCE_OF_TRUTH="claude-code"  # default when both exist
+  # Codex-exclusive: .codex-plugin/
+  CODEX_CHANGED=$(echo "$STAGED" | grep "^$PLUGIN/\.codex-plugin/")
+
+  if [ -n "$CC_CHANGED" ] && [ -n "$CODEX_CHANGED" ]; then
+    SOT=$(get_source_of_truth "$PLUGIN")
+    echo "⚠️  plugin-cross-port: both CC and Codex files staged in $PLUGIN — using source_of_truth=$SOT"
+    if [ "$SOT" = "codex" ]; then
+      run_codex_to_cc "$PLUGIN"
     else
-      continue  # not a managed plugin
+      run_cc_to_codex "$PLUGIN"
     fi
+    SYNCED=$((SYNCED + 1))
+  elif [ -n "$CC_CHANGED" ]; then
+    run_cc_to_codex "$PLUGIN"
+    SYNCED=$((SYNCED + 1))
+  elif [ -n "$CODEX_CHANGED" ]; then
+    run_codex_to_cc "$PLUGIN"
+    SYNCED=$((SYNCED + 1))
   fi
-
-  if [ "$SOURCE_OF_TRUTH" = "claude-code" ]; then
-    # Detect CC-side staged changes (exclude generated and Codex files)
-    SIDE_CHANGED=$(git diff --cached --name-only \
-      | grep "^$PLUGIN/" \
-      | grep -v "generated-from-commands\|generated-from-codex\|\.codex-plugin\|\.plugin-cross-port\.yaml")
-
-    if [ -z "$SIDE_CHANGED" ]; then
-      continue
-    fi
-
-    echo "plugin-cross-port: CC→Codex syncing $PLUGIN"
-    python3 "$CC_TO_CODEX" "$PLUGIN" --repo-root "$REPO_ROOT" --force
-    STATUS=$?
-
-    if [ $STATUS -ne 0 ]; then
-      echo "❌ plugin-cross-port: CC→Codex conversion failed for $PLUGIN. Commit aborted."
-      exit 1
-    fi
-
-    git add "$PLUGIN_ABS/.codex-plugin/" 2>/dev/null || true
-    git add "$PLUGIN_ABS/skills/generated-from-commands/" 2>/dev/null || true
-    git add "$PLUGIN_ABS/.plugin-cross-port.yaml" 2>/dev/null || true
-    git add "$REPO_ROOT/.agents/plugins/marketplace.json" 2>/dev/null || true
-
-  elif [ "$SOURCE_OF_TRUTH" = "codex" ]; then
-    # Detect Codex-side staged changes (exclude generated CC files)
-    SIDE_CHANGED=$(git diff --cached --name-only \
-      | grep "^$PLUGIN/" \
-      | grep -v "generated-from-commands\|generated-from-codex\|\.claude-plugin\|\.plugin-cross-port\.yaml")
-
-    if [ -z "$SIDE_CHANGED" ]; then
-      continue
-    fi
-
-    echo "plugin-cross-port: Codex→CC syncing $PLUGIN"
-    python3 "$CODEX_TO_CC" "$PLUGIN" --repo-root "$REPO_ROOT" --force
-    STATUS=$?
-
-    if [ $STATUS -ne 0 ]; then
-      echo "❌ plugin-cross-port: Codex→CC conversion failed for $PLUGIN. Commit aborted."
-      exit 1
-    fi
-
-    git add "$PLUGIN_ABS/.claude-plugin/" 2>/dev/null || true
-    git add "$PLUGIN_ABS/commands/generated-from-codex-"*.md 2>/dev/null || true
-    git add "$PLUGIN_ABS/.plugin-cross-port.yaml" 2>/dev/null || true
-
-  else
-    echo "⚠️  plugin-cross-port: unknown source_of_truth '$SOURCE_OF_TRUTH' in $PLUGIN — skipping"
-    continue
-  fi
-
-  SYNCED=$((SYNCED + 1))
+  # only skills/ or other shared files changed → no conversion needed
 done
 
 if [ $SYNCED -gt 0 ]; then

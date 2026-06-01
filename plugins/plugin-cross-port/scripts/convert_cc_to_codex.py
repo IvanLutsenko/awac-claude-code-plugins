@@ -313,6 +313,14 @@ class Converter:
         decision = self.load_decision_file()
         manually_maintained: list[str] = decision.get('manually_maintained', []) or []
 
+        # Guard: refuse to override source_of_truth without --force
+        existing_sot = decision.get('source_of_truth', '')
+        if existing_sot == 'codex' and not self.force:
+            print(f"ERROR: {plugin_name} has source_of_truth=codex in .plugin-cross-port.yaml")
+            print("This plugin was set up with Codex as source of truth.")
+            print("Running CC→Codex would silently flip that. Use --force to override.")
+            return 1
+
         print(f"\nPlugin Cross-Port: {plugin_name}")
         print('=' * (20 + len(plugin_name)))
 
