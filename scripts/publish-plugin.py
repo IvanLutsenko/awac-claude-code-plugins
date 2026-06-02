@@ -9,6 +9,8 @@ Does:
   2. Updates version string in plugins/{name}/README.md
   3. Updates version in root README.md
   4. Updates version in CLAUDE.md (Active Plugins)
+  5. Updates version in root .claude-plugin/marketplace.json
+  6. Updates plugins/{name}/.codex-plugin/plugin.json when present
 
 Does NOT:
   - Write changelog entries (the caller should do this — needs context)
@@ -66,6 +68,28 @@ def update_file_version(filepath, old_version, new_version):
     return True
 
 
+def update_json_version(filepath, plugin_name, new_version):
+    """Update plugin version in a manifest or marketplace. Returns True if changed."""
+    with open(filepath) as f:
+        data = json.load(f)
+
+    changed = False
+    if data.get('name') == plugin_name and data.get('version') != new_version:
+        data['version'] = new_version
+        changed = True
+
+    for plugin in data.get('plugins', []):
+        if plugin.get('name') == plugin_name and plugin.get('version') != new_version:
+            plugin['version'] = new_version
+            changed = True
+
+    if changed:
+        with open(filepath, 'w') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.write('\n')
+    return changed
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: publish-plugin.py <plugin_name> [patch|minor|major]", file=sys.stderr)
@@ -117,10 +141,15 @@ def main():
     if os.path.isfile(claude_md) and update_file_version(claude_md, old_version, new_version):
         updated.append("CLAUDE.md")
 
-    # 5. Update marketplace.json if exists
-    marketplace = os.path.join(plugin_dir, '.claude-plugin', 'marketplace.json')
-    if os.path.isfile(marketplace) and update_file_version(marketplace, old_version, new_version):
-        updated.append(f"plugins/{plugin_name}/.claude-plugin/marketplace.json")
+    # 5. Update root marketplace.json if exists
+    marketplace = os.path.join(REPO_ROOT, '.claude-plugin', 'marketplace.json')
+    if os.path.isfile(marketplace) and update_json_version(marketplace, plugin_name, new_version):
+        updated.append(".claude-plugin/marketplace.json")
+
+    # 6. Keep dual-target plugin manifest in sync
+    codex_manifest = os.path.join(plugin_dir, '.codex-plugin', 'plugin.json')
+    if os.path.isfile(codex_manifest) and update_json_version(codex_manifest, plugin_name, new_version):
+        updated.append(f"plugins/{plugin_name}/.codex-plugin/plugin.json")
 
     # Output summary
     print("publish:")
