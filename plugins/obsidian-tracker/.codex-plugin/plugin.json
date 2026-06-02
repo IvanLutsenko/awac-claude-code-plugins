@@ -1,0 +1,19 @@
+{
+  "name": "obsidian-tracker",
+  "version": "4.3.1",
+  "description": "Project tracking, task management with kanban boards, bug logging, decision records (ADR), session management, and engineering traceability via Obsidian. Auto-tracks sessions, actions, bugs, and commits via hooks.",
+  "author": {
+    "name": "Ivan Lutsenko"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Obsidian Tracker",
+    "shortDescription": "Project tracking, task management with kanban boards, bug logging, decision reco",
+    "developerName": "Ivan Lutsenko",
+    "category": "Development",
+    "capabilities": [
+      "Read",
+      "Write"
+    ]
+  }
+}

@@ -225,9 +225,12 @@ To disable auto-allow entirely, disable the plugin or remove the `PermissionRequ
 
 ## Version
 
-4.3.0
+4.3.1
 
 ## Changelog
+
+### 4.3.1
+- **Fix**: tracking state is serialized as valid JSON when project names, goals, or actions contain quotes and backslashes
 
 ### 4.3.0
 - **Auto-allow MCP tools via PermissionRequest hook**: `hooks/auto-allow-mcp.sh` returns `permissionDecision: allow` for 23 read-only and mutating MCP tools — no manual approval per tool call. Destructive tools (`deleteProject`, `deleteTask`, `restoreProject`) still require explicit approval. Override per-user via `ask`/`deny` rules in `~/.claude/settings.json` (see README → Permissions).

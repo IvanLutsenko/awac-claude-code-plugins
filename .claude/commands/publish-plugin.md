@@ -49,12 +49,12 @@ In the root `README.md`, find the plugin's section and update `**What's New in X
 
 Check all files are consistent:
 ```yaml
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && grep -rn "{new_version}" plugins/{plugin_name}/.claude-plugin/plugin.json plugins/{plugin_name}/README.md README.md CLAUDE.md
+Bash: cd /Users/lutse/projects/awac-claude-code-plugins && grep -rn "{new_version}" plugins/{plugin_name}/.claude-plugin/plugin.json plugins/{plugin_name}/.codex-plugin/plugin.json plugins/{plugin_name}/README.md README.md CLAUDE.md .claude-plugin/marketplace.json
 ```
 
 ## Step 6: Commit + push
 
 ```yaml
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && git add plugins/{plugin_name}/ README.md CLAUDE.md scripts/ && git commit -m "feat({plugin_name}): v{new_version} — {1-line summary}"
+Bash: cd /Users/lutse/projects/awac-claude-code-plugins && git add plugins/{plugin_name}/ README.md CLAUDE.md .claude-plugin/marketplace.json scripts/ && git commit -m "feat({plugin_name}): v{new_version} — {1-line summary}"
 Bash: cd /Users/lutse/projects/awac-claude-code-plugins && git push
 ```

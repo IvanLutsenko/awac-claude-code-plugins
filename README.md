@@ -32,9 +32,10 @@ Automated unit test generation for Kotlin/Android business logic with corporate 
 /validate-tests feature/auth                     # Validate tests against standards
 ```
 
-**Status:** ✅ Production Ready | **Version:** 2.7.0
+**Status:** ✅ Production Ready | **Version:** 2.7.1
 
-**What's New in 2.7.0:**
+**What's New in 2.7.1:**
+- 🤖 **Multi-agent workflows**: allowed-tools now includes `Agent` and `Bash`
 - 🔄 **PR Workflow**: `/test-diff` generates tests only for changed files
 - 🔧 **Auto-fix**: `/test-fix` brings existing tests to corporate standards
 - ✅ **Validation**: `/validate-tests` checks tests against all standards
@@ -110,13 +111,10 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 /track-stop                 # Save session to Obsidian
 ```
 
-**Status:** ✅ Production Ready | **Version:** 3.2.0
+**Status:** ✅ Production Ready | **Version:** 4.3.1
 
-**What's New in 3.2.0:**
-- Smart project lookup — subprojects found by short name (no full path needed)
-- `parent` parameter in `createProject` for subprojects
-- New tools: `deleteTask`, `updateProject` (with context appending)
-- Task skill distinguishes actionable tasks from project context
+**What's New in 4.3.1:**
+- Tracking state is serialized as valid JSON for quoted and escaped CLI arguments
 
 **Features:**
 - Auto-tracking via hooks (PreCompact, SessionStart, PostToolUse)
@@ -148,7 +146,7 @@ Multi-agent code review with CodeRabbit CLI integration. 4 specialized agents + 
 /review feature/X feature/Y +comments all # All agents
 ```
 
-**Status:** ✅ Production Ready | **Version:** 1.0.0
+**Status:** ✅ Production Ready | **Version:** 1.3.0
 
 **Features:**
 - 4 default agents: code-reviewer, git-historian, silent-failure-hunter, test-analyzer
@@ -258,13 +256,15 @@ python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidia
 python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root . --dry-run
 ```
 
-**Status:** 🔨 Beta | **Version:** 0.4.0
+**Status:** 🔨 Beta | **Version:** 0.5.0
 
 **Features:**
 - CC → Codex: manifest conversion, `commands/` → `skills/generated-from-commands/`
 - Codex → CC: manifest conversion, `skills/` → `commands/generated-from-codex-*/`
 - Idempotent: re-run without duplicates
 - Decision file `.plugin-cross-port.yaml` tracks source_of_truth and what was converted
+- Generated output cleanup removes stale converted commands and skills
+- Plugin-relative manual maintenance rules are honored in both directions
 - `--dry-run`, `--force`, `--strict` flags for both directions
 
 ---

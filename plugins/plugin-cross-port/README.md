@@ -4,7 +4,7 @@ Bridge between Claude Code and Codex plugin formats.
 
 Converts a Claude Code plugin to Codex format — one-shot or continuously via CI. Source of truth is always the Claude Code side.
 
-**Version:** 0.4.0
+**Version:** 0.5.0
 
 ---
 
@@ -120,6 +120,11 @@ See `references/continuous-mode.md` for GitHub Actions and pre-commit hook examp
 ---
 
 ## Changelog
+
+### 0.5.0
+- Remove stale converter-owned commands and skills when source files disappear
+- Honor plugin-relative `manually_maintained` paths in both conversion directions
+- Preserve manually maintained generated files during cleanup
 
 ### 0.4.0
 - Repo-level config `.plugin-cross-port.config.yaml`: `plugins_dir`, `codex_marketplace`, `default_source_of_truth`

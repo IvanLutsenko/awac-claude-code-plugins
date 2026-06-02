@@ -1,10 +1,38 @@
 {
+  "name": "awac-claude-code-plugins",
+  "interface": {
+    "displayName": "AWAC Claude Code Plugins"
+  },
   "plugins": [
     {
       "name": "plugin-cross-port",
       "source": {
         "source": "local",
         "path": "./plugins/plugin-cross-port"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development"
+    },
+    {
+      "name": "bereke-business-test-gen",
+      "source": {
+        "source": "local",
+        "path": "./plugins/bereke-business-test-gen"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development"
+    },
+    {
+      "name": "obsidian-tracker",
+      "source": {
+        "source": "local",
+        "path": "./plugins/obsidian-tracker"
       },
       "policy": {
         "installation": "AVAILABLE",

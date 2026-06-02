@@ -1,7 +1,7 @@
 {
   "name": "bereke-business-test-gen",
   "description": "Automated unit test generation for Kotlin/Android business logic with corporate standards",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "mcpServers": "./.mcp.json",
   "author": {
     "name": "Ivan Lutsenko",

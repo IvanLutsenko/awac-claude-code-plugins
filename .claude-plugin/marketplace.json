@@ -32,7 +32,7 @@
     },
     {
       "name": "obsidian-tracker",
-      "version": "4.3.0",
+      "version": "4.3.1",
       "description": "Project tracking, task management with kanban boards, bug logging, decision records (ADR), session management, and engineering traceability via Obsidian",
       "source": "./plugins/obsidian-tracker",
       "author": {
@@ -98,7 +98,7 @@
     },
     {
       "name": "plugin-cross-port",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "Bidirectional conversion between Claude Code and Codex plugin formats. CC → Codex and Codex → CC, one-shot or continuous.",
       "source": "./plugins/plugin-cross-port",
       "author": {

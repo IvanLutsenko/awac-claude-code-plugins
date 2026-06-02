@@ -3,13 +3,13 @@
 ## Active Plugins
 
 - **bereke-business-test-gen** (v2.7.1) — Kotlin unit test generation with coverage validation
-- **crashlytics** (v4.4.0) — Multi-platform crash analysis with git blame forensics
-- **obsidian-tracker** (v4.2.1) — Project tracking, task management, session logging via Obsidian
+- **crashlytics** (v4.4.3) — Multi-platform crash analysis with git blame forensics
+- **obsidian-tracker** (v4.3.1) — Project tracking, task management, session logging via Obsidian
 - **locale-notifications** (v2.0.0) — macOS notifications in system language
 - **combined-review** (v1.3.0) — Multi-agent code review + CodeRabbit CLI
 - **clip-maker** (v1.3.0) — Automated vertical clip creator (whisper + Claude + ffmpeg)
 - **drawbridge** (v0.1.0) — Bridge briefs to image-gen web UIs (Gemini/ChatGPT/Grok/Midjourney), per-target prompt tuning
-- **plugin-cross-port** (v0.4.0) — Bidirectional CC ↔ Codex plugin conversion
+- **plugin-cross-port** (v0.5.0) — Bidirectional CC ↔ Codex plugin conversion
 
 ## Plugin Structure
 

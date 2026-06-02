@@ -113,7 +113,7 @@ async function scanProject(projectPath, name, archived, isSubproject = false) {
     };
 }
 // --- Server ---
-const server = new Server({ name: "obsidian-tracker", version: "3.2.0" }, { capabilities: { tools: {} } });
+const server = new Server({ name: "obsidian-tracker", version: "4.3.1" }, { capabilities: { tools: {} } });
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
         tools: [
