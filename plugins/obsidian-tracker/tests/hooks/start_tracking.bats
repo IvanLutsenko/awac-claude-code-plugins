@@ -73,3 +73,13 @@ teardown() {
   project=$(jq -r '.project' .claude/obsidian-tracking.json)
   [ "$project" = "my project" ]
 }
+
+@test "quotes and backslashes produce valid JSON" {
+  "$SCRIPTS_DIR/start-tracking.sh" 'my "project"\path' 'fix "quoted"\goal' 'action "one"' 'action\two'
+
+  jq -e . .claude/obsidian-tracking.json >/dev/null
+  [ "$(jq -r '.project' .claude/obsidian-tracking.json)" = 'my "project"\path' ]
+  [ "$(jq -r '.goal' .claude/obsidian-tracking.json)" = 'fix "quoted"\goal' ]
+  [ "$(jq -r '.actions[0]' .claude/obsidian-tracking.json)" = 'action "one"' ]
+  [ "$(jq -r '.actions[1]' .claude/obsidian-tracking.json)" = 'action\two' ]
+}
