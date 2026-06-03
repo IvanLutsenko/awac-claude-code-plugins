@@ -1,5 +1,9 @@
 # Claude Code → Codex Mapping
 
+`0.6.0` keeps deterministic conversion separate from semantic adaptation. The
+same converter engines are used by one-shot conversion and marketplace
+reconciliation.
+
 ## Manifest
 
 | Claude Code | Codex | Notes |
@@ -59,3 +63,21 @@
 - **allowed-tools**: CC's per-command tool allowlist has no Codex analog. Codex uses manifest-level `capabilities`.
 - **MCP tool names**: Same `.mcp.json` format works, but tool IDs may differ between environments. Review generated skills for `mcp__*` references.
 - **`${CLAUDE_PLUGIN_ROOT}`**: This CC variable is not available in Codex. Scripts referenced via this variable need path adjustment.
+
+## Marketplace Mapping
+
+| Field | Owner |
+|---|---|
+| Marketplace root metadata | Canonical marketplace selected by attach |
+| Plugin order and active plugin set | Canonical marketplace |
+| `name`, `version`, `description`, `author` | Authoritative plugin manifest |
+| Entry source path | Current local `./plugins/<name>` path |
+| Existing category | Preserved; defaulted for new entries |
+| Codex `policy.authentication` | Preserved; default `ON_INSTALL` |
+| Codex `policy.products` | Preserved when present |
+| Codex `policy.installation` | Derived from reconciliation status |
+
+Codex failed or review-required targets are published as `NOT_AVAILABLE`.
+Failed Claude Code targets are omitted from the Claude Code marketplace.
+Semantic adaptation fields, snapshot hashes, criticality, and stale adaptation
+detection are reserved for `0.7.0`.

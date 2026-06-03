@@ -6,16 +6,19 @@ version: 0.1.0
 
 # Maintain Dual-Target Plugin
 
-Keep a plugin synchronized between Claude Code (source of truth) and Codex after incremental changes.
+Keep attached plugins synchronized between Claude Code and Codex after
+incremental changes.
 
 ## Source of truth
 
-Claude Code is always the source of truth:
-- `.claude-plugin/plugin.json` — canonical manifest
-- `commands/` — authoritative command definitions
-- `skills/` — shared, authoritative
+Source of truth is explicit:
 
-Codex files are **generated** unless explicitly marked `manually_maintained` in `.plugin-cross-port.yaml`.
+- `.plugin-cross-port.marketplace.yaml` records the canonical marketplace.
+- Each plugin `.plugin-cross-port.yaml` records plugin-level `source_of_truth`.
+- Mixed repositories are valid: one plugin can be Claude Code-first and another
+  Codex-first.
+- Generated-side staged edits are rejected unless explicitly marked
+  `manually_maintained`.
 
 ## When to activate
 
@@ -29,22 +32,29 @@ Codex files are **generated** unless explicitly marked `manually_maintained` in 
 
 ### Step 1 — Read state
 
-1. Read `<plugin-path>/.plugin-cross-port.yaml` — if absent, run the `cc-to-codex` skill first (initial conversion)
-2. Read `<plugin-path>/.claude-plugin/plugin.json`
-3. List `<plugin-path>/commands/`, `skills/`, `agents/`
-4. List `<plugin-path>/skills/generated-from-commands/`
+1. Read `.plugin-cross-port.marketplace.yaml`
+2. Read `<plugin-path>/.plugin-cross-port.yaml`
+3. Read the authoritative manifest for the plugin source
+4. Run marketplace check before switching source
 
 ### Step 2 — Diff commands
 
-Compare `commands/*.md` vs `skills/generated-from-commands/`:
+Prefer the deterministic CLI:
 
-- **New command** (in `commands/` but not in `skills/generated-from-commands/`) → convert (same as Step 5 of cc-to-codex skill)
-- **Deleted command** (in `skills/generated-from-commands/` but not in `commands/`) → delete the generated skill directory; emit notice
-- **Modified command** (source newer than generated) → regenerate the skill; emit notice
+```bash
+python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace sync
+python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace check
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin attach plugins/example --source codex
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin switch-source plugins/example --to claude-code
+```
 
 ### Step 3 — Check `manually_maintained`
 
-If `.plugin-cross-port.yaml` lists a generated file as `manually_maintained`, skip overwriting it. Emit a reminder: "Manually maintained: <path> — review manually."
+If `.plugin-cross-port.yaml` lists a generated file as `manually_maintained`,
+skip overwriting it. Emit a reminder: "Manually maintained: <path> - review
+manually."
 
 ### Step 4 — Strict mode check
 
@@ -56,12 +66,13 @@ Otherwise emit warnings only.
 
 ### Step 5 — Update `.plugin-cross-port.yaml`
 
-Update `generated_at` timestamp and `warnings` list to reflect current state.
+Update plugin `status` after sync. The state is JSON-compatible YAML and must
+remain readable without PyYAML.
 
 ### Step 6 — Validate Codex manifest
 
 Re-read `.codex-plugin/plugin.json`. Verify:
-- `hooks` key is absent (Codex rejects it)
+- `hooks` key is absent from Codex manifests
 - `skills` points to `./skills/`
 - `version` matches `.claude-plugin/plugin.json`
 
@@ -80,9 +91,10 @@ Report what changed:
 See `references/continuous-mode.md` for full details.
 
 The hook at `.githooks/pre-commit` runs automatically:
-1. Developer modifies a Claude Code plugin and stages the changes
-2. Pre-commit hook detects CC-side staged files and runs `convert_cc_to_codex.py --force`
-3. Generated Codex files are staged in the same commit automatically
+1. Developer modifies authoritative files and stages the changes
+2. Pre-commit hook runs `cross_port.py marketplace sync --changed-only ... --stage`
+3. Generated files and deletions are staged in the same commit automatically
+4. Generated-side edits are rejected based on plugin-level state
 
 ## Generated vs manually maintained
 
@@ -96,3 +108,17 @@ manually_maintained:
 ```
 
 The converter will skip overwriting files listed here.
+
+## Publication and deletion
+
+Codex failed or review-required targets are published as
+`policy.installation: "NOT_AVAILABLE"`. Failed Claude Code targets are omitted
+from the Claude Code marketplace.
+
+When a canonical marketplace entry is removed, sync removes the whole
+`plugins/<name>/` directory only after validating that the path is local,
+inside `plugins_dir`, and has a basename matching the plugin name. Use Git for
+recovery.
+
+`plugin adapt`, adaptation plans, snapshot hashes, semantic adaptation rules,
+criticality, and stale adaptation detection are deferred to `0.7.0`.

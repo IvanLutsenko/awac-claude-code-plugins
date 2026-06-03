@@ -20,6 +20,14 @@ Convert a single plugin from Claude Code format to Codex-compatible format.
 
 ## Workflow
 
+## Phase 0: Vendor external plugins
+
+When the plugin lives outside this repository, copy it into `plugins_dir`
+before conversion. Review license and attribution, resolve name collisions,
+discard stale foreign generated artifacts after review, and explicitly choose
+the source of truth when attaching. Deterministic scripts never copy files
+between repositories.
+
 ### Step 1 — Read source
 
 Read the following files from the target plugin (skip if absent):
@@ -125,6 +133,16 @@ manually_maintained:
 ```
 
 ### Step 8 — Update Codex marketplace
+
+For standalone one-shot conversion, the legacy converter may update the Codex
+marketplace. In a managed repository, prefer:
+
+```bash
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin convert <plugin-path> --from claude-code --to codex
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin attach <plugin-path> --source claude-code
+```
 
 Read `.agents/plugins/marketplace.json` (create if absent).
 Add or update entry for this plugin:

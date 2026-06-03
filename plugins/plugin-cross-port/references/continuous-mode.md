@@ -2,27 +2,32 @@
 
 ## Philosophy
 
-- **Claude Code is source of truth** — never edit Codex-generated files directly unless you mark them `manually_maintained`.
-- **Generated files are regenerated** on each converter run; manual edits are overwritten.
-- **Pre-commit hook enforces sync** — Codex files are always up-to-date in the same commit as the CC changes.
+- **Marketplace source of truth** is selected by `marketplace attach`. It owns
+  marketplace root metadata, active plugin ordering, and removals.
+- **Plugin source of truth** is stored per plugin in `.plugin-cross-port.yaml`.
+  One plugin can be Claude Code-first while another is Codex-first.
+- **Generated files are regenerated** by `marketplace sync`; manual edits on
+  generated sides are rejected unless listed in `manually_maintained`.
+- **Pre-commit hook enforces declared state** and stages generated output in the
+  same commit.
 
 ## Pre-commit Hook
 
 The hook lives at `.githooks/pre-commit` and runs automatically before every commit (the repo already has `core.hooksPath = .githooks`).
 
-**Direction is determined by `source_of_truth` in `.plugin-cross-port.yaml`:**
+**Direction is determined only by plugin-level `source_of_truth`:**
 
-- `source_of_truth: claude-code` → CC-side changes trigger `convert_cc_to_codex.py`
-- `source_of_truth: codex` → Codex-side changes trigger `convert_codex_to_cc.py`
-- No `.plugin-cross-port.yaml` → inferred from which manifest exists (CC manifest → `claude-code`, Codex-only → `codex`)
+- `source_of_truth: claude-code` -> CC-side files are authoritative
+- `source_of_truth: codex` -> Codex-side files are authoritative
+- Generated-side staged edits are rejected unless explicitly listed in
+  `manually_maintained`
 
 **What it does:**
 1. Scans staged files to find changed plugins
-2. Reads `source_of_truth` for each plugin
-3. Detects changes on the authoritative side (ignores generated files)
-4. Runs the appropriate converter with `--force`
-5. Stages all generated output in the same commit
-6. Fails the commit if conversion errors out
+2. Runs `cross_port.py marketplace sync --changed-only <plugins> --stage`
+3. Runs full sync when the canonical marketplace file is staged
+4. Stages generated output and deletions in the same commit
+5. Fails the commit on generated-side edits or conversion errors
 
 **Nothing to configure** — the hook is already wired. To verify it's active:
 
@@ -34,28 +39,30 @@ ls .githooks/               # should list: pre-commit, pre-push
 ## Local workflow
 
 ```bash
-# Run conversion manually (preview)
-python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root . --dry-run
+# Attach a marketplace once
+python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace attach --source claude-code
 
-# Run conversion manually (apply)
-python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root .
+# Reconcile everything
+python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace sync
 
-# Force overwrite including manually_maintained files
-python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root . --force
+# CI/dry-run consistency check
+python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace check
 
-# Strict: fail if agents/hooks are unresolved in .plugin-cross-port.yaml
-python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root . --strict
+# Attach one plugin to an already managed repository
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin attach plugins/example --source codex
+
+# Explicitly change a plugin's authoritative side after a clean check
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin switch-source plugins/example --to claude-code
 ```
 
 ## What triggers a re-sync
 
 | Change | Re-sync needed? |
 |---|---|
-| Edit `commands/*.md` | Yes — pre-commit regenerates corresponding skill |
-| Add new command | Yes — pre-commit creates new generated skill |
-| Delete command | Yes — pre-commit removes generated skill |
-| Edit `skills/<name>/SKILL.md` | No — shared file, no generation |
-| Edit `.claude-plugin/plugin.json` | Yes — version synced to Codex manifest |
+| Edit authoritative manifest or content | Yes — pre-commit regenerates target files |
+| Edit generated manifest or content | Rejected unless manually maintained |
+| Remove canonical marketplace entry | Yes — sync removes the plugin directory |
+| Edit shared `skills/<name>/SKILL.md` | Depends on plugin source and target conversion |
 | Edit `agents/*.md` | Warning only — manual action required |
 | Edit hooks in `plugin.json` | Warning only — no Codex equivalent |
 
@@ -70,3 +77,12 @@ manually_maintained:
 ```
 
 The converter skips overwriting files listed here and emits a reminder notice instead.
+
+## Publication asymmetry
+
+Codex marketplace entries for failed or review-required targets use
+`policy.installation: "NOT_AVAILABLE"`. Claude Code failed targets are omitted
+from the Claude Code marketplace; no disabled marketplace field is assumed.
+
+`plugin adapt`, adaptation plans, snapshot hashes, semantic rules, criticality,
+and stale adaptation detection are reserved for `0.7.0`.

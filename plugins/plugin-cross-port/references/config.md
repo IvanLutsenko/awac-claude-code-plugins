@@ -15,20 +15,20 @@ default_source_of_truth: claude-code              # fallback when no decision fi
 
 ## Fields
 
-**`plugins_dir`** — directory scanned by the pre-commit hook for changed plugins.
+**`plugins_dir`** — directory containing managed plugin directories.
 Change this if your repo uses a non-standard layout (e.g., `packages`, `src`).
 
-**`codex_marketplace`** — path where `convert_cc_to_codex.py` writes the Codex marketplace entry.
-Change if your Codex tooling expects it elsewhere.
+**`codex_marketplace`** — path to the Codex marketplace used by reconciliation
+and standalone CC -> Codex conversion.
 
 **`cc_marketplace`** — path to the Claude Code marketplace used by marketplace reconciliation.
 
 **`marketplace_state`** — path to repository-level marketplace state. This file is created by
 `marketplace attach` and read by `marketplace sync` and `marketplace check`.
 
-**`default_source_of_truth`** — used by the hook when a plugin has no `.plugin-cross-port.yaml`
-and both `.claude-plugin/` and `.codex-plugin/` exist.
-Values: `claude-code` (default) or `codex`.
+**`default_source_of_truth`** — legacy fallback for standalone converter mode.
+Managed marketplace sync uses plugin-level state and does not infer direction
+from staged paths.
 
 ## Example — non-standard layout
 
@@ -43,7 +43,6 @@ default_source_of_truth: claude-code
 
 ## Precedence
 
-Config → decision file → CLI flags.
+Config -> marketplace state -> plugin state -> CLI flags.
 
-Per-plugin `.plugin-cross-port.yaml` always wins over repo config for `source_of_truth`.
-CLI `--force` overrides everything.
+Per-plugin `.plugin-cross-port.yaml` wins for plugin `source_of_truth`.

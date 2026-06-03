@@ -2,7 +2,9 @@
 
 Bridge between Claude Code and Codex plugin formats.
 
-Converts a Claude Code plugin to Codex format — one-shot or continuously via CI. Source of truth is always the Claude Code side.
+Converts individual plugins in either direction and reconciles dual-target
+Claude Code and Codex marketplaces. A repository chooses one canonical
+marketplace, while each plugin keeps its own `source_of_truth`.
 
 **Version:** 0.5.0
 
@@ -34,6 +36,10 @@ python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidia
 
 # Strict: fail if agents/hooks are unresolved
 python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root . --strict
+
+# CLI wrapper without marketplace side effects
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin convert plugins/obsidian-tracker --from claude-code --to codex
 ```
 
 ### Output
@@ -51,7 +57,7 @@ plugins/obsidian-tracker/
       ... (one per command)
   .plugin-cross-port.yaml                <- decision file
 
-.agents/plugins/marketplace.json         <- Codex marketplace entry added
+.agents/plugins/marketplace.json         <- Codex marketplace entry added in standalone script mode
 ```
 
 ---
@@ -72,6 +78,10 @@ python3 plugins/plugin-cross-port/scripts/convert_codex_to_cc.py plugins/my-code
 
 # Run conversion
 python3 plugins/plugin-cross-port/scripts/convert_codex_to_cc.py plugins/my-codex-plugin --repo-root .
+
+# CLI wrapper without marketplace side effects
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin convert plugins/my-codex-plugin --from codex --to claude-code
 ```
 
 ### Output
@@ -87,15 +97,40 @@ plugins/my-codex-plugin/
 
 ---
 
-## Continuous mode
+## Marketplace reconciliation
 
-After initial conversion, re-run the script whenever commands change:
+Attach a repository marketplace once, then use deterministic full-list sync:
 
 ```bash
-python3 plugins/plugin-cross-port/scripts/convert_cc_to_codex.py plugins/obsidian-tracker --repo-root .
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  marketplace attach --source claude-code
+
+python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace sync
+python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace check
+
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin attach plugins/example --source codex
+
+python3 plugins/plugin-cross-port/scripts/cross_port.py \
+  plugin switch-source plugins/example --to claude-code
 ```
 
-The script is **idempotent** — up-to-date generated files are skipped.
+`marketplace attach` records repository-level state in
+`.plugin-cross-port.marketplace.yaml`. The selected marketplace owns root
+metadata, active plugin ordering, and deletion. Each plugin state file owns its
+own `source_of_truth`, so mixed repositories are supported.
+
+If a canonical marketplace entry is removed, `marketplace sync` removes the
+entire `plugins/<name>/` directory after validating that the path is local,
+inside `plugins_dir`, and has a basename matching the plugin name. Use Git to
+recover deleted plugin files.
+
+Failed or review-required Codex targets are published with
+`policy.installation: "NOT_AVAILABLE"`. Failed Claude Code targets are omitted
+from the Claude Code marketplace because there is no confirmed disabled field.
+
+The pre-commit hook delegates to `marketplace sync --changed-only ... --stage`
+and rejects staged edits on generated sides according to plugin-level state.
 
 See `references/continuous-mode.md` for GitHub Actions and pre-commit hook examples.
 
@@ -108,6 +143,9 @@ See `references/continuous-mode.md` for GitHub Actions and pre-commit hook examp
 - **`${CLAUDE_PLUGIN_ROOT}`** — CC-specific path variable; remove from generated skills or replace with relative paths.
 - **`allowed-tools`** — CC per-command tool allowlist has no Codex analog; remove from generated skills.
 - **MCP tool names** — same `.mcp.json` format, but verify tool IDs work in target environment.
+- **Semantic adaptation** — `plugin adapt`, adaptation plans, snapshot hashes,
+  semantic rules, criticality, and stale adaptation detection are deferred to
+  `0.7.0`.
 
 ---
 
@@ -120,6 +158,14 @@ See `references/continuous-mode.md` for GitHub Actions and pre-commit hook examp
 ---
 
 ## Changelog
+
+### 0.6.0
+- Add marketplace attach, sync and check workflows
+- Support mixed Claude Code-first and Codex-first plugins
+- Reconcile ordered marketplace entries and preserve non-derived policy fields
+- Mark unavailable Codex targets with NOT_AVAILABLE and omit broken CC targets
+- Remove plugin directories when canonical marketplace entries are removed
+- Replace hook direction guessing with declared source-of-truth enforcement
 
 ### 0.5.0
 - Remove stale converter-owned commands and skills when source files disappear
