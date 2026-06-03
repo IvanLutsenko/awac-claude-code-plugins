@@ -256,20 +256,25 @@ Convert plugins/obsidian-tracker to Codex
 python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace attach --source claude-code
 python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace sync
 python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace check
+
+# Review and apply semantic adaptations
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example --apply
 ```
 
-**Status:** 🔨 Beta | **Version:** 0.6.0
+**Status:** 🔨 Beta | **Version:** 0.7.0
 
-**What's New in 0.6.0:**
-- Marketplace attach, sync and check workflows
-- Mixed Claude Code-first and Codex-first plugin support
-- Ordered marketplace reconciliation with Codex `NOT_AVAILABLE` publication for unavailable targets
-- Pre-commit hook uses declared plugin source-of-truth instead of guessing direction
+**What's New in 0.7.0:**
+- `plugin adapt` writes semantic adaptation plans and source snapshots
+- `plugin adapt --apply` applies approved plans atomically
+- Sync replays reproducible adaptation rules
+- Stale critical adaptations mark Codex targets as unavailable
 
 **Features:**
 - CC → Codex: manifest conversion, `commands/` → `skills/generated-from-commands/`
 - Codex → CC: manifest conversion, `skills/` → `commands/generated-from-codex-*/`
 - Repository marketplace state plus per-plugin `.plugin-cross-port.yaml` source-of-truth
+- Semantic adaptation plans for behavior that cannot be mechanically derived
 - Generated output cleanup removes stale converted commands and skills
 - Plugin-relative manual maintenance rules are honored in both directions
 - Standalone converter scripts remain available for one-shot conversion

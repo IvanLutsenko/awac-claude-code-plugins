@@ -1,7 +1,7 @@
 {
   "name": "plugin-cross-port",
   "description": "Bidirectional conversion between Claude Code and Codex plugin formats. CC → Codex and Codex → CC, one-shot or continuous.",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "author": {
     "name": "Ivan Lutsenko",
     "email": "ivan@lutsenko.com",

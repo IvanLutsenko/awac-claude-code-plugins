@@ -9,7 +9,7 @@
 - **combined-review** (v1.3.0) — Multi-agent code review + CodeRabbit CLI
 - **clip-maker** (v1.3.0) — Automated vertical clip creator (whisper + Claude + ffmpeg)
 - **drawbridge** (v0.1.0) — Bridge briefs to image-gen web UIs (Gemini/ChatGPT/Grok/Midjourney), per-target prompt tuning
-- **plugin-cross-port** (v0.6.0) — Bidirectional CC ↔ Codex plugin conversion
+- **plugin-cross-port** (v0.7.0) — Bidirectional CC ↔ Codex plugin conversion
 
 ## Plugin Structure
 
@@ -66,6 +66,13 @@ automatically:
 ```bash
 python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace sync
 python3 plugins/plugin-cross-port/scripts/cross_port.py marketplace check
+```
+
+For semantic gaps, use:
+
+```bash
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example --apply
 ```
 
 For attached plugins, `.plugin-cross-port.marketplace.yaml` owns marketplace
