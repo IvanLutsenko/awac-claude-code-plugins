@@ -1,7 +1,7 @@
 # Claude Code → Codex Mapping
 
-`0.6.0` keeps deterministic conversion separate from semantic adaptation. The
-same converter engines are used by one-shot conversion and marketplace
+Deterministic conversion remains separate from semantic adaptation. The same
+converter engines are used by one-shot conversion and marketplace
 reconciliation.
 
 ## Manifest
@@ -79,5 +79,7 @@ reconciliation.
 
 Codex failed or review-required targets are published as `NOT_AVAILABLE`.
 Failed Claude Code targets are omitted from the Claude Code marketplace.
-Semantic adaptation fields, snapshot hashes, criticality, and stale adaptation
-detection are reserved for `0.7.0`.
+
+`0.7.0` implements the planned semantic adaptation workflow. It still does not
+pretend that hooks or ecosystem-specific paths have direct equivalents; it
+records and applies reviewed plans explicitly.

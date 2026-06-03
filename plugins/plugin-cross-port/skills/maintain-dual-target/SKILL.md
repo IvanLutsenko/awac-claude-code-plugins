@@ -109,6 +109,19 @@ manually_maintained:
 
 The converter will skip overwriting files listed here.
 
+## Semantic adaptation workflow
+
+Use this when hooks, permission behavior, tool IDs, or ecosystem-specific paths
+cannot be resolved mechanically:
+
+```bash
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example --apply
+```
+
+Review `plugins/example/.plugin-cross-port/adaptation-plan.md` before applying.
+If source files change after planning, rerun `plugin adapt`.
+
 ## Publication and deletion
 
 Codex failed or review-required targets are published as
@@ -119,6 +132,3 @@ When a canonical marketplace entry is removed, sync removes the whole
 `plugins/<name>/` directory only after validating that the path is local,
 inside `plugins_dir`, and has a basename matching the plugin name. Use Git for
 recovery.
-
-`plugin adapt`, adaptation plans, snapshot hashes, semantic adaptation rules,
-criticality, and stale adaptation detection are deferred to `0.7.0`.

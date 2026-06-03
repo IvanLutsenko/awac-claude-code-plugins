@@ -56,6 +56,41 @@ from changed files.
 The marketplace source owns root metadata, active plugin set, ordering, and
 plugin directory removal. Plugin state owns conversion direction.
 
+## Adaptation State
+
+Semantic adaptation state lives at:
+
+```text
+plugins/<name>/.plugin-cross-port/adaptation-state.yaml
+```
+
+The file is JSON-compatible YAML:
+
+```json
+{
+  "version": 1,
+  "plugin": "plugin-name",
+  "plan_hash": "sha256:...",
+  "source_snapshot": "sha256:...",
+  "status": "planned",
+  "adaptations": [
+    {
+      "id": "hooks-sessionstart",
+      "strategy": "semantic",
+      "criticality": "critical",
+      "rationale": "Claude Code hook SessionStart has no deterministic Codex equivalent.",
+      "source_files": [".claude-plugin/plugin.json", "hooks/sessionstart.sh"],
+      "target_files": ["skills/generated-from-hooks/sessionstart/SKILL.md"],
+      "source_snapshot": "sha256:..."
+    }
+  ]
+}
+```
+
+Changing a source file for a semantic adaptation makes that adaptation stale.
+Stale critical adaptations set plugin status to `needs-review`; stale
+non-critical adaptations remain available and emit a warning.
+
 ## Example: obsidian-tracker after conversion
 
 ```yaml

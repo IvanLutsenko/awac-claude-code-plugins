@@ -136,6 +136,30 @@ See `references/continuous-mode.md` for GitHub Actions and pre-commit hook examp
 
 ---
 
+## Semantic adaptation
+
+`0.7.0` adds an explicit review workflow for behavior that cannot be
+mechanically derived:
+
+```bash
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example
+python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example --apply
+```
+
+`plugin adapt` writes:
+
+- `plugins/example/.plugin-cross-port/adaptation-plan.md`
+- `plugins/example/.plugin-cross-port/adaptation-state.yaml`
+
+The analyze command does not modify target files. `--apply` applies the whole
+reviewed plan atomically and rejects stale source snapshots. During
+`marketplace sync`, reproducible adaptation rules are replayed. Stale critical
+semantic adaptations set plugin status to `needs-review`; Codex marketplace
+entries become `NOT_AVAILABLE`. Stale non-critical adaptations keep the target
+available and emit a warning.
+
+---
+
 ## Limitations
 
 - **Hooks** — `SessionStart`, `PostToolUse`, etc. have no Codex equivalent. Implement as GitHub Actions if needed.
@@ -143,9 +167,8 @@ See `references/continuous-mode.md` for GitHub Actions and pre-commit hook examp
 - **`${CLAUDE_PLUGIN_ROOT}`** — CC-specific path variable; remove from generated skills or replace with relative paths.
 - **`allowed-tools`** — CC per-command tool allowlist has no Codex analog; remove from generated skills.
 - **MCP tool names** — same `.mcp.json` format, but verify tool IDs work in target environment.
-- **Semantic adaptation** — `plugin adapt`, adaptation plans, snapshot hashes,
-  semantic rules, criticality, and stale adaptation detection are deferred to
-  `0.7.0`.
+- **Semantic adaptation** — hooks and ecosystem-specific paths still require
+  review through `plugin adapt`; sync never invents new semantic behavior.
 
 ---
 
@@ -158,6 +181,13 @@ See `references/continuous-mode.md` for GitHub Actions and pre-commit hook examp
 ---
 
 ## Changelog
+
+### 0.7.0
+- Add `plugin adapt` and `plugin adapt --apply`
+- Write adaptation plan and adaptation state under `.plugin-cross-port/`
+- Reject stale source snapshots before applying reviewed plans
+- Replay reproducible adaptation rules during sync
+- Mark stale critical semantic adaptations as needs-review
 
 ### 0.6.0
 - Add marketplace attach, sync and check workflows

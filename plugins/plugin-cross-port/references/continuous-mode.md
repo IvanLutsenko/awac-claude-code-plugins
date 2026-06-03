@@ -66,6 +66,16 @@ python3 plugins/plugin-cross-port/scripts/cross_port.py plugin switch-source plu
 | Edit `agents/*.md` | Warning only — manual action required |
 | Edit hooks in `plugin.json` | Warning only — no Codex equivalent |
 
+## Adaptation during sync
+
+`marketplace sync` remains mechanical. It does not invent new semantic
+adaptations. It only:
+
+- replays previously approved reproducible adaptation rules;
+- detects stale semantic adaptations from source snapshots;
+- marks stale critical adaptations as `needs-review`;
+- keeps stale non-critical adaptations available and reports a warning.
+
 ## Marking a generated file as manually maintained
 
 After customizing a generated skill beyond what the converter produces:
@@ -83,6 +93,3 @@ The converter skips overwriting files listed here and emits a reminder notice in
 Codex marketplace entries for failed or review-required targets use
 `policy.installation: "NOT_AVAILABLE"`. Claude Code failed targets are omitted
 from the Claude Code marketplace; no disabled marketplace field is assumed.
-
-`plugin adapt`, adaptation plans, snapshot hashes, semantic rules, criticality,
-and stale adaptation detection are reserved for `0.7.0`.
