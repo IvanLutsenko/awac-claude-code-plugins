@@ -303,7 +303,8 @@ class Reconciler:
                 plugins_dir = (self.repo_root / self.config["plugins_dir"]).resolve()
                 if plugin_path.name != name:
                     raise ValueError(f"Plugin path basename does not match {name}")
-                plugin_source_path(plugin_path, self.repo_root, Path(self.config["plugins_dir"]))
+                if plugins_dir not in plugin_path.parents:
+                    raise ValueError(f"Plugin path is outside plugins_dir: {plugin_path}")
                 if plugin_path.exists():
                     shutil.rmtree(plugin_path)
                 del state["plugins"][name]
