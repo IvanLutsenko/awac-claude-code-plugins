@@ -1,12 +1,15 @@
 import importlib.util
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from helpers import make_cc_plugin, make_codex_marketplace, make_codex_plugin
-
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
+TESTS_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(TESTS_ROOT))
+
+from helpers import make_cc_plugin, make_codex_marketplace, make_codex_plugin, read_json
 
 
 def load_module(name: str, relative_path: str):
@@ -25,7 +28,7 @@ class ConverterTest(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.repo_root = Path(self.temp_dir.name)
-        make_codex_marketplace(self.repo_root, [])
+        self.codex_marketplace = make_codex_marketplace(self.repo_root, [])
 
     def tearDown(self):
         self.temp_dir.cleanup()
@@ -78,6 +81,21 @@ class ConverterTest(unittest.TestCase):
 
         self.assertEqual(converter.run(), 0)
         self.assertFalse(stale.exists())
+
+    def test_cc_to_codex_can_skip_marketplace_side_effects(self):
+        plugin = self.make_cc_plugin()
+        converter = cc_to_codex.Converter(
+            plugin, self.repo_root, False, False, False, sync_marketplace=False
+        )
+        self.assertEqual(converter.run(), 0)
+        self.assertEqual(read_json(self.codex_marketplace)["plugins"], [])
+
+    def test_codex_to_cc_accepts_orchestration_mode(self):
+        plugin = self.make_codex_plugin()
+        converter = codex_to_cc.ReverseConverter(
+            plugin, self.repo_root, False, False, False, sync_marketplace=False
+        )
+        self.assertEqual(converter.run(), 0)
 
 
 if __name__ == "__main__":

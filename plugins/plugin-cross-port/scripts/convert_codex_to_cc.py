@@ -19,6 +19,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from plugin_state import load as load_state
+
 
 # ---------------------------------------------------------------------------
 # YAML helpers (no external deps — minimal subset we actually need)
@@ -127,6 +130,8 @@ def _parse_yaml_simple(text: str) -> dict:
 DEFAULT_CONFIG: dict = {
     'plugins_dir': 'plugins',
     'codex_marketplace': '.agents/plugins/marketplace.json',
+    'cc_marketplace': '.claude-plugin/marketplace.json',
+    'marketplace_state': '.plugin-cross-port.marketplace.yaml',
     'default_source_of_truth': 'claude-code',
 }
 
@@ -190,12 +195,14 @@ class ReverseConverter:
         dry_run: bool,
         force: bool,
         strict: bool,
+        sync_marketplace: bool = True,
     ):
         self.plugin_path = plugin_path.resolve()
         self.repo_root = repo_root.resolve()
         self.dry_run = dry_run
         self.force = force
         self.strict = strict
+        self.sync_marketplace = sync_marketplace
         self.warnings: list[str] = []
         self.created: list[str] = []
         self.removed: list[str] = []
@@ -246,10 +253,10 @@ class ReverseConverter:
         return json.loads(manifest_path.read_text(encoding='utf-8'))
 
     def load_decision_file(self) -> dict:
-        path = self.plugin_path / '.plugin-cross-port.yaml'
-        if not path.exists():
-            return {}
-        return _parse_yaml_simple(path.read_text(encoding='utf-8'))
+        return load_state(
+            self.plugin_path / '.plugin-cross-port.yaml',
+            default={},
+        )
 
     def build_cc_manifest(self, codex: dict, skill_files: list[Path]) -> dict:
         name = codex.get('name', self.plugin_path.name)
