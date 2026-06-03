@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "plugin": "obsidian-tracker",
+  "plugin": "auto-theme",
   "source_of_truth": "claude-code",
   "status": "synced",
   "manually_maintained": []

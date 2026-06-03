@@ -1,0 +1,19 @@
+{
+  "name": "crashlytics",
+  "version": "4.4.3",
+  "description": "Multi-platform crash analysis for Android & iOS with git blame forensics, code-level fixes, and deterministic quality gate. MCP-primary fetch with REST API fallback. Language-aware validator and origin/<branch> forensics.",
+  "author": {
+    "name": "Ivan Lutsenko"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Crashlytics",
+    "shortDescription": "Multi-platform crash analysis for Android & iOS with git blame forensics, code-l",
+    "developerName": "Ivan Lutsenko",
+    "category": "Development",
+    "capabilities": [
+      "Read",
+      "Write"
+    ]
+  }
+}

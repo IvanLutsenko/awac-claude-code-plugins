@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "plugin": "obsidian-tracker",
+  "plugin": "drawbridge",
   "source_of_truth": "claude-code",
   "status": "synced",
   "manually_maintained": []
