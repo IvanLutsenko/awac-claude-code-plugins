@@ -256,33 +256,54 @@ class Reconciler:
         )
         if staged.returncode != 0:
             return None
+        staged_paths = staged.stdout.splitlines()
         state = self._load_marketplace_state()
-        for name in changed_only:
-            plugin_info = state.get("plugins", {}).get(name, {})
-            plugin_path = self.repo_root / plugin_info.get("path", f"plugins/{name}")
-            plugin_state = load_state(
-                plugin_path / ".plugin-cross-port.yaml",
-                default=new_plugin_state(name, plugin_info.get("source_of_truth", state["source_of_truth"])),
-            )
-            source = plugin_state.get("source_of_truth", state["source_of_truth"])
-            manually_maintained = set(plugin_state.get("manually_maintained", []) or [])
-            for rel_path in staged.stdout.splitlines():
+        # Reconcile a throwaway copy to learn the authoritative generated content.
+        # A staged generated-side file is only an illegal manual edit when it
+        # diverges from what reconcile would produce; tool-produced output that
+        # already matches the source of truth is allowed.
+        with tempfile.TemporaryDirectory() as directory:
+            copy_root = Path(directory) / "repo"
+            shutil.copytree(self.repo_root, copy_root, ignore=shutil.ignore_patterns(".git"))
+            Reconciler(copy_root)._reconcile(changed_only=changed_only)
+            for name in changed_only:
+                plugin_info = state.get("plugins", {}).get(name, {})
+                plugin_path = self.repo_root / plugin_info.get("path", f"plugins/{name}")
+                plugin_state = load_state(
+                    plugin_path / ".plugin-cross-port.yaml",
+                    default=new_plugin_state(name, plugin_info.get("source_of_truth", state["source_of_truth"])),
+                )
+                source = plugin_state.get("source_of_truth", state["source_of_truth"])
+                manually_maintained = set(plugin_state.get("manually_maintained", []) or [])
                 prefix = f"plugins/{name}/"
-                if not rel_path.startswith(prefix):
-                    continue
-                plugin_rel = rel_path[len(prefix):]
-                if plugin_rel in manually_maintained:
-                    continue
-                if self._is_generated_side_path(plugin_rel, source):
-                    target = self._opposite(source)
-                    message = (
-                        f"Generated-side edit is not allowed: {rel_path}. "
-                        f"Source of truth: {source}"
+                for rel_path in staged_paths:
+                    if not rel_path.startswith(prefix):
+                        continue
+                    plugin_rel = rel_path[len(prefix):]
+                    if plugin_rel in manually_maintained:
+                        continue
+                    if not self._is_generated_side_path(plugin_rel, source):
+                        continue
+                    staged_file = self.repo_root / rel_path
+                    reconciled_file = copy_root / rel_path
+                    staged_content = (
+                        staged_file.read_text(encoding="utf-8") if staged_file.exists() else None
                     )
-                    return ReconcileReport(
-                        [PluginResult(name, "failed", target, message)],
-                        [],
+                    reconciled_content = (
+                        reconciled_file.read_text(encoding="utf-8")
+                        if reconciled_file.exists()
+                        else None
                     )
+                    if staged_content != reconciled_content:
+                        target = self._opposite(source)
+                        message = (
+                            f"Generated-side edit diverges from source of truth: {rel_path}. "
+                            f"Source of truth: {source}"
+                        )
+                        return ReconcileReport(
+                            [PluginResult(name, "failed", target, message)],
+                            [],
+                        )
         return None
 
     def _is_generated_side_path(self, plugin_rel: str, source: str) -> bool:

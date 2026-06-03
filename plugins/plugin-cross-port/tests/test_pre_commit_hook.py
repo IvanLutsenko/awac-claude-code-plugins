@@ -98,6 +98,30 @@ class PreCommitHookTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("Source of truth: claude-code", result.stdout + result.stderr)
 
+    def test_consistent_new_generated_side_is_allowed(self):
+        # Simulate a repo whose HEAD lacks a plugin's generated side (as happens
+        # when attaching plugins that were never dual-target before). Regenerating
+        # it and staging the new file must not be rejected: it matches reconcile.
+        self.attach_baseline(("one", "two"))
+        shutil.rmtree(self.repo / "plugins/two/.codex-plugin")
+        self.git_run("git", "add", "-A")
+        self.git_run("git", "commit", "--no-verify", "-m", "drop two codex side")
+
+        regenerate = self.git_run(
+            sys.executable,
+            "plugins/plugin-cross-port/scripts/cross_port.py",
+            "--repo-root",
+            ".",
+            "marketplace",
+            "sync",
+        )
+        self.assertEqual(regenerate.returncode, 0, regenerate.stderr)
+        self.git_run("git", "add", "plugins/two/.codex-plugin/plugin.json")
+
+        result = self.git_run(".githooks/pre-commit", check=False)
+
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+
     def test_staged_deletion_is_staged_after_sync(self):
         self.attach_baseline(("one", "two"))
         marketplace = self.repo / ".claude-plugin/marketplace.json"
