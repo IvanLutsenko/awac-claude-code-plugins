@@ -11,6 +11,74 @@ def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def plugin_side_root(root: Path, side: str) -> Path:
+    if side == "claude-code":
+        return root / ".claude-plugin" / "plugins"
+    if side == "codex":
+        return root / ".agents" / "plugins" / "plugins"
+    raise ValueError(f"unsupported plugin side: {side}")
+
+
+def write_plugin_file(
+    root: Path, side: str, name: str, relative_path: str, content: str
+) -> Path:
+    path = plugin_side_root(root, side) / name / relative_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+    return path
+
+
+def write_adaptation_state(root: Path, side: str, name: str, state: dict) -> Path:
+    path = (
+        plugin_side_root(root, side)
+        / name
+        / ".plugin-cross-port"
+        / "adaptation-state.yaml"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(state, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def add_cc_command(
+    repo: Path, plugin_name: str, command_name: str, body: str = "Body"
+) -> Path:
+    command = repo / "plugins" / plugin_name / "commands" / f"{command_name}.md"
+    command.parent.mkdir(parents=True, exist_ok=True)
+    command.write_text(
+        f"---\ndescription: {command_name.title()} command\n---\n\n{body}\n",
+        encoding="utf-8",
+    )
+    return command
+
+
+def add_cc_hook(repo: Path, plugin_name: str, event: str = "SessionStart") -> Path:
+    plugin = repo / "plugins" / plugin_name
+    manifest_path = plugin / ".claude-plugin" / "plugin.json"
+    manifest = read_json(manifest_path)
+    hook_path = plugin / "hooks" / f"{event.lower()}.sh"
+    hook_path.parent.mkdir(parents=True, exist_ok=True)
+    hook_path.write_text("#!/bin/bash\nprintf 'hook'\n", encoding="utf-8")
+    manifest["hooks"] = {
+        event: [
+            {
+                "type": "command",
+                "command": f"hooks/{event.lower()}.sh",
+                "timeout": 10,
+            }
+        ]
+    }
+    write_json(manifest_path, manifest)
+    return hook_path
+
+
+def read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
 def make_cc_marketplace(repo: Path, names: list[str]) -> Path:
     path = repo / ".claude-plugin" / "marketplace.json"
     write_json(
