@@ -9,6 +9,7 @@ from typing import Any, Iterable
 
 STATE_DIR = ".plugin-cross-port"
 STATE_FILE = "adaptation-state.yaml"
+PLAN_FILE = "adaptation-plan.md"
 HASH_PREFIX = "sha256:"
 _MISSING_MARKER = b"<plugin-cross-port:missing-source>"
 
@@ -19,6 +20,14 @@ from plugin_state import save as save_json_yaml
 
 def state_path(plugin_dir: Path) -> Path:
     return plugin_dir / STATE_DIR / STATE_FILE
+
+
+def plan_dir(plugin_dir: Path) -> Path:
+    return plugin_dir / STATE_DIR
+
+
+def plan_path(plugin_dir: Path) -> Path:
+    return plan_dir(plugin_dir) / PLAN_FILE
 
 
 def load(path_or_plugin_dir: Path) -> dict[str, Any]:
