@@ -141,15 +141,70 @@ def replay_reproducible_adaptations(
     for item in payload.get("adaptations", []):
         if item.get("strategy") != "reproducible":
             continue
-        action = item.get("action", {})
-        action_type = action.get("type")
-        if action_type == "append_text":
-            changed.extend(_append_text(plugin_path, item, action))
-        elif action_type == "write_review_stub":
-            changed.extend(_write_review_stub(plugin_path, item))
-        else:
-            raise ValueError(f"Unknown adaptation action: {action_type}")
+        changed.extend(_apply_adaptation_item(plugin_path, item))
     return changed
+
+
+def apply_plan(repo_root: Path, plugin_path: Path) -> AdaptationReport:
+    del repo_root
+    plugin = plugin_path.resolve()
+    plan_path = adaptation_state.plan_path(plugin)
+    try:
+        payload = parse_plan(plan_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return AdaptationReport(
+            plugin=plugin,
+            adaptations=[],
+            changed_paths=[],
+            status="error",
+            error=str(error),
+        )
+
+    adaptations = payload.get("adaptations", [])
+    saved_state = adaptation_state.load(plugin)
+    source_files = _all_source_files(adaptations)
+    current_snapshot = adaptation_state.source_snapshot(plugin, source_files)
+    expected_snapshot = saved_state.get("source_snapshot") or payload.get("source_snapshot")
+    if expected_snapshot and expected_snapshot != current_snapshot:
+        return AdaptationReport(
+            plugin=plugin,
+            adaptations=adaptations,
+            changed_paths=[],
+            status="error",
+            error="stale source snapshot; rerun plugin adapt before --apply",
+        )
+
+    target_paths = _target_paths(plugin, adaptations)
+    target_snapshots = _snapshot_paths(target_paths)
+    changed_paths: list[Path] = []
+    try:
+        for item in adaptations:
+            changed_paths.extend(_apply_adaptation_item(plugin, item))
+    except Exception as error:
+        _restore_snapshots(target_snapshots)
+        return AdaptationReport(
+            plugin=plugin,
+            adaptations=adaptations,
+            changed_paths=[],
+            status="error",
+            error=str(error),
+        )
+
+    for item in adaptations:
+        item["source_snapshot"] = adaptation_state.source_snapshot(
+            plugin, item.get("source_files", [])
+        )
+    payload["status"] = "applied"
+    payload["source_snapshot"] = current_snapshot
+    adaptation_state.save(plugin, payload)
+    changed_paths.append(adaptation_state.state_path(plugin))
+
+    return AdaptationReport(
+        plugin=plugin,
+        adaptations=adaptations,
+        changed_paths=_unique_paths(changed_paths),
+        status="applied",
+    )
 
 
 def _detect_hook_adaptations(plugin: Path) -> list[dict[str, Any]]:
@@ -230,6 +285,52 @@ def _append_text(
         path.write_text(existing + text, encoding="utf-8")
         changed.append(path)
     return changed
+
+
+def _apply_adaptation_item(plugin: Path, item: dict[str, Any]) -> list[Path]:
+    action = item.get("action", {})
+    action_type = action.get("type")
+    if action_type == "append_text":
+        return _append_text(plugin, item, action)
+    if action_type == "write_review_stub":
+        return _write_review_stub(plugin, item)
+    raise ValueError(f"Unknown adaptation action: {action_type}")
+
+
+def _target_paths(plugin: Path, adaptations: list[dict[str, Any]]) -> list[Path]:
+    paths: list[Path] = []
+    for item in adaptations:
+        for relative in item.get("target_files", []):
+            paths.append(plugin / relative)
+    return _unique_paths(paths)
+
+
+def _snapshot_paths(paths: list[Path]) -> dict[Path, bytes | None]:
+    snapshots: dict[Path, bytes | None] = {}
+    for path in paths:
+        snapshots[path] = path.read_bytes() if path.exists() else None
+    return snapshots
+
+
+def _restore_snapshots(snapshots: dict[Path, bytes | None]) -> None:
+    for path, content in snapshots.items():
+        if content is None:
+            if path.exists():
+                path.unlink()
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
+
+def _unique_paths(paths: list[Path]) -> list[Path]:
+    unique: list[Path] = []
+    seen: set[Path] = set()
+    for path in paths:
+        if path in seen:
+            continue
+        seen.add(path)
+        unique.append(path)
+    return unique
 
 
 def _write_review_stub(plugin: Path, item: dict[str, Any]) -> list[Path]:

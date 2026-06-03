@@ -13,6 +13,7 @@ from helpers import (
     add_cc_command,
     add_cc_hook,
     make_cc_plugin,
+    read_json,
     read_text,
     write_json,
 )
@@ -111,6 +112,63 @@ class AdaptationTest(unittest.TestCase):
         self.assertEqual(first, [target])
         self.assertEqual(second, [])
         self.assertEqual(read_text(target).count("Review note"), 1)
+
+    def test_apply_rejects_stale_source_snapshot(self):
+        plugin = make_cc_plugin(self.repo, "one")
+        add_cc_hook(self.repo, "one")
+        adaptation.analyze(self.repo, plugin)
+        manifest_path = plugin / ".claude-plugin" / "plugin.json"
+        manifest = read_json(manifest_path)
+        manifest["description"] = "Changed after planning."
+        write_json(manifest_path, manifest)
+
+        report = adaptation.apply_plan(self.repo, plugin)
+
+        self.assertEqual(report.exit_code, 1)
+        self.assertIn("stale source snapshot", report.error)
+
+    def test_apply_writes_all_targets_and_marks_state_applied(self):
+        plugin = make_cc_plugin(self.repo, "one")
+        add_cc_hook(self.repo, "one")
+        target = plugin / "skills/generated-from-hooks/sessionstart/SKILL.md"
+        state_path = plugin / ".plugin-cross-port/adaptation-state.yaml"
+        adaptation.analyze(self.repo, plugin)
+
+        report = adaptation.apply_plan(self.repo, plugin)
+
+        self.assertEqual(report.exit_code, 0)
+        self.assertTrue(target.exists())
+        self.assertEqual(read_json(state_path)["status"], "applied")
+
+    def test_apply_rolls_back_all_targets_when_one_action_fails(self):
+        plugin = make_cc_plugin(self.repo, "one")
+        add_cc_hook(self.repo, "one")
+        first_target = plugin / "skills/generated-from-hooks/sessionstart/SKILL.md"
+        unknown_target = plugin / "skills/generated-from-hooks/unknown/SKILL.md"
+        adaptation.analyze(self.repo, plugin)
+        plan_path = plugin / ".plugin-cross-port/adaptation-plan.md"
+        payload = adaptation.parse_plan(read_text(plan_path))
+        payload["adaptations"].append(
+            {
+                "id": "unknown-action",
+                "strategy": "semantic",
+                "criticality": "critical",
+                "rationale": "Exercise apply rollback.",
+                "source_files": [".claude-plugin/plugin.json"],
+                "target_files": ["skills/generated-from-hooks/unknown/SKILL.md"],
+                "source_snapshot": payload["source_snapshot"],
+                "action": {
+                    "type": "unknown_action",
+                },
+            }
+        )
+        plan_path.write_text(adaptation.render_plan(payload), encoding="utf-8")
+
+        report = adaptation.apply_plan(self.repo, plugin)
+
+        self.assertEqual(report.exit_code, 1)
+        self.assertFalse(first_target.exists())
+        self.assertFalse(unknown_target.exists())
 
     def test_analyze_rejects_codex_source(self):
         plugin = make_cc_plugin(self.repo, "one")
