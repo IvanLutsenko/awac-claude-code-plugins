@@ -1,0 +1,19 @@
+{
+  "name": "drawbridge",
+  "version": "0.1.0",
+  "description": "Bridge between a short brief and image-gen web UIs (Gemini, ChatGPT, Grok, Midjourney). Crafts a target-specific prompt, copies it to clipboard, opens the target — no API keys, no payments.",
+  "author": {
+    "name": "Ivan Lutsenko"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Drawbridge",
+    "shortDescription": "Bridge between a short brief and image-gen web UIs (Gemini, ChatGPT, Grok, Midjo",
+    "developerName": "Ivan Lutsenko",
+    "category": "Development",
+    "capabilities": [
+      "Read",
+      "Write"
+    ]
+  }
+}

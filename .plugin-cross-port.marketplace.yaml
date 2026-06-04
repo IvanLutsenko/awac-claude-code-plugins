@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "source_of_truth": "claude-code",
+  "source_marketplace": ".claude-plugin/marketplace.json",
+  "targets": {
+    "codex": ".agents/plugins/marketplace.json"
+  },
+  "plugins": {
+    "bereke-business-test-gen": {
+      "path": "plugins/bereke-business-test-gen",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "crashlytics": {
+      "path": "plugins/crashlytics",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "obsidian-tracker": {
+      "path": "plugins/obsidian-tracker",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "locale-notifications": {
+      "path": "plugins/locale-notifications",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "auto-theme": {
+      "path": "plugins/auto-theme",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "combined-review": {
+      "path": "plugins/combined-review",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "clip-maker": {
+      "path": "plugins/clip-maker",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "drawbridge": {
+      "path": "plugins/drawbridge",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    },
+    "plugin-cross-port": {
+      "path": "plugins/plugin-cross-port",
+      "source_of_truth": "claude-code",
+      "status": "synced"
+    }
+  }
+}

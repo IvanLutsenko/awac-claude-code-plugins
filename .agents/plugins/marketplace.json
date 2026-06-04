@@ -5,18 +5,6 @@
   },
   "plugins": [
     {
-      "name": "plugin-cross-port",
-      "source": {
-        "source": "local",
-        "path": "./plugins/plugin-cross-port"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Development"
-    },
-    {
       "name": "bereke-business-test-gen",
       "source": {
         "source": "local",
@@ -29,10 +17,94 @@
       "category": "Development"
     },
     {
+      "name": "crashlytics",
+      "source": {
+        "source": "local",
+        "path": "./plugins/crashlytics"
+      },
+      "category": "Development",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    },
+    {
       "name": "obsidian-tracker",
       "source": {
         "source": "local",
         "path": "./plugins/obsidian-tracker"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development"
+    },
+    {
+      "name": "locale-notifications",
+      "source": {
+        "source": "local",
+        "path": "./plugins/locale-notifications"
+      },
+      "category": "Development",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    },
+    {
+      "name": "auto-theme",
+      "source": {
+        "source": "local",
+        "path": "./plugins/auto-theme"
+      },
+      "category": "Development",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    },
+    {
+      "name": "combined-review",
+      "source": {
+        "source": "local",
+        "path": "./plugins/combined-review"
+      },
+      "category": "Development",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    },
+    {
+      "name": "clip-maker",
+      "source": {
+        "source": "local",
+        "path": "./plugins/clip-maker"
+      },
+      "category": "Development",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    },
+    {
+      "name": "drawbridge",
+      "source": {
+        "source": "local",
+        "path": "./plugins/drawbridge"
+      },
+      "category": "Development",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    },
+    {
+      "name": "plugin-cross-port",
+      "source": {
+        "source": "local",
+        "path": "./plugins/plugin-cross-port"
       },
       "policy": {
         "installation": "AVAILABLE",
