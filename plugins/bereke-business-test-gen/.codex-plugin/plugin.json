@@ -1,6 +1,6 @@
 {
   "name": "bereke-business-test-gen",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "Automated unit test generation for Kotlin/Android business logic with corporate standards",
   "author": {
     "name": "Ivan Lutsenko"

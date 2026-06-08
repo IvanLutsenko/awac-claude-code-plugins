@@ -2,7 +2,7 @@
 
 Automated unit test generation for Kotlin/Android business logic with corporate standards.
 
-**Version 2.7.1** - Added `Agent` and `Bash` to allowed-tools for seamless multi-agent workflows.
+**Version 2.7.2** - Standards loaders support the renamed `awac-ai-agent-plugins` marketplace while falling back to legacy installs.
 
 **New in 2.7.0**:
 - 🔀 `/test-diff`: Generate tests only for changed files in PR (vs target branch)
@@ -20,7 +20,7 @@ Best for automated test generation with slash commands.
 
 ```bash
 # Add marketplace
-/plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
+/plugin marketplace add https://github.com/IvanLutsenko/awac-ai-agent-plugins
 
 # Install plugin
 /plugin install bereke-business-test-gen
@@ -51,7 +51,7 @@ Use this plugin as an MCP server in Claude Desktop.
   "mcpServers": {
     "bereke-test-gen": {
       "command": "node",
-      "args": ["/path/to/awac-claude-code-plugins/plugins/bereke-business-test-gen/mcp-server.js"]
+      "args": ["/path/to/awac-ai-agent-plugins/plugins/bereke-business-test-gen/mcp-server.js"]
     }
   }
 }

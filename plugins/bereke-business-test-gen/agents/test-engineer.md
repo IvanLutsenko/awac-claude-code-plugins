@@ -14,23 +14,23 @@ color: green
 
 ### Базовые стандарты (ВСЕГДА загружай):
 ```bash
-cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/core-assertions.md
-cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/mockk-patterns.md
+for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/core-assertions.md"; [ -f "$path" ] && cat "$path" && break; done
+for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/mockk-patterns.md"; [ -f "$path" ] && cat "$path" && break; done
 ```
 
 ### Дополнительные по типу класса:
 
 **Repository/UseCase/Interactor:**
 ```bash
-cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/repository-patterns.md
+for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/repository-patterns.md"; [ -f "$path" ] && cat "$path" && break; done
 # Если класс имеет Flow методы - добавь:
-cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/flow-testing.md
+for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/flow-testing.md"; [ -f "$path" ] && cat "$path" && break; done
 ```
 
 **ViewModel:**
 ```bash
-cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/viewmodel-patterns.md
-cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/flow-testing.md
+for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/viewmodel-patterns.md"; [ -f "$path" ] && cat "$path" && break; done
+for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/flow-testing.md"; [ -f "$path" ] && cat "$path" && break; done
 ```
 
 **Validator/Formatter/Utils:**
@@ -47,7 +47,7 @@ cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-busin
 
 Для template matching, quality review, branch analysis используй ultra-compact (~200 tokens):
 ```bash
-cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/ultra-compact.md
+for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/ultra-compact.md"; [ -f "$path" ] && cat "$path" && break; done
 ```
 
 ## Выбор модели по сложности задачи (v2.6.0!)
@@ -197,7 +197,7 @@ Task(
    b. Если template_id получен (wrapper/validator/mapper):
       i. Загрузи template:
          ```bash
-         cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/templates/{template_id}-template.md
+         for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/templates/{template_id}-template.md"; [ -f "$path" ] && cat "$path" && break; done
          ```
       ii. Подставь параметры (methodName, className, dependencies)
       iii. Запиши тест БЕЗ full generation (SKIP steps 9-10)

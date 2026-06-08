@@ -225,6 +225,21 @@ class ReconcileTest(unittest.TestCase):
         self.assertEqual(report.exit_code, 1)
         self.assertEqual(file_hashes(self.repo), before)
 
+    def test_check_ignores_generated_at_only_plugin_state_changes(self):
+        make_cc_marketplace(self.repo, ["one"])
+        make_cc_plugin(self.repo, "one")
+        self.reconciler().attach_marketplace("claude-code")
+        state_path = self.repo / "plugins/one/.plugin-cross-port.yaml"
+        state = read_json(state_path)
+        state["generated_at"] = "2000-01-01T00:00:00+00:00"
+        write_json(state_path, state)
+        before = file_hashes(self.repo)
+
+        report = self.reconciler().check()
+
+        self.assertEqual(report.exit_code, 0)
+        self.assertEqual(file_hashes(self.repo), before)
+
     def test_codex_exclude_skips_generation_and_removes_artifacts(self):
         make_cc_marketplace(self.repo, ["one", "two"])
         make_cc_plugin(self.repo, "one")
@@ -251,6 +266,33 @@ class ReconcileTest(unittest.TestCase):
         # CC side of the excluded plugin is left intact; cross-port marker removed
         self.assertTrue((self.repo / "plugins/two/.claude-plugin/plugin.json").exists())
         self.assertFalse((self.repo / "plugins/two/.plugin-cross-port.yaml").exists())
+
+    def test_skills_authored_skips_command_generation(self):
+        make_cc_marketplace(self.repo, ["one"])
+        make_cc_plugin(self.repo, "one")
+        command = self.repo / "plugins/one/commands/do.md"
+        command.parent.mkdir(parents=True, exist_ok=True)
+        command.write_text("---\ndescription: Do\n---\n\nbody\n", encoding="utf-8")
+        self.reconciler().attach_marketplace("claude-code")
+        generated = self.repo / "plugins/one/skills/generated-from-commands/do/SKILL.md"
+        self.assertTrue(generated.exists())
+
+        state_path = self.repo / ".plugin-cross-port.marketplace.yaml"
+        state = read_json(state_path)
+        state["skills_authored"] = ["one"]
+        write_json(state_path, state)
+
+        report = self.reconciler().sync()
+
+        self.assertEqual(report.exit_code, 0)
+        self.assertFalse((self.repo / "plugins/one/skills/generated-from-commands").exists())
+        # manifest + marketplace entry are still synced for an authored plugin
+        self.assertTrue((self.repo / "plugins/one/.codex-plugin/plugin.json").exists())
+        names = [
+            p["name"]
+            for p in read_json(self.repo / ".agents/plugins/marketplace.json")["plugins"]
+        ]
+        self.assertIn("one", names)
 
 
 if __name__ == "__main__":

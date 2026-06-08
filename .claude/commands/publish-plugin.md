@@ -16,14 +16,14 @@ Extract from `$ARGUMENTS`:
 
 If no arguments provided, detect which plugin was changed:
 ```yaml
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && git diff --name-only HEAD | grep '^plugins/' | head -1 | cut -d/ -f2
+Bash: cd "$(git rev-parse --show-toplevel)" && git diff --name-only HEAD | grep '^plugins/' | head -1 | cut -d/ -f2
 ```
 If multiple plugins changed, ask user which one to publish.
 
 ## Step 2: Run version bump script
 
 ```yaml
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && python3 scripts/publish-plugin.py {plugin_name} {bump_type}
+Bash: cd "$(git rev-parse --show-toplevel)" && python3 scripts/publish-plugin.py {plugin_name} {bump_type}
 ```
 
 Parse the YAML output — it shows old/new version and which files were updated.
@@ -32,7 +32,7 @@ Parse the YAML output — it shows old/new version and which files were updated.
 
 Look at what changed since last version:
 ```yaml
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && git diff HEAD -- plugins/{plugin_name}/
+Bash: cd "$(git rev-parse --show-toplevel)" && git diff HEAD -- plugins/{plugin_name}/
 ```
 
 Based on the diff, write a changelog entry in `plugins/{plugin_name}/README.md`:
@@ -49,12 +49,12 @@ In the root `README.md`, find the plugin's section and update `**What's New in X
 
 Check all files are consistent:
 ```yaml
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && grep -rn "{new_version}" plugins/{plugin_name}/.claude-plugin/plugin.json plugins/{plugin_name}/.codex-plugin/plugin.json plugins/{plugin_name}/README.md README.md CLAUDE.md .claude-plugin/marketplace.json
+Bash: cd "$(git rev-parse --show-toplevel)" && grep -rn "{new_version}" plugins/{plugin_name}/.claude-plugin/plugin.json plugins/{plugin_name}/.codex-plugin/plugin.json plugins/{plugin_name}/README.md README.md CLAUDE.md .claude-plugin/marketplace.json
 ```
 
 ## Step 6: Commit + push
 
 ```yaml
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && git add plugins/{plugin_name}/ README.md CLAUDE.md .claude-plugin/marketplace.json scripts/ && git commit -m "feat({plugin_name}): v{new_version} — {1-line summary}"
-Bash: cd /Users/lutse/projects/awac-claude-code-plugins && git push
+Bash: cd "$(git rev-parse --show-toplevel)" && git add plugins/{plugin_name}/ README.md CLAUDE.md .claude-plugin/marketplace.json scripts/ && git commit -m "feat({plugin_name}): v{new_version} — {1-line summary}"
+Bash: cd "$(git rev-parse --show-toplevel)" && git push
 ```

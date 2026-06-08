@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "awac-claude-code-plugins",
+  "name": "awac-ai-agent-plugins",
   "version": "1.0.0",
-  "description": "Custom plugins for Claude Code by Ivan Lutsenko",
+  "description": "Custom AI agent plugins by Ivan Lutsenko",
   "owner": {
     "name": "Ivan Lutsenko",
     "email": "lutsenkoivan@gmail.com"
@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "bereke-business-test-gen",
-      "version": "2.7.1",
+      "version": "2.7.2",
       "description": "Automated unit test generation for Kotlin/Android business logic with corporate standards",
       "source": "./plugins/bereke-business-test-gen",
       "author": {
@@ -32,7 +32,7 @@
     },
     {
       "name": "obsidian-tracker",
-      "version": "4.3.1",
+      "version": "4.3.2",
       "description": "Project tracking, task management with kanban boards, bug logging, decision records (ADR), session management, and engineering traceability via Obsidian",
       "source": "./plugins/obsidian-tracker",
       "author": {
@@ -98,7 +98,7 @@
     },
     {
       "name": "plugin-cross-port",
-      "version": "0.7.0",
+      "version": "0.8.0",
       "description": "Bidirectional conversion between Claude Code and Codex plugin formats. CC → Codex and Codex → CC, one-shot or continuous.",
       "source": "./plugins/plugin-cross-port",
       "author": {

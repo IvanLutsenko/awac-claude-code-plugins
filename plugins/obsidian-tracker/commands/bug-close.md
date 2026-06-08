@@ -25,8 +25,8 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
 ## Examples
 
 ```
-/bug-close awac-claude-code-plugins
-/bug-close awac-claude-code-plugins --title "Write tool фейлится"
+/bug-close awac-ai-agent-plugins
+/bug-close awac-ai-agent-plugins --title "Write tool фейлится"
 ```
 
 ## Logic

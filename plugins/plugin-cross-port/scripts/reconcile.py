@@ -85,6 +85,8 @@ class Reconciler:
         existing_state = load_state(self.marketplace_state_path, default={})
         if existing_state.get("codex_exclude"):
             state["codex_exclude"] = existing_state["codex_exclude"]
+        if existing_state.get("skills_authored"):
+            state["skills_authored"] = existing_state["skills_authored"]
         for entry in selected_entries:
             name = entry["name"]
             plugin_path = self._entry_plugin_path(source, entry)
@@ -165,6 +167,7 @@ class Reconciler:
             canonical_entries = [
                 entry for entry in canonical_entries if entry.get("name") not in excluded
             ]
+        authored = set(state.get("skills_authored") or []) if target == "codex" else set()
         canonical_names = [entry["name"] for entry in canonical.get("plugins", [])]
         active_names = [entry["name"] for entry in canonical_entries]
 
@@ -189,7 +192,11 @@ class Reconciler:
             plugin_target = self._opposite(plugin_source)
             snapshot = self._snapshot_plugin(plugin_path)
             try:
-                self._run_converter(plugin_path, plugin_source)
+                self._run_converter(
+                    plugin_path,
+                    plugin_source,
+                    skip_command_skills=name in authored,
+                )
                 manifest = self._manifest(plugin_path, plugin_source)
                 source_path = plugin_source_path(
                     plugin_path,
@@ -429,7 +436,9 @@ class Reconciler:
             except Exception as error:
                 self.results.append(PluginResult(name, "failed", "", str(error)))
 
-    def _run_converter(self, plugin_path: Path, source: str) -> None:
+    def _run_converter(
+        self, plugin_path: Path, source: str, *, skip_command_skills: bool = False
+    ) -> None:
         if source == "claude-code":
             code = Converter(
                 plugin_path,
@@ -438,6 +447,7 @@ class Reconciler:
                 True,
                 False,
                 sync_marketplace=False,
+                skip_command_skills=skip_command_skills,
             ).run()
         else:
             code = ReverseConverter(
@@ -531,8 +541,23 @@ def _file_hashes(root: Path) -> dict[str, str]:
     hashes = {}
     for path in sorted(root.rglob("*")):
         if path.is_file() and ".git" not in path.parts:
-            hashes[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+            hashes[str(path.relative_to(root))] = hashlib.sha256(
+                _stable_file_bytes(path)
+            ).hexdigest()
     return hashes
+
+
+def _stable_file_bytes(path: Path) -> bytes:
+    if path.name != ".plugin-cross-port.yaml":
+        return path.read_bytes()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return path.read_bytes()
+    payload.pop("generated_at", None)
+    return (json.dumps(payload, sort_keys=True, ensure_ascii=False) + "\n").encode(
+        "utf-8"
+    )
 
 
 def _load_converter_legacy_state(path: Path, default: dict[str, Any]) -> dict[str, Any]:

@@ -41,7 +41,7 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
 
 ```
 /projects                           # List all projects
-/projects awac-claude-code-plugins  # Show specific project
+/projects awac-ai-agent-plugins  # Show specific project
 ```
 
 ## Logic

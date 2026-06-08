@@ -29,8 +29,8 @@ mcp__plugin_obsidian_tracker_obsidian__getConfig
 ## Examples
 
 ```
-/project-bug awac-claude-code-plugins
-/project-bug awac-claude-code-plugins --title "Search broken" --priority high
+/project-bug awac-ai-agent-plugins
+/project-bug awac-ai-agent-plugins --title "Search broken" --priority high
 ```
 
 ## Logic

@@ -1,7 +1,11 @@
 {
   "mcpServers": {
     "obsidian-tracker": {
-      "command": "/Users/lutse/projects/awac-claude-code-plugins/plugins/obsidian-tracker/mcp/run-server.sh",
+      "command": "/bin/bash",
+      "args": [
+        "-lc",
+        "for root in \"${AWAC_AI_AGENT_PLUGINS_ROOT:-}\" \"$HOME/projects/awac-ai-agent-plugins\" \"$HOME/projects/awac-claude-code-plugins\"; do [ -n \"$root\" ] || continue; script=\"$root/plugins/obsidian-tracker/mcp/run-server.sh\"; [ -x \"$script\" ] && exec \"$script\"; done; echo \"obsidian-tracker MCP server not found\" >&2; exit 1"
+      ],
       "env": {
         "OBSIDIAN_VAULT": "${OBSIDIAN_VAULT:-$HOME/Documents/GitHub/obsidian/MCP/Projects}"
       }

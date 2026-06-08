@@ -6,7 +6,7 @@ Converts individual plugins in either direction and reconciles dual-target
 Claude Code and Codex marketplaces. A repository chooses one canonical
 marketplace, while each plugin keeps its own `source_of_truth`.
 
-**Version:** 0.7.0
+**Version:** 0.8.0
 
 ---
 
@@ -181,6 +181,10 @@ available and emit a warning.
 ---
 
 ## Changelog
+
+### 0.8.0
+- Add `skills_authored` marketplace-state flag: plugins with hand-authored Codex skills skip mechanical `commands/` → `skills/generated-from-commands/` generation (manifest + marketplace entry are still synced); existing mechanical output is removed
+- Flag is preserved across `marketplace attach`
 
 ### 0.7.0
 - Add `plugin adapt` and `plugin adapt --apply`

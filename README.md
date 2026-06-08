@@ -1,14 +1,18 @@
-# AWAC Claude Code Plugins
+# AWAC AI Agent Plugins
 
-Custom Claude Code plugins by Ivan Lutsenko
+Custom AI agent plugins by Ivan Lutsenko
 
 ## Installation
 
 Add the marketplace once, then install plugins as needed:
 
 ```bash
-/plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
+/plugin marketplace add https://github.com/IvanLutsenko/awac-ai-agent-plugins
 ```
+
+Compatibility: the previous repository slug,
+`awac-claude-code-plugins`, is kept as a supported fallback for existing
+Claude Code marketplace installations.
 
 ## Available Plugins
 
@@ -32,13 +36,11 @@ Automated unit test generation for Kotlin/Android business logic with corporate 
 /validate-tests feature/auth                     # Validate tests against standards
 ```
 
-**Status:** ✅ Production Ready | **Version:** 2.7.1
+**Status:** ✅ Production Ready | **Version:** 2.7.2
 
-**What's New in 2.7.1:**
-- 🤖 **Multi-agent workflows**: allowed-tools now includes `Agent` and `Bash`
-- 🔄 **PR Workflow**: `/test-diff` generates tests only for changed files
-- 🔧 **Auto-fix**: `/test-fix` brings existing tests to corporate standards
-- ✅ **Validation**: `/validate-tests` checks tests against all standards
+**What's New in 2.7.2:**
+- Marketplace standards loaders now prefer `awac-ai-agent-plugins` and fall back
+  to the legacy `awac-claude-code-plugins` install path.
 
 **Key Features:**
 - Multi-agent architecture (10+ specialized agents)
@@ -111,10 +113,10 @@ cd plugins/obsidian-tracker/mcp && npm install && npm run build
 /track-stop                 # Save session to Obsidian
 ```
 
-**Status:** ✅ Production Ready | **Version:** 4.3.1
+**Status:** ✅ Production Ready | **Version:** 4.3.2
 
-**What's New in 4.3.1:**
-- Tracking state is serialized as valid JSON for quoted and escaped CLI arguments
+**What's New in 4.3.2:**
+- Examples now use the renamed `awac-ai-agent-plugins` project slug.
 
 **Features:**
 - Auto-tracking via hooks (PreCompact, SessionStart, PostToolUse)
@@ -262,7 +264,10 @@ python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/exa
 python3 plugins/plugin-cross-port/scripts/cross_port.py plugin adapt plugins/example --apply
 ```
 
-**Status:** 🔨 Beta | **Version:** 0.7.0
+**Status:** 🔨 Beta | **Version:** 0.8.0
+
+**What's New in 0.8.0:**
+- `skills_authored` marketplace flag — plugins whose Codex skills are hand-authored skip mechanical `commands/` → `skills/` generation (manifest + marketplace still synced)
 
 **What's New in 0.7.0:**
 - `plugin adapt` writes semantic adaptation plans and source snapshots

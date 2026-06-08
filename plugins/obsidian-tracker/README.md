@@ -225,9 +225,12 @@ To disable auto-allow entirely, disable the plugin or remove the `PermissionRequ
 
 ## Version
 
-4.3.1
+4.3.2
 
 ## Changelog
+
+### 4.3.2
+- **Docs**: examples now use the renamed `awac-ai-agent-plugins` project slug
 
 ### 4.3.1
 - **Fix**: tracking state is serialized as valid JSON when project names, goals, or actions contain quotes and backslashes
@@ -277,7 +280,7 @@ To disable auto-allow entirely, disable the plugin or remove the `PermissionRequ
 - Destructive tools (`deleteProject`, `deleteTask`) still require explicit approval
 
 ### 3.2.0
-- **Smart project lookup**: `resolveProjectPath` recursively searches subprojects by short name — `addTask(project: "obsidian-tracker")` works without full path `awac-claude-code-plugins/obsidian-tracker`
+- **Smart project lookup**: `resolveProjectPath` recursively searches subprojects by short name — `addTask(project: "obsidian-tracker")` works without full path `awac-ai-agent-plugins/obsidian-tracker`
 - **Subproject creation**: `createProject` now accepts `parent` parameter — `createProject(name: "Sub", parent: "Parent")` creates subproject in correct location
 - **`deleteTask` tool**: Deletes task file and removes from Board.md kanban board
 - **`updateProject` tool**: Update description, status, repository, localPath, or append markdown context to README

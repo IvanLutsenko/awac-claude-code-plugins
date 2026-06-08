@@ -1,7 +1,7 @@
 {
-  "name": "awac-claude-code-plugins",
+  "name": "awac-ai-agent-plugins",
   "interface": {
-    "displayName": "AWAC Claude Code Plugins"
+    "displayName": "AWAC AI Agent Plugins"
   },
   "plugins": [
     {

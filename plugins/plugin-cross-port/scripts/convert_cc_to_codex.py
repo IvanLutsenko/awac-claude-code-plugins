@@ -183,6 +183,7 @@ class Converter:
         force: bool,
         strict: bool,
         sync_marketplace: bool = True,
+        skip_command_skills: bool = False,
     ):
         self.plugin_path = plugin_path.resolve()
         self.repo_root = repo_root.resolve()
@@ -190,6 +191,7 @@ class Converter:
         self.force = force
         self.strict = strict
         self.sync_marketplace = sync_marketplace
+        self.skip_command_skills = skip_command_skills
         self.warnings: list[str] = []
         self.created: list[str] = []
         self.removed: list[str] = []
@@ -401,43 +403,48 @@ class Converter:
         # --- commands/ → skills/generated-from-commands/ ---
         commands_dir = self.plugin_path / 'commands'
         converted_count = 0
-        if commands_dir.exists():
-            cmd_files = sorted(commands_dir.glob('*.md'))
-            for cmd_file in cmd_files:
-                command_name = cmd_file.stem
-                out_dir = self.plugin_path / 'skills' / 'generated-from-commands' / command_name
-                out_path = out_dir / 'SKILL.md'
-                rel_out = self._rel(out_path)
+        cmd_files: list[Path] = []
+        generated_root = self.plugin_path / 'skills' / 'generated-from-commands'
 
-                if self._is_manually_maintained(out_path, manually_maintained):
-                    print(f"  Skipping manually maintained: {rel_out}")
-                    continue
+        if self.skip_command_skills:
+            # Codex skills for this plugin are hand-authored; drop mechanical output.
+            if generated_root.exists():
+                self._remove(generated_root)
+        else:
+            if commands_dir.exists():
+                cmd_files = sorted(commands_dir.glob('*.md'))
+                for cmd_file in cmd_files:
+                    command_name = cmd_file.stem
+                    out_dir = generated_root / command_name
+                    out_path = out_dir / 'SKILL.md'
+                    rel_out = self._rel(out_path)
 
-                # Idempotent: skip if generated file is newer than source
-                if out_path.exists() and not self.force:
-                    src_mtime = cmd_file.stat().st_mtime
-                    dst_mtime = out_path.stat().st_mtime
-                    if dst_mtime >= src_mtime:
-                        self.skipped.append(rel_out)
+                    if self._is_manually_maintained(out_path, manually_maintained):
+                        print(f"  Skipping manually maintained: {rel_out}")
                         continue
 
-                content = self.convert_command_to_skill(cmd_file, plugin_name)
-                self._write(out_path, content, overwrite=True)
-                converted_count += 1
-        else:
-            cmd_files = []
+                    # Idempotent: skip if generated file is newer than source
+                    if out_path.exists() and not self.force:
+                        src_mtime = cmd_file.stat().st_mtime
+                        dst_mtime = out_path.stat().st_mtime
+                        if dst_mtime >= src_mtime:
+                            self.skipped.append(rel_out)
+                            continue
 
-        generated_root = self.plugin_path / 'skills' / 'generated-from-commands'
-        expected = {cmd_file.stem for cmd_file in cmd_files}
-        if generated_root.exists():
-            for generated_dir in sorted(generated_root.iterdir()):
-                skill_path = generated_dir / 'SKILL.md'
-                if not generated_dir.is_dir() or generated_dir.name in expected:
-                    continue
-                if self._is_manually_maintained(skill_path, manually_maintained):
-                    self.skipped.append(self._rel(skill_path))
-                    continue
-                self._remove(generated_dir)
+                    content = self.convert_command_to_skill(cmd_file, plugin_name)
+                    self._write(out_path, content, overwrite=True)
+                    converted_count += 1
+
+            expected = {cmd_file.stem for cmd_file in cmd_files}
+            if generated_root.exists():
+                for generated_dir in sorted(generated_root.iterdir()):
+                    skill_path = generated_dir / 'SKILL.md'
+                    if not generated_dir.is_dir() or generated_dir.name in expected:
+                        continue
+                    if self._is_manually_maintained(skill_path, manually_maintained):
+                        self.skipped.append(self._rel(skill_path))
+                        continue
+                    self._remove(generated_dir)
 
         # --- agents/ --- warn or strict fail
         agents_dir = self.plugin_path / 'agents'

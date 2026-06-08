@@ -33,12 +33,12 @@ version: 0.1.0
 
 **Быстрая шпаргалка** (начни с этого - 50 строк):
 ```
-!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/android-kotlin-quick-ref.md
+!bash -lc 'for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/android-kotlin-quick-ref.md"; [ -f "$path" ] && cat "$path" && exit 0; done; echo "Missing android-kotlin-quick-ref.md in awac-ai-agent-plugins or awac-claude-code-plugins" >&2; exit 1'
 ```
 
 **Полное руководство** (если нужны детали - 600+ строк):
 ```
-!cat ~/.claude/plugins/marketplaces/awac-claude-code-plugins/plugins/bereke-business-test-gen/standards/android-kotlin.md
+!bash -lc 'for marketplace in awac-ai-agent-plugins awac-claude-code-plugins; do path="$HOME/.claude/plugins/marketplaces/$marketplace/plugins/bereke-business-test-gen/standards/android-kotlin.md"; [ -f "$path" ] && cat "$path" && exit 0; done; echo "Missing android-kotlin.md in awac-ai-agent-plugins or awac-claude-code-plugins" >&2; exit 1'
 ```
 
 ### Шаг 2: Полное сканирование модуля

@@ -12,7 +12,7 @@ This project uses **Obsidian** as the single source of truth for:
 
 1. **Install obsidian-tracker plugin:**
    ```bash
-   /plugin marketplace add https://github.com/IvanLutsenko/awac-claude-code-plugins
+   /plugin marketplace add https://github.com/IvanLutsenko/awac-ai-agent-plugins
    /plugin install obsidian-tracker
    cd plugins/obsidian-tracker/mcp && npm install && npm run build
    ```
@@ -53,13 +53,13 @@ This project uses **Obsidian** as the single source of truth for:
 
 ```bash
 # Start of session
-/projects awac-claude-code-plugins    # Review project status
+/projects awac-ai-agent-plugins    # Review project status
 
 # During debugging
-/project-bug awac-claude-code-plugins --title "glm-toggle not indexing" --priority critical
+/project-bug awac-ai-agent-plugins --title "glm-toggle not indexing" --priority critical
 
 # End of session
-/session-log awac-claude-code-plugins  # Document progress
+/session-log awac-ai-agent-plugins  # Document progress
 ```
 
 ## Project Structure Template

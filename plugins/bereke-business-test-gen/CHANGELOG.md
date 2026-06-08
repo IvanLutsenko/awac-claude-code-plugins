@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.7.2] - 2026-06-04
+
+### Fixed - Marketplace Rename Compatibility
+
+- Standards-loading commands now prefer the renamed `awac-ai-agent-plugins`
+  marketplace directory.
+- Existing `awac-claude-code-plugins` Claude Code installations remain supported
+  as a fallback path.
+
 ## [2.7.0] - 2026-01-15
 
 ### Added - PR Workflow + Test Fix
